@@ -27,6 +27,7 @@ using OpenTK.Wpf;
 using ProjectWS.Engine.Rendering;
 using ProjectWS.Engine;
 using SevenZip.Compression.LZ;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace ProjectWS.Editor
 {
@@ -35,16 +36,17 @@ namespace ProjectWS.Editor
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-        public Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
+		public Editor editor;
 
         public MainWindow()
 		{
 			InitializeComponent();
 			this.DataContext = this;
+			this.editor = Program.editor;
 			Program.mainWindow = this;
 
 			// Create main render/update loop renderer
-            Program.editor.CreateRendererPane(Program.mainWindow, "World", 0, 0);
+            this.editor.CreateRendererPane(this, "World", 0, 0);
         }
 
 		#region FocusedElement
@@ -86,18 +88,30 @@ namespace ProjectWS.Editor
 					if (grid == null)
 						return;
 
+					GLWpfControl? focusedControl = null;
+
                     foreach (var item in grid.Children)
 					{
 						if (item is GLWpfControl)
 						{
-							if (Program.editor != null)
-							{
-								Program.editor.focusedControl = item as GLWpfControl;
-								Debug.Log(string.Format("Active Control -> {0}", item));
-								return;
-							}
+							focusedControl = item as GLWpfControl;
                         }
 					}
+
+					if (focusedControl != null && Program.editor != null)
+					{
+                        this.editor.focusedControl = focusedControl;
+
+						foreach (var item in this.editor.controls)
+						{
+							if (item.Value == focusedControl)
+							{
+								Debug.Log(string.Format("Active Control -> {0}", item.Key));
+							}
+                        }
+                        
+                        return;
+                    }
 				}
             }
         }

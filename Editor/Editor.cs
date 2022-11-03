@@ -29,10 +29,13 @@ namespace ProjectWS.Editor
         public Engine.Engine? engine;
         private TestArea.Tests? tests;
         public GLWpfControl? focusedControl;
+        public Dictionary<int, GLWpfControl> controls;
+
         FPSCounter fps;
 
         public Editor()
         {
+            this.controls = new Dictionary<int, GLWpfControl>();
             Start();
         }
 
@@ -106,7 +109,7 @@ namespace ProjectWS.Editor
             {
                 foreach (var item in opentkKeyMap)
                 {
-                    //this.engine.input.keyStates[item.Key] = Keyboard.IsKeyDown(item.Value);
+                    this.engine.input.keyStates[item.Key] = Keyboard.IsKeyDown(item.Value);
                 }
             }
 
@@ -131,6 +134,7 @@ namespace ProjectWS.Editor
             Debug.Log("Create Renderer Pane, type " + type);
 
             var openTkControl = new GLWpfControl();
+            this.controls.Add(ID, openTkControl);
             openTkControl.Name = "OpenTKControl_" + ID;
 
             var rendererGrid = new Grid();
