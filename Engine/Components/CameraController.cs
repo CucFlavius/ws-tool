@@ -197,34 +197,37 @@ namespace ProjectWS.Engine.Components
 
         public override void Update(float deltaTime)
         {
-            if (this.input.hasFocus)
+            if (this.rendererID == this.camera.renderer.engine.focusedRendererID)
             {
-                if (this.input.GetKeyDown(Keys.W))
-                    ProcessKeyboard(CameraMovement.FORWARD, deltaTime);
-                if (this.input.GetKeyDown(Keys.S))
-                    ProcessKeyboard(CameraMovement.BACKWARD, deltaTime);
-                if (this.input.GetKeyDown(Keys.A))
-                    ProcessKeyboard(CameraMovement.LEFT, deltaTime);
-                if (this.input.GetKeyDown(Keys.D))
-                    ProcessKeyboard(CameraMovement.RIGHT, deltaTime);
-                if (this.input.GetKeyDown(Keys.Space))
-                    ProcessKeyboard(CameraMovement.UP, deltaTime);
-                if (this.input.GetKeyDown(Keys.C))
-                    ProcessKeyboard(CameraMovement.DOWN, deltaTime);
-            }
+                if (this.input.hasFocus)
+                {
+                    if (this.input.GetKeyDown(Keys.W))
+                        ProcessKeyboard(CameraMovement.FORWARD, deltaTime);
+                    if (this.input.GetKeyDown(Keys.S))
+                        ProcessKeyboard(CameraMovement.BACKWARD, deltaTime);
+                    if (this.input.GetKeyDown(Keys.A))
+                        ProcessKeyboard(CameraMovement.LEFT, deltaTime);
+                    if (this.input.GetKeyDown(Keys.D))
+                        ProcessKeyboard(CameraMovement.RIGHT, deltaTime);
+                    if (this.input.GetKeyDown(Keys.Space))
+                        ProcessKeyboard(CameraMovement.UP, deltaTime);
+                    if (this.input.GetKeyDown(Keys.C))
+                        ProcessKeyboard(CameraMovement.DOWN, deltaTime);
+                }
 
-            if (this.camera != null)
-            {
-                var mouseDiff = this.input.GetMouseDiff();
-                if (this.input.RMB)   // RMB
+                if (this.camera != null)
                 {
-                    ProcessMouseMovement(mouseDiff.X, mouseDiff.Y);
+                    var mouseDiff = this.input.GetMouseDiff();
+                    if (this.input.RMB)   // RMB
+                    {
+                        ProcessMouseMovement(mouseDiff.X, mouseDiff.Y);
+                    }
+                    if (this.input.MMB)   // MMB
+                    {
+                        ProcessMousePan(mouseDiff.X, mouseDiff.Y);
+                    }
+                    ProcessMouseScroll(mouseDiff.Z);
                 }
-                if (this.input.MMB)   // MMB
-                {
-                    ProcessMousePan(mouseDiff.X, mouseDiff.Y);
-                }
-                ProcessMouseScroll(mouseDiff.Z);
             }
 
             if (this.cameraMode == CameraMode.Orbit)

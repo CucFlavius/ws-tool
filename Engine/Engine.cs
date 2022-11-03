@@ -24,6 +24,7 @@ namespace ProjectWS.Engine
         public float frameTime;
         public float time;
         public string cacheLocation;
+        public int focusedRendererID;
 
         public TaskManager.Manager taskManager;
         public Data.ResourceManager.Manager resourceManager;

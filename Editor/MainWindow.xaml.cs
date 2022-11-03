@@ -98,7 +98,7 @@ namespace ProjectWS.Editor
                         }
 					}
 
-					if (focusedControl != null && Program.editor != null)
+					if (focusedControl != null && this.editor != null)
 					{
                         this.editor.focusedControl = focusedControl;
 
@@ -107,6 +107,7 @@ namespace ProjectWS.Editor
 							if (item.Value == focusedControl)
 							{
 								Debug.Log(string.Format("Active Control -> {0}", item.Key));
+								this.editor.engine.focusedRendererID = item.Key;
 							}
                         }
                         
