@@ -13,11 +13,11 @@
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.70.2" />
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
     <PackageReference Include="OpenTK" Version="4.7.5" />
-    <PackageReference Include="OpenTK.GLWpfControl" Version="4.2.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj" />
+    <ProjectReference Include="..\GLWpfControl\src\GLWpfControl\GLWpfControl.csproj" />
   </ItemGroup>
 
 </Project>
