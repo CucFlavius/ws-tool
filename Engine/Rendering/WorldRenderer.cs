@@ -2,6 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using ProjectWS.Engine.Objects.Gizmos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace ProjectWS.Engine.Rendering
             camController.cameraMode = Components.CameraController.CameraMode.Fly;
             mainCamera.components.Add(camController);
             this.cameras.Add(mainCamera);
-            this.activeCamera = mainCamera;
+            //this.activeCamera = mainCamera;
 
             var secondCamera = new Camera(this, new Vector3(0, 200, 0), MathHelper.DegreesToRadians(45), this.aspect, 0.1f, 10000.0f);
             this.cameras.Add(secondCamera);
@@ -54,26 +55,38 @@ namespace ProjectWS.Engine.Rendering
 
             GL.ClearColor(new Color4(0.1f, 0.1f, 0.1f, 1.0f));
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
             // render 1
             GL.Viewport(0, 0, this.width / 2, this.height);
             if (world != null)
             {
                 terrainShader.Use();
-                this.activeCamera.Set(terrainShader);
+                this.cameras[0].SetToShader(terrainShader);
                 this.world.Render(terrainShader);
             }
 
             // render gizmos 1
-            lineShader.Use();
-            this.activeCamera.Set(lineShader);
-            for (int i = 0; i < this.engine.gizmos.Count; i++)
+            for (int i = 0; i < this.gizmos.Count; i++)
             {
-                //if (this.engine.gizmos[i] is Objects.Gizmos.CameraGizmo)
-                //    if ((this.engine.gizmos[i] as Objects.Gizmos.CameraGizmo).camera == this.activeCamera)
-                //        continue;
+                if (this.gizmos[i] == null) continue;
 
-                this.engine.gizmos[i].Render(Matrix4.Identity, lineShader);
+                if (this.gizmos[i] is Objects.Gizmos.CameraGizmo)
+                    if ((this.gizmos[i] as Objects.Gizmos.CameraGizmo).camera == this.cameras[0])
+                        continue;
+
+                if (this.gizmos[i] is InfiniteGridGizmo)
+                {
+                    this.infiniteGridShader.Use();
+                    this.cameras[0].SetToShader(this.infiniteGridShader);
+                    this.gizmos[i].Render(Matrix4.Identity, this.infiniteGridShader);
+                }
+                else
+                {
+                    this.lineShader.Use();
+                    this.cameras[0].SetToShader(this.lineShader);
+                    this.gizmos[i].Render(Matrix4.Identity, this.lineShader);
+                }
             }
 
             // render 2
@@ -81,41 +94,40 @@ namespace ProjectWS.Engine.Rendering
             if (world != null)
             {
                 terrainShader.Use();
-                this.cameras[1].Set(terrainShader);
+                this.cameras[1].SetToShader(terrainShader);
                 this.world.Render(terrainShader);
             }
 
             // render gizmos 2
             lineShader.Use();
-            this.cameras[1].Set(lineShader);
-            for (int i = 0; i < this.engine.gizmos.Count; i++)
+            this.cameras[1].SetToShader(lineShader);
+            for (int i = 0; i < this.gizmos.Count; i++)
             {
-                //if (this.engine.gizmos[i] is Objects.Gizmos.CameraGizmo)
-                //    if ((this.engine.gizmos[i] as Objects.Gizmos.CameraGizmo).camera == this.cameras[1])
-                //        continue;
+                if (this.gizmos[i] is Objects.Gizmos.CameraGizmo)
+                    if ((this.gizmos[i] as Objects.Gizmos.CameraGizmo).camera == this.cameras[1])
+                        continue;
 
-                this.engine.gizmos[i].Render(Matrix4.Identity, lineShader);
+                this.gizmos[i].Render(Matrix4.Identity, lineShader);
             }
 
             GL.Viewport(0, 0, this.width, this.height); //restore default
-
         }
 
         public override void Update(float deltaTime)
         {
             for (int i = 0; i < this.cameras.Count; i++)
             {
+                this.cameras[i].Update(deltaTime);
                 for (int c = 0; c < this.cameras[i].components.Count; c++)
                 {
                     this.cameras[i].components[c].Update(deltaTime);
                 }
-                this.cameras[i].Update(deltaTime);
             }
 
             // Temp : Updating topdown camera manually
             var p = this.cameras[0].transform.GetPosition() + new Vector3(0, 1000, 0);
             this.cameras[1].view = Matrix4.LookAt(p, p - Vector3.UnitY, Vector3.UnitZ);
-            this.cameras[1].transform.SetPosition(this.cameras[0].transform.GetPosition() + new Vector3(0, 1000, 0));
+            this.cameras[1].transform.SetPosition(p);
 
             if (this.world != null)
                 this.world.Update(deltaTime);

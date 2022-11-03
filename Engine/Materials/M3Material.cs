@@ -55,7 +55,7 @@ namespace ProjectWS.Engine.Materials
             this.isBuilt = true;
         }
 
-        public override void Set(Shader shader)
+        public override void SetToShader(Shader shader)
         {
             if (!this.isBuilt) return;
 

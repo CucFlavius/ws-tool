@@ -45,7 +45,9 @@ namespace ProjectWS.Editor
 			this.editor = Program.editor;
 			Program.mainWindow = this;
 
-			// Create main render/update loop renderer
+            Mouse.AddMouseWheelHandler(Application.Current.MainWindow, new MouseWheelEventHandler(this.editor.MouseWheelEventHandler));
+
+            // Create main render/update loop renderer
             this.editor.CreateRendererPane(this, "World", 0, 0);
         }
 

@@ -40,7 +40,7 @@ namespace ProjectWS.Engine.Objects
                 else
                     shader.SetMat4("model", model);
 
-                this.m3Data.materials[matSelector].mat.Set(shader);
+                this.m3Data.materials[matSelector].mat.SetToShader(shader);
 
                 submesh.Draw();
             }

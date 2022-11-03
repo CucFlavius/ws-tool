@@ -377,7 +377,7 @@ namespace ProjectWS.Engine.Data
 
             internal void Render(Shader shader)
             {
-                this.material.Set(shader);
+                this.material.SetToShader(shader);
                 this.mesh.Draw();
             }
 

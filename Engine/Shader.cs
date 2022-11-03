@@ -102,6 +102,11 @@ namespace ProjectWS.Engine
             GL.Uniform1(GL.GetUniformLocation(Handle, name), value);
         }
 
+        public void SetFloat(string name, float value)
+        {
+            GL.Uniform1(GL.GetUniformLocation(Handle, name), value);
+        }
+
         public void SetMat4(string name, Matrix4 mat)
         {
             GL.UniformMatrix4(GL.GetUniformLocation(Handle, name), false, ref mat);

@@ -106,7 +106,7 @@ namespace ProjectWS.Engine.World
             this.controller.worldPosition = new Vector3(x, y + cameraUpOffset, z - cameraBehindCharacterOffset);
             if (FindRenderer())
             {
-                (this.renderer.activeCamera.components[0] as Components.CameraController).Pos = this.controller.worldPosition;
+                (this.renderer.cameras[0].components[0] as Components.CameraController).Pos = this.controller.worldPosition;
                 this.renderer.cameras[1].transform.SetPosition(this.controller.worldPosition + new Vector3(0, 1000, 0));
                 this.renderer.cameras[1].transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(-90), 0, 0));
             }
@@ -215,13 +215,13 @@ namespace ProjectWS.Engine.World
             {
                 for (int i = 0; i < this.renderer.cameras.Count; i++)
                 {
-                    this.renderer.cameras[i].Update(deltaTime);
+                    //this.renderer.cameras[i].Update(deltaTime);
                 }
 
                 //this.mouseRay = this.activeCamera.camera.ScreenPointToRay(Input.mousePosition);
                 if (this.controller != null)
                 {
-                    this.controller.Update(this.renderer.activeCamera);
+                    this.controller.Update(this.renderer.cameras[0]);
                 }
             }
             CullingMT();
@@ -459,7 +459,7 @@ namespace ProjectWS.Engine.World
 
             foreach (var item in this.activeChunks)
             {
-                item.Value.CalculateCulling(this.renderer.activeCamera/*, this.sunLight*/);
+                item.Value.CalculateCulling(this.renderer.cameras[0]/*, this.sunLight*/);
             }
 
             // Chunks - Occlusion //

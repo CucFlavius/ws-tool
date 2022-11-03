@@ -31,7 +31,6 @@ namespace ProjectWS.Engine
         //public Renderer.WRenderer wRenderer;
         //public CameraController cc;
         public Dictionary<uint, World.World> worlds;
-        public List<Objects.GameObject> gizmos;
         public Data.GameData data;
         public Input input;
 
@@ -50,7 +49,6 @@ namespace ProjectWS.Engine
             this.renderers = new List<Rendering.Renderer>();
             this.input = new Input(this);
             this.worlds = new Dictionary<uint, World.World>();
-            this.gizmos = new List<Objects.GameObject>();
 
             // Load engine resources
             this.resourceManager.textureResources.Add(ResourceManager.EngineTextures.white, new Data.ResourceManager.TextureResource(ResourceManager.EngineTextures.white, this.resourceManager, null));
@@ -76,17 +74,21 @@ namespace ProjectWS.Engine
             this.taskManager.Update();
             this.input.Update();
 
-            for (int i = 0; i < this.renderers.Count; i++)
+            if (this.input.GetKeyPress(Keys.R))
             {
-                if (this.input.GetKeyPress(Keys.R))
+                for (int i = 0; i < this.renderers.Count; i++)
                 {
                     Debug.Log($"Reload Shaders: Renderer[{i}]");
                     this.renderers[i].normalShader.Load();
                     this.renderers[i].modelShader.Load();
                     this.renderers[i].wireframeShader.Load();
                     this.renderers[i].terrainShader.Load();
+                    this.renderers[i].infiniteGridShader.Load();
                 }
+            }
 
+            for (int i = 0; i < this.renderers.Count; i++)
+            {
                 this.renderers[i].Update(deltaTime);
             }
 
@@ -97,8 +99,9 @@ namespace ProjectWS.Engine
 
         public void Render(int renderer)
         {
-            contextAvailable = true;
-            renderers[renderer].Render();
+            this.contextAvailable = true;
+            this.renderers[renderer].Render();
+
             GL.Flush();
         }
 

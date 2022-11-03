@@ -30,11 +30,11 @@ namespace ProjectWS.Engine
             this.farDistance = farDistance;
             this.frustum = new Frustum();
             this.gizmo = new Objects.Gizmos.CameraGizmo(this);
-            this.renderer.engine.gizmos.Add(this.gizmo);
+            this.renderer.gizmos.Add(this.gizmo);
             this.renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.gizmo));
         }
 
-        public void Set(Shader shader)
+        public void SetToShader(Shader shader)
         {
             if (this.aspectRatio == 0)
                 this.aspectRatio = 1;

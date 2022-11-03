@@ -14,7 +14,7 @@ namespace ProjectWS.Engine.Materials
 
         public abstract void Build();
 
-        public abstract void Set(Shader shader);
+        public abstract void SetToShader(Shader shader);
 
         public void SetTexture(string samplerName, uint ptr)
         {

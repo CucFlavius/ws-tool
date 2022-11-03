@@ -10,6 +10,7 @@ namespace ProjectWS.Engine.Rendering
 {
     public abstract class Renderer
     {
+        public int ID;
         public Engine engine;
         public bool rendering = false;
         public bool mouseOver = false;
@@ -25,20 +26,22 @@ namespace ProjectWS.Engine.Rendering
         public Shader normalShader;
         public Shader terrainShader;
         public Shader lineShader;
-        public int ID;
-        public Camera activeCamera;
+        public Shader infiniteGridShader;
+
         public List<Camera> cameras;
+        public List<Objects.GameObject> gizmos;
         public ShadingOverride shadingOverride;
 
         public Renderer(Engine engine)
         {
             this.engine = engine;
+            this.gizmos = new List<Objects.GameObject>();
         }
 
         public abstract void Update(float deltaTime);
         public abstract void Render();
 
-        public void SetViewport(int x, int y, int width, int height)
+        public void SetViewport(int x, int y, int width, int height, int cameraID)
         {
             this.rendering = true;
             this.x = x;
@@ -46,7 +49,7 @@ namespace ProjectWS.Engine.Rendering
             this.width = width;
             this.height = height;
             this.aspect = (float)(this.width / 2) / (float)this.height;
-            this.activeCamera.aspectRatio = aspect;
+            this.cameras[cameraID].aspectRatio = aspect;
 
             if (this.cameras == null)
             {
@@ -58,10 +61,6 @@ namespace ProjectWS.Engine.Rendering
             {
                 this.cameras[i].aspectRatio = aspect;
             }
-
-            GL.Viewport(this.x, this.y, this.width, this.height);
-            GL.ClearColor(0.3f, 0.2f, 0.3f, 1.0f);
-            GL.Enable(EnableCap.DepthTest);
         }
 
         public void DestroyViewport()
@@ -84,7 +83,10 @@ namespace ProjectWS.Engine.Rendering
             this.height = height;
             GL.Viewport(this.x, this.y, this.width, this.height);
             this.aspect = (float)(this.width / 2) / (float)this.height;
-            this.activeCamera.aspectRatio = aspect;
+            for (int i = 0; i < this.cameras.Count; i++)
+            {
+                this.cameras[i].aspectRatio = aspect;
+            }
 
             if (this.cameras == null)
             {

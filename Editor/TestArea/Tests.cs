@@ -31,11 +31,6 @@ namespace ProjectWS.TestArea
             this.engine.LoadGameData(installLocation, OnDataLoaded);
             this.engine.SetCacheLocation(cacheLocation);
 
-            var gizmo = new Engine.Objects.Gizmos.BoxGizmo(Vector4.One);
-            gizmo.transform.SetPosition(0.1f, 0.1f, 0.1f);
-            this.engine.gizmos.Add(gizmo);
-            this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(gizmo));
-
             //CompareBetaAndRetailTextures();
             //FindBoneFlags();
         }
@@ -91,6 +86,7 @@ namespace ProjectWS.TestArea
             {
                 var modelRenderer = this.engine.renderers[rendererIndex] as Engine.Rendering.ModelRenderer;
                 modelRenderer.objects.Add(new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine));
+                //modelRenderer.SetShadingOverride(Renderer.ShadingOverride.Wireframe);
             }
             else
             {

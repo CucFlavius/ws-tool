@@ -1,11 +1,4 @@
-﻿using OpenTK;
-using System;
-//using OpenTK.Input;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace ProjectWS.Engine.Components
@@ -161,6 +154,7 @@ namespace ProjectWS.Engine.Components
                 if (this.Zoom > 45.0f)
                     this.Zoom = 45.0f;
             }
+
             else if (this.cameraMode == CameraMode.Orbit)
             {
                 this.distanceToOrigin -= scroll * 0.5f;
@@ -230,28 +224,27 @@ namespace ProjectWS.Engine.Components
                 }
             }
 
+            Matrix4 cameraMat;
+
             if (this.cameraMode == CameraMode.Orbit)
             {
-                if (this.camera != null)
-                    this.camera.transform.SetMatrix(Matrix4.LookAt(this.Pos + this.lookAtPoint, this.lookAtPoint, this.Up));
+                cameraMat = Matrix4.LookAt(this.Pos + this.lookAtPoint, this.lookAtPoint, this.Up);
             }
             else if (this.cameraMode == CameraMode.Fly)
             {
-                //this.camera.transform.SetMatrix(Matrix4.LookAt(this.Pos, this.Pos + this.Front, this.Up));
-                var mat = Matrix4.LookAt(this.Pos, this.Pos + this.Front, this.Up);
-                if (this.camera != null)
-                {
-                    this.camera.transform.SetRotation(mat.ExtractRotation());
-                    this.camera.transform.SetPosition(this.Pos);
-                    //this.camera.transform.SetMatrix(mat);
-
-                    this.camera.view = mat;
-                }
+                cameraMat = Matrix4.LookAt(this.Pos, this.Pos + this.Front, this.Up);
             }
             else
             {
-                if (this.camera != null)
-                    this.camera.transform.SetMatrix(Matrix4.Identity);
+                cameraMat = Matrix4.Identity;
+            }
+
+            if (this.camera != null)
+            {
+                this.camera.transform.SetRotation(cameraMat.ExtractRotation());
+                this.camera.transform.SetPosition(this.Pos);
+                //this.camera.transform.SetMatrix(mat);
+                this.camera.view = cameraMat;
             }
         }
     }

@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Xml.Linq;
 using AvalonDock.Layout;
 using OpenTK.Compute.OpenCL;
 using OpenTK.Mathematics;
@@ -25,6 +26,7 @@ namespace ProjectWS.Editor
         readonly float timeScale = 1.0f;
         float deltaTime;
         float elapsedTime;
+        float mouseWheelPos;
 
         public Engine.Engine? engine;
         private TestArea.Tests? tests;
@@ -124,7 +126,13 @@ namespace ProjectWS.Editor
                 Application.Current.MainWindow.ReleaseMouseCapture();
 
             var mousePosition = Mouse.GetPosition(this.focusedControl);
-            this.engine.input.mousePos = new Vector3((float)mousePosition.X, (float)mousePosition.Y, 0);
+
+            this.engine.input.mousePos = new Vector3((float)mousePosition.X, (float)mousePosition.Y, this.mouseWheelPos);
+        }
+
+        public void MouseWheelEventHandler(object sender, MouseWheelEventArgs e)
+        {
+            this.mouseWheelPos += e.Delta / 120f;
         }
 
         public void CreateRendererPane(MainWindow window, string name, int ID, int type)
@@ -149,7 +157,7 @@ namespace ProjectWS.Editor
             window.LayoutDocumentPaneGroup.Children.Add(rendererPane);
             //rendererDocument.Dock();
 
-            var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0 };
+            var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
             openTkControl.Start(settings);
 
             Renderer renderer = null;
@@ -157,11 +165,24 @@ namespace ProjectWS.Editor
             {
                 renderer = new WorldRenderer(this.engine, ID, this.engine.input);
                 this.engine.renderers.Add(renderer);
+
+                var gizmo = new Engine.Objects.Gizmos.BoxGizmo(Vector4.One);
+                gizmo.transform.SetPosition(0.1f, 0.1f, 0.1f);
+                renderer.gizmos.Add(gizmo);
+                this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(gizmo));
+
+                var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
+                renderer.gizmos.Add(grid);
+                this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(grid));
             }
             else if (type == 1)
             {
                 renderer = new ModelRenderer(this.engine, ID, this.engine.input);
                 this.engine.renderers.Add(renderer);
+
+                var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
+                renderer.gizmos.Add(grid);
+                this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(grid));
             }
             else
             {
@@ -177,7 +198,7 @@ namespace ProjectWS.Editor
 
         void OpenTkControl_OnRender(TimeSpan delta, int ID)
         {
-            if (ID == 0)
+            //if (ID == 0)
                 Update();
 
             Render(ID);
@@ -185,13 +206,14 @@ namespace ProjectWS.Editor
 
         void OpenTkControl_OnLoaded(object sender, RoutedEventArgs e, Renderer renderer, Grid control)
         {
-            renderer.SetViewport(0, 0, (int)control.ActualWidth, (int)control.ActualHeight);
+            renderer.SetViewport(0, 0, (int)control.ActualWidth, (int)control.ActualHeight, 0);
             renderer.modelShader = new Shader("shader_vert.glsl", "shader_frag.glsl");
             renderer.shader = renderer.modelShader;
             renderer.wireframeShader = new Shader("wireframe_vert.glsl", "wireframe_frag.glsl");
             renderer.normalShader = new Shader("normal_vert.glsl", "normal_frag.glsl");
             renderer.terrainShader = new Shader("terrain_vert.glsl", "terrain_frag.glsl");
             renderer.lineShader = new Shader("line_vert.glsl", "line_frag.glsl");
+            renderer.infiniteGridShader = new Shader("infinite_grid_vert.glsl", "infinite_grid_frag.glsl");
         }
 
         void OpenTkControl_OnSizeChanged(object sender, SizeChangedEventArgs e, Renderer renderer)
