@@ -1,0 +1,56 @@
+﻿<Window x:Class="ProjectWS.Editor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="720" Width="1280">
+    <Grid x:Name="layoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
+            <MenuItem Header="Edit">
+                <MenuItem Command="Undo" />
+                <MenuItem Command="Redo" />
+                <Separator />
+                <MenuItem Command="Cut" />
+                <MenuItem Command="Copy" />
+                <MenuItem Command="Paste" />
+            </MenuItem>
+        </Menu>
+
+        <DockingManager x:Name="dockManager"
+            Grid.Row="1"
+            AllowMixedOrientation="True"
+            AutoWindowSizeWhenOpened="True"
+            DocumentClosing="DockManager_DocumentClosing"
+            IsVirtualizingAnchorable="True"
+            IsVirtualizingDocument="True">
+            <DockingManager.Theme>
+                <Vs2013DarkTheme />
+            </DockingManager.Theme>
+            <DockingManager.DocumentHeaderTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Margin="0,0,4,0" Source="{Binding IconSource}" />
+                        <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </DataTemplate>
+            </DockingManager.DocumentHeaderTemplate>
+            <LayoutRoot PropertyChanged="OnLayoutRootPropertyChanged" x:Name="LayoutRoot">
+                <LayoutPanel Orientation="Horizontal">
+
+                    <LayoutDocumentPaneGroup x:Name="LayoutDocumentPaneGroup">
+                        <LayoutDocumentPane x:Name="LayoutDocumentPane">
+                        </LayoutDocumentPane>
+                    </LayoutDocumentPaneGroup>
+                    <LayoutAnchorablePaneGroup DockWidth="250">
+
+                    </LayoutAnchorablePaneGroup>
+                </LayoutPanel>
+            </LayoutRoot>
+        </DockingManager>
+    </Grid>
+</Window>
