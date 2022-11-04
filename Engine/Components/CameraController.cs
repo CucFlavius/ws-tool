@@ -53,10 +53,10 @@ namespace ProjectWS.Engine.Components
         public CameraMode cameraMode = CameraMode.Orbit;
 
         Camera camera;
-        Input input;
+        Input? input;
         int rendererID;
 
-        public CameraController(Camera camera, Input input) : base()
+        public CameraController(Camera camera, Input? input) : base()
         {
             SetDefaults();
 
@@ -191,23 +191,24 @@ namespace ProjectWS.Engine.Components
 
         public override void Update(float deltaTime)
         {
+            if (this.camera.renderer == null) return;
+            if (this.camera.renderer.engine == null) return;
+            if (this.input == null) return;
+
             if (this.rendererID == this.camera.renderer.engine.focusedRendererID)
             {
-                if (this.input.hasFocus)
-                {
-                    if (this.input.GetKeyDown(Keys.W))
-                        ProcessKeyboard(CameraMovement.FORWARD, deltaTime);
-                    if (this.input.GetKeyDown(Keys.S))
-                        ProcessKeyboard(CameraMovement.BACKWARD, deltaTime);
-                    if (this.input.GetKeyDown(Keys.A))
-                        ProcessKeyboard(CameraMovement.LEFT, deltaTime);
-                    if (this.input.GetKeyDown(Keys.D))
-                        ProcessKeyboard(CameraMovement.RIGHT, deltaTime);
-                    if (this.input.GetKeyDown(Keys.Space))
-                        ProcessKeyboard(CameraMovement.UP, deltaTime);
-                    if (this.input.GetKeyDown(Keys.C))
-                        ProcessKeyboard(CameraMovement.DOWN, deltaTime);
-                }
+                if (this.input.GetKeyDown(Keys.W))
+                    ProcessKeyboard(CameraMovement.FORWARD, deltaTime);
+                if (this.input.GetKeyDown(Keys.S))
+                    ProcessKeyboard(CameraMovement.BACKWARD, deltaTime);
+                if (this.input.GetKeyDown(Keys.A))
+                    ProcessKeyboard(CameraMovement.LEFT, deltaTime);
+                if (this.input.GetKeyDown(Keys.D))
+                    ProcessKeyboard(CameraMovement.RIGHT, deltaTime);
+                if (this.input.GetKeyDown(Keys.Space))
+                    ProcessKeyboard(CameraMovement.UP, deltaTime);
+                if (this.input.GetKeyDown(Keys.C))
+                    ProcessKeyboard(CameraMovement.DOWN, deltaTime);
 
                 if (this.camera != null)
                 {

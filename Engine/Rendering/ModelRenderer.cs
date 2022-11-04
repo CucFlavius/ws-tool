@@ -24,15 +24,16 @@ namespace ProjectWS.Engine.Rendering
             this.input = input;
             this.objects = new List<Objects.GameObject>();
             this.lights = new List<Lighting.Light>();
-            this.cameras = new List<Camera>();
-            AddDefaultCamera();
+            //this.cameras = new List<Camera>();
+            //AddDefaultCamera();
+            SetViewportMode(0);
             AddDefaultLight();
         }
 
         void AddDefaultCamera()
         {
             Debug.Log("Model Renderer : Add Default Camera.");
-
+            /*
             this.aspect = (float)(this.width) / (float)this.height;
 
             var mainCamera = new Camera(this, new Vector3(0, 0, 0), MathHelper.DegreesToRadians(45), this.aspect, 0.1f, 1000.0f);
@@ -45,6 +46,7 @@ namespace ProjectWS.Engine.Rendering
             //var secondCamera = new Camera(this, new Vector3(0, 200, 0), MathHelper.DegreesToRadians(45), this.aspect, 0.1f, 1000.0f);
             //this.cameras.Add(secondCamera);
             //secondCamera.transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(90), 0, 0));
+            */
         }
 
         void AddDefaultLight()
@@ -59,12 +61,12 @@ namespace ProjectWS.Engine.Rendering
 
         public override void Update(float deltaTime)
         {
-            for (int i = 0; i < this.cameras.Count; i++)
+            for (int i = 0; i < this.viewports.Count; i++)
             {
-                this.cameras[i].Update(deltaTime);
-                for (int c = 0; c < this.cameras[i].components.Count; c++)
+                this.viewports[i].mainCamera.Update(deltaTime);
+                for (int c = 0; c < this.viewports[i].mainCamera.components.Count; c++)
                 {
-                    this.cameras[i].components[c].Update(deltaTime);
+                    this.viewports[i].mainCamera.components[c].Update(deltaTime);
                 }
             }
 
@@ -80,18 +82,15 @@ namespace ProjectWS.Engine.Rendering
 
             GL.ClearColor(new Color4(0.1f, 0.1f, 0.15f, 1.0f));
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            //GL.Viewport(this.x, this.y, this.width, this.height);
-
-            //this.shadingOverride = ShadingOverride.Wireframe;
 
             if (this.shadingOverride == ShadingOverride.ShadedAndWireframe)
             {
-                RenderWireframe();
                 RenderShaded();
+                RenderWireframe(true);
             }
             else if (this.shadingOverride == ShadingOverride.Wireframe)
             {
-                RenderWireframe();
+                RenderWireframe(false);
             }
             else if (this.shadingOverride == ShadingOverride.Shaded)
             {
@@ -109,17 +108,22 @@ namespace ProjectWS.Engine.Rendering
             GL.Viewport(0, 0, this.width, this.height); //restore default
         }
 
-        void RenderWireframe()
+        void RenderWireframe(bool smooth)
         {
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             GL.LineWidth(1.0f);
-            //GL.Enable(EnableCap.LineSmooth);
+
+            if (smooth)
+                GL.Enable(EnableCap.LineSmooth);
+            else
+                GL.Disable(EnableCap.LineSmooth);
+
             GL.Enable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-
             //GL.Viewport(0, 0, this.width / 2, this.height);
-            RenderInternal(this.wireframeShader, this.cameras[0]);
+            RenderInternal(this.wireframeShader, this.viewports[0].mainCamera);
 
             //GL.Viewport(this.width / 2, 0, this.width / 2, this.height);
             //RenderInternal(this.wireframeShader, this.cameras[1]);
@@ -129,17 +133,19 @@ namespace ProjectWS.Engine.Rendering
         {
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
             GL.Disable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
 
             this.normalShader.SetColor4("lightColor", Vector4.Zero);
             this.normalShader.SetColor4("ambientColor", Vector4.One);
 
-            RenderInternal(this.normalShader, this.cameras[0]);
+            RenderInternal(this.normalShader, this.viewports[0].mainCamera);
         }
 
         void RenderShaded()
         {
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
             GL.Disable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
 
             for (int i = 0; i < this.lights.Count; i++)
             {
@@ -155,16 +161,17 @@ namespace ProjectWS.Engine.Rendering
             this.modelShader.SetInt("diffuseMap3", 6);
             this.modelShader.SetInt("normalMap3", 7);
 
-            RenderInternal(this.modelShader, this.cameras[0]);
+            RenderInternal(this.modelShader, this.viewports[0].mainCamera);
         }
 
         void RenderUnshaded()
         {
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
             GL.Disable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
 
             this.modelShader.SetColor4("lightColor", Vector4.Zero);
-            this.modelShader.SetColor4("ambientColor", Vector4.One);
+            this.modelShader.SetColor4("ambientColor", Vector4.Zero);
 
             this.modelShader.SetInt("diffuseMap0", 0);
             this.modelShader.SetInt("normalMap0", 1);
@@ -175,7 +182,7 @@ namespace ProjectWS.Engine.Rendering
             this.modelShader.SetInt("diffuseMap3", 6);
             this.modelShader.SetInt("normalMap3", 7);
 
-            RenderInternal(this.modelShader, this.cameras[0]);
+            RenderInternal(this.modelShader, this.viewports[0].mainCamera);
         }
 
         void RenderInternal(Shader shader, Camera camera)
@@ -184,7 +191,6 @@ namespace ProjectWS.Engine.Rendering
             shader.Use();
             camera.SetToShader(shader);
             shader.SetVec3("objectColor", 1.0f, 1.0f, 1.0f);
-
 
             if (this.objects == null) return;
 

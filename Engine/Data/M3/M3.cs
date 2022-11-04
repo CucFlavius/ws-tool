@@ -162,12 +162,11 @@ namespace ProjectWS.Engine.Data
         {
             if (this.geometries != null)
             {
-                /*
                 for (int i = 0; i < this.materials.Length; i++)
                 {
                     this.materials[i].Build(this);
                 }
-                */
+
                 for (int i = 0; i < this.geometries.Length; i++)
                 {
                     this.geometries[i].Build(this);

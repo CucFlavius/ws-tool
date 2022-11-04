@@ -18,7 +18,6 @@ namespace ProjectWS.Engine
 
         public Dictionary<Keys, bool> lastKeyStates;
         public Dictionary<Keys, bool> keyStates;
-        public bool hasFocus = true;
         public bool LMB;
         public bool RMB;
         public bool MMB;
@@ -28,7 +27,6 @@ namespace ProjectWS.Engine
         public int LMBClicked = -1;
         public int RMBClicked = -1;
         public int MMBClicked = -1;
-        int mouseOverRenderer = -1;
 
         public Input(Engine engine)
         {
@@ -42,13 +40,6 @@ namespace ProjectWS.Engine
 
         public void Update()
         {
-            mouseOverRenderer = -1;
-            for (int i = 0; i < this.engine.renderers.Count; i++)
-            {
-                if (this.engine.renderers[i].mouseOver)
-                    mouseOverRenderer = this.engine.renderers[i].ID;
-            }
-
             // Get Mouse State
             this.mouseDiff.X = this.mousePos.X - this.mouseLastPos.X;
             this.mouseDiff.Y = this.mouseLastPos.Y - this.mousePos.Y; // reversed since y-coordinates go from bottom to top
@@ -62,10 +53,7 @@ namespace ProjectWS.Engine
             if (LMB != this.LMBPrevious)
             {
                 if (LMB)
-                    if (this.hasFocus)
-                        this.LMBClicked = mouseOverRenderer;
-                    else
-                        this.LMBClicked = -1;
+                    this.LMBClicked = -1;
 
                 this.LMBPrevious = LMB;
             }
@@ -73,10 +61,7 @@ namespace ProjectWS.Engine
             if (RMB != this.RMBPrevious)
             {
                 if (RMB)
-                    if (this.hasFocus)
-                        this.RMBClicked = mouseOverRenderer;
-                    else
-                        this.RMBClicked = -1;
+                    this.RMBClicked = -1;
 
                 this.RMBPrevious = RMB;
             }
@@ -84,10 +69,7 @@ namespace ProjectWS.Engine
             if (MMB != this.MMBPrevious)
             {
                 if (MMB)
-                    if (this.hasFocus)
-                        this.MMBClicked = mouseOverRenderer;
-                    else
-                        this.MMBClicked = -1;
+                    this.MMBClicked = -1;
 
                 this.MMBPrevious = MMB;
             }

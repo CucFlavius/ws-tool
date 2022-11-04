@@ -20,7 +20,6 @@
                 <MenuItem Command="Paste" />
             </MenuItem>
         </Menu>
-
         <DockingManager x:Name="dockManager"
             Grid.Row="1"
             AllowMixedOrientation="True"

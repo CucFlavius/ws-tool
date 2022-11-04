@@ -106,9 +106,9 @@ namespace ProjectWS.Engine.World
             this.controller.worldPosition = new Vector3(x, y + cameraUpOffset, z - cameraBehindCharacterOffset);
             if (FindRenderer())
             {
-                (this.renderer.cameras[0].components[0] as Components.CameraController).Pos = this.controller.worldPosition;
-                this.renderer.cameras[1].transform.SetPosition(this.controller.worldPosition + new Vector3(0, 1000, 0));
-                this.renderer.cameras[1].transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(-90), 0, 0));
+                (this.renderer.viewports[0].mainCamera.components[0] as Components.CameraController).Pos = this.controller.worldPosition;
+                this.renderer.viewports[1].mainCamera.transform.SetPosition(this.controller.worldPosition + new Vector3(0, 1000, 0));
+                this.renderer.viewports[1].mainCamera.transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(-90), 0, 0));
             }
 
             // Load world around spawn position
@@ -211,19 +211,14 @@ namespace ProjectWS.Engine.World
         public void Update(float deltaTime)
         {
             // Visibility / Loading / Culling
-            if (this.renderer != null)
+            if (this.controller != null && this.renderer != null && this.renderer.viewports != null)
             {
-                for (int i = 0; i < this.renderer.cameras.Count; i++)
+                for (int v = 0; v < this.renderer.viewports.Count; v++)
                 {
-                    //this.renderer.cameras[i].Update(deltaTime);
-                }
-
-                //this.mouseRay = this.activeCamera.camera.ScreenPointToRay(Input.mousePosition);
-                if (this.controller != null)
-                {
-                    this.controller.Update(this.renderer.cameras[0]);
+                    this.controller.Update(this.renderer.viewports[v].mainCamera);
                 }
             }
+
             CullingMT();
             TasksUpdate();
         }
@@ -457,9 +452,12 @@ namespace ProjectWS.Engine.World
         {
             // Chunks - Frustum and Distance //
 
+            if (this.renderer == null) return;
+            if (this.renderer.viewports == null) return;
+
             foreach (var item in this.activeChunks)
             {
-                item.Value.CalculateCulling(this.renderer.cameras[0]/*, this.sunLight*/);
+                item.Value.CalculateCulling(this.renderer.viewports[0].mainCamera/*, this.sunLight*/);
             }
 
             // Chunks - Occlusion //

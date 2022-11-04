@@ -10,7 +10,7 @@ namespace ProjectWS.Editor
 {
     public class Program
     {
-        public static Editor editor;
+        public static Editor? editor;
         public static App? app;
         public static MainWindow? mainWindow;
 

@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Xml.Linq;
-using AvalonDock.Layout;
-using OpenTK.Compute.OpenCL;
+﻿using AvalonDock.Layout;
+using Editor;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
 using ProjectWS.Engine;
-using ProjectWS.Engine.Data;
-using ProjectWS.Engine.Database.Definitions;
 using ProjectWS.Engine.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace ProjectWS.Editor
 {
@@ -33,7 +26,7 @@ namespace ProjectWS.Editor
         public GLWpfControl? focusedControl;
         public Dictionary<int, GLWpfControl> controls;
 
-        FPSCounter fps;
+        FPSCounter? fps;
 
         public Editor()
         {
@@ -61,14 +54,14 @@ namespace ProjectWS.Editor
                 InputUpdate();
                 this.engine.Update(this.deltaTime, this.timeScale);
 
-                if (Program.app != null)
+                if (Program.app != null && this.fps != null)
                     Program.app.MainWindow.Title = this.fps.Get().ToString();
             }
         }
 
         public void Render(int renderer)
         {
-            if (this.engine != null)
+            if (this.engine != null && this.fps != null)
             {
                 this.engine.Render(renderer);
                 this.fps.Update(this.deltaTime);
@@ -141,47 +134,75 @@ namespace ProjectWS.Editor
 
             Debug.Log("Create Renderer Pane, type " + type);
 
-            var openTkControl = new GLWpfControl();
-            this.controls.Add(ID, openTkControl);
-            openTkControl.Name = "OpenTKControl_" + ID;
+            Renderer renderer;
+            GLWpfControl openTkControl;
+            Grid rendererGrid;
 
-            var rendererGrid = new Grid();
-            rendererGrid.Children.Add(openTkControl);
-
-            var rendererDocument = new LayoutDocument();
-            rendererDocument.Title = name;
-            rendererDocument.ContentId = "Renderer_" + ID + "_" + name;
-            rendererDocument.Content = rendererGrid;
-
-            var rendererPane = new LayoutDocumentPane(rendererDocument);
-            window.LayoutDocumentPaneGroup.Children.Add(rendererPane);
-            //rendererDocument.Dock();
-
-            var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
-            openTkControl.Start(settings);
-
-            Renderer renderer = null;
             if (type == 0)
             {
+                var rendererPane = new WorldRendererPane();
+                openTkControl = rendererPane.GetOpenTKControl();
+                rendererGrid = rendererPane.GetRendererGrid();
+                this.controls.Add(ID, openTkControl);
+
+                var layoutDoc = new LayoutDocument();
+                layoutDoc.Title = name;
+                layoutDoc.ContentId = "Renderer_" + ID + "_" + name;
+                layoutDoc.Content = rendererPane;
+
+                var testRenderPane = new LayoutDocumentPane(layoutDoc);
+
+                window.LayoutDocumentPaneGroup.Children.Add(testRenderPane);
+
+                var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
+                openTkControl.Start(settings);
+
                 renderer = new WorldRenderer(this.engine, ID, this.engine.input);
                 this.engine.renderers.Add(renderer);
 
                 var gizmo = new Engine.Objects.Gizmos.BoxGizmo(Vector4.One);
                 gizmo.transform.SetPosition(0.1f, 0.1f, 0.1f);
-                renderer.gizmos.Add(gizmo);
+                if (renderer.gizmos != null)
+                    renderer.gizmos.Add(gizmo);
+
                 this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(gizmo));
 
+                rendererPane.changeViewMode = renderer.SetViewportMode;
+
                 var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
-                renderer.gizmos.Add(grid);
+                if (renderer.gizmos != null)
+                    renderer.gizmos.Add(grid);
+
                 this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(grid));
             }
             else if (type == 1)
             {
+                var rendererPane = new ModelRendererPane();
+                openTkControl = rendererPane.GetOpenTKControl();
+                rendererGrid = rendererPane.GetRendererGrid();
+                this.controls.Add(ID, openTkControl);
+
+                var layoutDoc = new LayoutDocument();
+                layoutDoc.Title = name;
+                layoutDoc.ContentId = "Renderer_" + ID + "_" + name;
+                layoutDoc.Content = rendererPane;
+
+                var testRenderPane = new LayoutDocumentPane(layoutDoc);
+
+                window.LayoutDocumentPaneGroup.Children.Add(testRenderPane);
+
+                var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
+                openTkControl.Start(settings);
+
                 renderer = new ModelRenderer(this.engine, ID, this.engine.input);
                 this.engine.renderers.Add(renderer);
 
+                rendererPane.changeRenderMode = renderer.SetShadingOverride;
+
                 var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
-                renderer.gizmos.Add(grid);
+                if (renderer.gizmos != null)
+                    renderer.gizmos.Add(grid);
+
                 this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(grid));
             }
             else
@@ -198,7 +219,7 @@ namespace ProjectWS.Editor
 
         void OpenTkControl_OnRender(TimeSpan delta, int ID)
         {
-            //if (ID == 0)
+            if (ID == 0)
                 Update();
 
             Render(ID);
@@ -206,7 +227,7 @@ namespace ProjectWS.Editor
 
         void OpenTkControl_OnLoaded(object sender, RoutedEventArgs e, Renderer renderer, Grid control)
         {
-            renderer.SetViewport(0, 0, (int)control.ActualWidth, (int)control.ActualHeight, 0);
+            renderer.SetDimensions(0, 0, (int)control.ActualWidth, (int)control.ActualHeight);
             renderer.modelShader = new Shader("shader_vert.glsl", "shader_frag.glsl");
             renderer.shader = renderer.modelShader;
             renderer.wireframeShader = new Shader("wireframe_vert.glsl", "wireframe_frag.glsl");

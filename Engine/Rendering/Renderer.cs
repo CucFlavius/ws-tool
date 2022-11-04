@@ -1,20 +1,12 @@
-﻿using OpenTK;
-using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ProjectWS.Engine.Rendering
+﻿namespace ProjectWS.Engine.Rendering
 {
     public abstract class Renderer
     {
         public int ID;
-        public Engine engine;
+        public Engine? engine;
+        public Input? input;
         public bool rendering = false;
         public bool mouseOver = false;
-        public float aspect;
         public int x;
         public int y;
         public int width;
@@ -28,51 +20,29 @@ namespace ProjectWS.Engine.Rendering
         public Shader lineShader;
         public Shader infiniteGridShader;
 
-        public List<Camera> cameras;
-        public List<Objects.GameObject> gizmos;
+        public List<Viewport>? viewports;
+        public List<Objects.GameObject>? gizmos;
         public ShadingOverride shadingOverride;
+        public ViewMode viewportMode;
 
         public Renderer(Engine engine)
         {
             this.engine = engine;
             this.gizmos = new List<Objects.GameObject>();
+            this.viewports = new List<Viewport>();
         }
 
         public abstract void Update(float deltaTime);
         public abstract void Render();
 
-        public void SetViewport(int x, int y, int width, int height, int cameraID)
+        public void SetDimensions(int x, int y, int width, int height)
         {
             this.rendering = true;
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
-            this.aspect = (float)(this.width / 2) / (float)this.height;
-            this.cameras[cameraID].aspectRatio = aspect;
-
-            if (this.cameras == null)
-            {
-                Debug.LogWarning("Cameras == null");
-                return;
-            }
-
-            for (int i = 0; i < this.cameras.Count; i++)
-            {
-                this.cameras[i].aspectRatio = aspect;
-            }
-        }
-
-        public void DestroyViewport()
-        {
-            this.rendering = false;
-        }
-
-        public void Move(int x, int y)
-        {
-            this.x = x;
-            this.y = y;
-            GL.Viewport(this.x, this.y, this.width, this.height);
+            SetViewportMode(this.viewportMode);
         }
 
         public void Resize(int width, int height)
@@ -81,29 +51,37 @@ namespace ProjectWS.Engine.Rendering
 
             this.width = width;
             this.height = height;
-            GL.Viewport(this.x, this.y, this.width, this.height);
-            this.aspect = (float)(this.width / 2) / (float)this.height;
-            for (int i = 0; i < this.cameras.Count; i++)
-            {
-                this.cameras[i].aspectRatio = aspect;
-            }
 
-            if (this.cameras == null)
-            {
-                Debug.LogWarning("Cameras == null");
-                return;
-            }
-
-            for (int i = 0; i < this.cameras.Count; i++)
-            {
-                this.cameras[i].aspectRatio = aspect;
-            }
-
+            SetViewportMode(this.viewportMode);
         }
+
+        public void SetShadingOverride(int type) => SetShadingOverride((ShadingOverride)type);
 
         public void SetShadingOverride(ShadingOverride type)
         {
             this.shadingOverride = type;
+        }
+
+        public void SetViewportMode(int mode) => SetViewportMode((ViewMode)mode);
+
+        public void SetViewportMode(ViewMode mode)
+        {
+            if (this.viewports == null)
+                this.viewports = new List<Viewport>();
+
+            this.viewports.Clear();
+
+            if (mode == ViewMode.Default)
+            {
+                // Full view
+                this.viewports.Add(new Rendering.Viewport(this, this.input, this.x, this.y, this.width, this.height, true));
+            }
+            else if (mode == ViewMode.SideBySide)
+            {
+                // Side by side
+                this.viewports.Add(new Rendering.Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true));
+                this.viewports.Add(new Rendering.Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false));
+            }
         }
 
         public enum ShadingOverride
@@ -113,6 +91,12 @@ namespace ProjectWS.Engine.Rendering
             Wireframe = 2,
             ShadedAndWireframe = 3,
             Normals = 4,
+        }
+
+        public enum ViewMode
+        {
+            Default = 0,
+            SideBySide = 1,
         }
     }
 }

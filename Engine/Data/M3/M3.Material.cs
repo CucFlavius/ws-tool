@@ -37,6 +37,7 @@ namespace ProjectWS.Engine.Data
             internal void Build(M3 m3)
             {
                 this.mat = new Materials.M3Material(this, m3);
+                this.mat.Build();
             }
         }
     }

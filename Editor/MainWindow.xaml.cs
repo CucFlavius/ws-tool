@@ -28,6 +28,7 @@ using ProjectWS.Engine.Rendering;
 using ProjectWS.Engine;
 using SevenZip.Compression.LZ;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
+using Editor;
 
 namespace ProjectWS.Editor
 {
@@ -80,41 +81,36 @@ namespace ProjectWS.Editor
 				if (activeContent == null)
 					return;
 
-				if (activeContent.Content is Grid)
+				GLWpfControl? focusedControl = null;
+
+                if (activeContent.Content is WorldRendererPane)
 				{
-					if (activeContent.Content == null)
-						return;
+					var worldRendererPane = activeContent.Content as WorldRendererPane;
+					if (worldRendererPane != null)
+						focusedControl = worldRendererPane.GetOpenTKControl();
+				}
+                if (activeContent.Content is ModelRendererPane)
+                {
+                    var modelRendererPane = activeContent.Content as ModelRendererPane;
+                    if (modelRendererPane != null)
+                        focusedControl = modelRendererPane.GetOpenTKControl();
+                }
 
-					var grid = (activeContent.Content as Grid);
+                if (focusedControl != null && this.editor != null)
+				{
+					this.editor.focusedControl = focusedControl;
 
-					if (grid == null)
-						return;
-
-					GLWpfControl? focusedControl = null;
-
-                    foreach (var item in grid.Children)
+					foreach (var item in this.editor.controls)
 					{
-						if (item is GLWpfControl)
+						if (item.Value == focusedControl)
 						{
-							focusedControl = item as GLWpfControl;
-                        }
+							Debug.Log(string.Format("Active Control -> {0}", item.Key));
+							if (this.editor != null && this.editor.engine != null)
+								this.editor.engine.focusedRendererID = item.Key;
+						}
 					}
 
-					if (focusedControl != null && this.editor != null)
-					{
-                        this.editor.focusedControl = focusedControl;
-
-						foreach (var item in this.editor.controls)
-						{
-							if (item.Value == focusedControl)
-							{
-								Debug.Log(string.Format("Active Control -> {0}", item.Key));
-								this.editor.engine.focusedRendererID = item.Key;
-							}
-                        }
-                        
-                        return;
-                    }
+					return;
 				}
             }
         }

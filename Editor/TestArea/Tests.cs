@@ -28,7 +28,7 @@ namespace ProjectWS.TestArea
             // but for debugging purposes I need it to load directly at runtime in editor so I don't waste time
             string installLocation = @"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\";
             string cacheLocation = @"D:\Wildstar1.7.8.16042_Cache\";
-            this.engine.LoadGameData(installLocation, OnDataLoaded);
+            //this.engine.LoadGameData(installLocation, OnDataLoaded);
             this.engine.SetCacheLocation(cacheLocation);
 
             //CompareBetaAndRetailTextures();
@@ -51,7 +51,7 @@ namespace ProjectWS.TestArea
             //LoadTestWorld();
             //LoadTestTexture();
             //PrintTestDatabase();
-            LoadAnM3ForDebug();
+            //LoadAnM3ForDebug();
             //TestSkyFile();
         }
 
