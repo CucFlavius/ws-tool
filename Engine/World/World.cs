@@ -79,7 +79,10 @@ namespace ProjectWS.Engine.World
             if (setActive)
             {
                 if (FindRenderer())
+                {
+                    Debug.Log("Set World");
                     this.renderer.SetWorld(this);
+                }
             }
         }
 
@@ -106,9 +109,15 @@ namespace ProjectWS.Engine.World
             this.controller.worldPosition = new Vector3(x, y + cameraUpOffset, z - cameraBehindCharacterOffset);
             if (FindRenderer())
             {
-                (this.renderer.viewports[0].mainCamera.components[0] as Components.CameraController).Pos = this.controller.worldPosition;
-                this.renderer.viewports[1].mainCamera.transform.SetPosition(this.controller.worldPosition + new Vector3(0, 1000, 0));
-                this.renderer.viewports[1].mainCamera.transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(-90), 0, 0));
+                if (this.renderer != null && this.renderer.viewports != null)
+                {
+                    //if (this.renderer.viewports.Count == 2)
+                    {
+                        (this.renderer.viewports[0].mainCamera.components[0] as Components.CameraController).Pos = this.controller.worldPosition;
+                        //this.renderer.viewports[1].mainCamera.transform.SetPosition(this.controller.worldPosition + new Vector3(0, 1000, 0));
+                        //this.renderer.viewports[1].mainCamera.transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(-90), 0, 0));
+                    }
+                }
             }
 
             // Load world around spawn position

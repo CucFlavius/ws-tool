@@ -2,7 +2,6 @@
 using ProjectWS.Editor;
 using ProjectWS.Engine.Rendering;
 
-//#if UNITY_EDITOR
 namespace ProjectWS.TestArea
 {
     public class Tests
@@ -28,7 +27,7 @@ namespace ProjectWS.TestArea
             // but for debugging purposes I need it to load directly at runtime in editor so I don't waste time
             string installLocation = @"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\";
             string cacheLocation = @"D:\Wildstar1.7.8.16042_Cache\";
-            //this.engine.LoadGameData(installLocation, OnDataLoaded);
+            this.engine.LoadGameData(installLocation, OnDataLoaded);
             this.engine.SetCacheLocation(cacheLocation);
 
             //CompareBetaAndRetailTextures();
@@ -48,10 +47,10 @@ namespace ProjectWS.TestArea
         {
             Debug.Log("Data Loaded");
 
-            //LoadTestWorld();
+            LoadTestWorld();
             //LoadTestTexture();
             //PrintTestDatabase();
-            //LoadAnM3ForDebug();
+            LoadAnM3ForDebug();
             //TestSkyFile();
         }
 
@@ -65,33 +64,17 @@ namespace ProjectWS.TestArea
 
         void LoadAnM3ForDebug()
         {
-            Program.editor.CreateRendererPane(Program.mainWindow, "Model", 1, 1);
+            var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Model", 1, 1);
             //string path0 = @"Art\Character\Chua\Male\Chua_M.m3";
             string path0 = @"Art\Creature\AgressorBot\AgressorBot.m3";
             //string path0 = @"Art\Prop\Constructed\Quest\Taxi\TaxiKiosk\PRP_Taxi_Kiosk_000.m3";
             //string path0 = @"Art\Prop\Constructed\Ship\Defiance\PRP_Ship_DefianceTransport_000.m3";
             //string path1 = @"Art\Prop\Natural\Tree\Deciduous_RootyMangrove\PRP_Tree_Deciduous_RootyMangrove_Blue_000.m3";
             //string path1 = @"Art\Creature\Asura\Asura.m3";
-            int rendererIndex = -1;
-            for (int i = 0; i < this.engine.renderers.Count; i++)
-            {
-                if (this.engine.renderers[i] is Engine.Rendering.ModelRenderer)
-                {
-                    rendererIndex = i;
-                    break;
-                }
-            }
 
-            if (rendererIndex != -1)
-            {
-                var modelRenderer = this.engine.renderers[rendererIndex] as Engine.Rendering.ModelRenderer;
-                modelRenderer.objects.Add(new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine));
-                //modelRenderer.SetShadingOverride(Renderer.ShadingOverride.Wireframe);
-            }
-            else
-            {
-                Debug.Log("No ModelRenderers found.");
-            }
+            var modelRenderer = renderer as Engine.Rendering.ModelRenderer;
+            modelRenderer.objects.Add(new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine));
+            //modelRenderer.SetShadingOverride(Renderer.ShadingOverride.Wireframe);
         }
 
         void PrintTestDatabase()
@@ -106,4 +89,3 @@ namespace ProjectWS.TestArea
         }
     }
 }
-//#endif

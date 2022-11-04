@@ -25,12 +25,16 @@ namespace ProjectWS.Editor
         private TestArea.Tests? tests;
         public GLWpfControl? focusedControl;
         public Dictionary<int, GLWpfControl> controls;
+        public Dictionary<int, WorldRendererPane> worldRendererPanes;
+        public Dictionary<int, ModelRendererPane> modelRendererPanes;
 
         FPSCounter? fps;
 
         public Editor()
         {
             this.controls = new Dictionary<int, GLWpfControl>();
+            this.worldRendererPanes = new Dictionary<int, WorldRendererPane>();
+            this.modelRendererPanes = new Dictionary<int, ModelRendererPane>();
             Start();
         }
 
@@ -55,17 +59,19 @@ namespace ProjectWS.Editor
                 this.engine.Update(this.deltaTime, this.timeScale);
 
                 if (Program.app != null && this.fps != null)
-                    Program.app.MainWindow.Title = this.fps.Get().ToString();
+                    //Program.app.MainWindow.Title = this.fps.Get().ToString() + " " + WorldRenderer.drawCalls;
+                    if (this.engine.renderers.Count > 1)
+                    Program.app.MainWindow.Title = this.engine.renderers[1].viewports[0].mainCamera.transform.GetPosition().ToString();
             }
         }
 
         public void Render(int renderer)
         {
-            if (this.engine != null && this.fps != null)
-            {
+            if (this.engine != null)
                 this.engine.Render(renderer);
+
+            if (this.fps != null)
                 this.fps.Update(this.deltaTime);
-            }
         }
 
         void CalculateDeltaTime()
@@ -108,6 +114,57 @@ namespace ProjectWS.Editor
                 }
             }
 
+            var mousePosition = Mouse.GetPosition(this.focusedControl);
+
+            this.engine.input.mousePos = new Vector3((float)mousePosition.X, (float)mousePosition.Y, this.mouseWheelPos);
+
+            for (int r = 0; r < this.engine.renderers.Count; r++)
+            {
+                var renderer = this.engine.renderers[r];
+                renderer.RecalculateViewports();
+                if (renderer.ID == engine.focusedRendererID)
+                {
+                    if(this.worldRendererPanes.TryGetValue(renderer.ID, out WorldRendererPane? wPane))
+                    {
+                        if (renderer.viewports != null)
+                        {
+                            if ((Mouse.LeftButton == MouseButtonState.Pressed && !this.engine.input.LMB) || (Mouse.RightButton == MouseButtonState.Pressed && !this.engine.input.RMB))
+                            {
+                                for (int v = 0; v < renderer.viewports.Count; v++)
+                                {
+                                    var vp = renderer.viewports[v];
+                                    if (mousePosition.X < vp.x + vp.width && mousePosition.X > vp.x &&
+                                        mousePosition.Y < vp.y + vp.height && mousePosition.Y > vp.y)
+                                    {
+                                        vp.interactive = true;
+                                    }
+                                    else
+                                    {
+                                        vp.interactive = false;
+                                    }
+                                }
+                            }
+
+                            for (int v = 0; v < renderer.viewports.Count; v++)
+                            {
+                                if (renderer.viewports[v].interactive)
+                                {
+                                    wPane.ViewportRect0.Margin = new Thickness(renderer.viewports[v].x, renderer.viewports[v].y, 0, 0);
+                                    wPane.ViewportRect0.Width = renderer.viewports[v].width;
+                                    if (renderer.viewports[v].height > 0)
+                                        wPane.ViewportRect0.Height = renderer.viewports[v].height - 2;
+                                }
+                            }
+                        }
+                    }
+
+                    if (this.modelRendererPanes.TryGetValue(renderer.ID, out ModelRendererPane? mPane))
+                    {
+
+                    }
+                }
+            }
+
             this.engine.input.LMB = Mouse.LeftButton == MouseButtonState.Pressed;
             this.engine.input.RMB = Mouse.RightButton == MouseButtonState.Pressed;
             this.engine.input.MMB = Mouse.MiddleButton == MouseButtonState.Pressed;
@@ -117,10 +174,6 @@ namespace ProjectWS.Editor
                 Application.Current.MainWindow.CaptureMouse();
             else
                 Application.Current.MainWindow.ReleaseMouseCapture();
-
-            var mousePosition = Mouse.GetPosition(this.focusedControl);
-
-            this.engine.input.mousePos = new Vector3((float)mousePosition.X, (float)mousePosition.Y, this.mouseWheelPos);
         }
 
         public void MouseWheelEventHandler(object sender, MouseWheelEventArgs e)
@@ -128,9 +181,9 @@ namespace ProjectWS.Editor
             this.mouseWheelPos += e.Delta / 120f;
         }
 
-        public void CreateRendererPane(MainWindow window, string name, int ID, int type)
+        public Renderer? CreateRendererPane(MainWindow window, string name, int ID, int type)
         {
-            if (this.engine == null) return;
+            if (this.engine == null) return null;
 
             Debug.Log("Create Renderer Pane, type " + type);
 
@@ -158,6 +211,7 @@ namespace ProjectWS.Editor
                 openTkControl.Start(settings);
 
                 renderer = new WorldRenderer(this.engine, ID, this.engine.input);
+                //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
                 this.engine.renderers.Add(renderer);
 
                 var gizmo = new Engine.Objects.Gizmos.BoxGizmo(Vector4.One);
@@ -172,6 +226,8 @@ namespace ProjectWS.Editor
                 var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
                 if (renderer.gizmos != null)
                     renderer.gizmos.Add(grid);
+
+                this.worldRendererPanes.Add(ID, rendererPane);
 
                 this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(grid));
             }
@@ -195,6 +251,7 @@ namespace ProjectWS.Editor
                 openTkControl.Start(settings);
 
                 renderer = new ModelRenderer(this.engine, ID, this.engine.input);
+                //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
                 this.engine.renderers.Add(renderer);
 
                 rendererPane.changeRenderMode = renderer.SetShadingOverride;
@@ -203,18 +260,22 @@ namespace ProjectWS.Editor
                 if (renderer.gizmos != null)
                     renderer.gizmos.Add(grid);
 
+                this.modelRendererPanes.Add(ID, rendererPane);
+
                 this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(grid));
             }
             else
             {
                 Debug.Log("Unsupported renderer type : " + type);
-                return;
+                return null;
             }
 
             // Add events
             openTkControl.Render += (delta) => OpenTkControl_OnRender(delta, ID);
             openTkControl.Loaded += (sender, e) => OpenTkControl_OnLoaded(sender, e, renderer, rendererGrid);
             openTkControl.SizeChanged += (sender, e) => OpenTkControl_OnSizeChanged(sender, e, renderer);
+
+            return renderer;
         }
 
         void OpenTkControl_OnRender(TimeSpan delta, int ID)

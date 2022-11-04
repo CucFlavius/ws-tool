@@ -27,8 +27,12 @@ namespace ProjectWS.Engine.Rendering
             this.mainCamera.components.Add(camController);
         }
 
-        public void Recalculate()
+        public void Recalculate(int x, int y, int w, int h)
         {
+            this.x = x;
+            this.y = y;
+            this.width = w;
+            this.height = h;
             CalculateAspect();
             this.mainCamera.aspectRatio = this.aspect;
         }

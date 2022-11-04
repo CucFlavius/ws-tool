@@ -42,6 +42,7 @@
             this.y = y;
             this.width = width;
             this.height = height;
+
             SetViewportMode(this.viewportMode);
         }
 
@@ -52,7 +53,7 @@
             this.width = width;
             this.height = height;
 
-            SetViewportMode(this.viewportMode);
+            RecalculateViewports();
         }
 
         public void SetShadingOverride(int type) => SetShadingOverride((ShadingOverride)type);
@@ -69,18 +70,35 @@
             if (this.viewports == null)
                 this.viewports = new List<Viewport>();
 
+            this.viewportMode = mode;
             this.viewports.Clear();
 
             if (mode == ViewMode.Default)
             {
                 // Full view
-                this.viewports.Add(new Rendering.Viewport(this, this.input, this.x, this.y, this.width, this.height, true));
+                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true));
             }
             else if (mode == ViewMode.SideBySide)
             {
                 // Side by side
-                this.viewports.Add(new Rendering.Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true));
-                this.viewports.Add(new Rendering.Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false));
+                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true));
+                this.viewports.Add(new Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false));
+            }
+        }
+
+        public void RecalculateViewports()
+        {
+            if (this.viewports == null) return;
+
+            switch(this.viewportMode)
+            {
+                case ViewMode.Default:
+                    this.viewports[0].Recalculate(this.x, this.y, this.width, this.height);
+                    break;
+                case ViewMode.SideBySide:
+                    this.viewports[0].Recalculate(this.x, this.y, this.width / 2, this.height);
+                    this.viewports[1].Recalculate(this.width / 2, this.y, this.width / 2, this.height);
+                    break;
             }
         }
 
