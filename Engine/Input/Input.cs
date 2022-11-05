@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using static ProjectWS.Engine.Input.User32Wrapper;
 
-namespace ProjectWS.Engine
+namespace ProjectWS.Engine.Input
 {
     public class Input
     {
@@ -31,67 +33,67 @@ namespace ProjectWS.Engine
 
         public Input(Engine engine)
         {
-            this.keyStates = new Dictionary<Keys, bool>();
-            this.lastKeyStates = new Dictionary<Keys, bool>();
+            keyStates = new Dictionary<Keys, bool>();
+            lastKeyStates = new Dictionary<Keys, bool>();
             //this.mousePos = new Vector3();
-            this.mousePosPerControl = new Dictionary<int, Vector3>();
-            this.mouseLastPos = new Vector3();
-            this.mouseDiff = new Vector3();
+            mousePosPerControl = new Dictionary<int, Vector3>();
+            mouseLastPos = new Vector3();
+            mouseDiff = new Vector3();
             this.engine = engine;
         }
 
         public void Update()
         {
-            var mousePos = this.mousePosPerControl[this.engine.focusedRendererID];
+            var mousePos = mousePosPerControl[engine.focusedRendererID];
 
             // Get Mouse State
-            this.mouseDiff.X = mousePos.X - this.mouseLastPos.X;
-            this.mouseDiff.Y = this.mouseLastPos.Y - mousePos.Y; // reversed since y-coordinates go from bottom to top
-            this.mouseDiff.Z = mousePos.Z - this.mouseLastPos.Z;
+            mouseDiff.X = mousePos.X - mouseLastPos.X;
+            mouseDiff.Y = mouseLastPos.Y - mousePos.Y; // reversed since y-coordinates go from bottom to top
+            mouseDiff.Z = mousePos.Z - mouseLastPos.Z;
 
-            this.mouseLastPos.X = mousePos.X;
-            this.mouseLastPos.Y = mousePos.Y;
-            this.mouseLastPos.Z = mousePos.Z;
+            mouseLastPos.X = mousePos.X;
+            mouseLastPos.Y = mousePos.Y;
+            mouseLastPos.Z = mousePos.Z;
 
             // Mouse button state changes
-            if (LMB != this.LMBPrevious)
+            if (LMB != LMBPrevious)
             {
                 if (LMB)
-                    this.LMBClicked = -1;
+                    LMBClicked = -1;
 
-                this.LMBPrevious = LMB;
+                LMBPrevious = LMB;
             }
 
-            if (RMB != this.RMBPrevious)
+            if (RMB != RMBPrevious)
             {
                 if (RMB)
-                    this.RMBClicked = -1;
+                    RMBClicked = -1;
 
-                this.RMBPrevious = RMB;
+                RMBPrevious = RMB;
             }
 
-            if (MMB != this.MMBPrevious)
+            if (MMB != MMBPrevious)
             {
                 if (MMB)
-                    this.MMBClicked = -1;
+                    MMBClicked = -1;
 
-                this.MMBPrevious = MMB;
+                MMBPrevious = MMB;
             }
         }
 
         public bool GetKeyDown(Keys key)
         {
-            return this.keyStates[key];
+            return keyStates[key];
         }
 
         public bool GetKeyPress(Keys key)
         {
-            if (this.lastKeyStates.ContainsKey(key))
+            if (lastKeyStates.ContainsKey(key))
             {
-                if (this.keyStates[key] != this.lastKeyStates[key])
+                if (keyStates[key] != lastKeyStates[key])
                 {
-                    this.lastKeyStates[key] = this.keyStates[key];
-                    return this.keyStates[key];
+                    lastKeyStates[key] = keyStates[key];
+                    return keyStates[key];
                 }
                 else
                 {
@@ -100,19 +102,19 @@ namespace ProjectWS.Engine
             }
             else
             {
-                this.lastKeyStates[key] = this.keyStates[key];
-                return this.keyStates[key];
+                lastKeyStates[key] = keyStates[key];
+                return keyStates[key];
             }
         }
 
         public Vector3 GetMousePosition()
         {
-            return this.mousePosPerControl[this.engine.focusedRendererID];
+            return mousePosPerControl[engine.focusedRendererID];
         }
 
         public Vector3 GetMouseDiff()
         {
-            return this.mouseDiff;
+            return mouseDiff;
         }
     }
 }

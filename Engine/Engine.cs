@@ -1,3 +1,4 @@
+using ProjectWS.Engine.Input;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -32,7 +33,7 @@ namespace ProjectWS.Engine
         //public CameraController cc;
         public Dictionary<uint, World.World> worlds;
         public Data.GameData data;
-        public Input input;
+        public Input.Input input;
 
         public Dictionary<int, Rendering.Renderer> rendererMap;
         public List<Rendering.Renderer> renderers;
@@ -47,7 +48,7 @@ namespace ProjectWS.Engine
             this.resourceManager = new Data.ResourceManager.Manager(this);
             this.rendererMap = new Dictionary<int, Rendering.Renderer>();
             this.renderers = new List<Rendering.Renderer>();
-            this.input = new Input(this);
+            this.input = new Input.Input(this);
             this.worlds = new Dictionary<uint, World.World>();
 
             // Load engine resources

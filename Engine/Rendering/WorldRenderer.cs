@@ -1,4 +1,5 @@
-﻿using OpenTK;
+﻿using ProjectWS.Engine.Input;
+using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -16,7 +17,7 @@ namespace ProjectWS.Engine.Rendering
         World.World? world;
         public static int drawCalls;
 
-        public WorldRenderer(Engine engine, int ID, Input input) : base(engine)
+        public WorldRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
             Debug.Log("Create World Renderer " + ID);
             this.ID = ID;

@@ -6,6 +6,7 @@ using ProjectWS.Engine;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -81,7 +82,7 @@ namespace ProjectWS.Editor
             this.time1 = this.time2;
         }
 
-        Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Key> opentkKeyMap = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Key>()
+        Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Key> opentkKeyMap_old = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Key>()
         { 
             { OpenTK.Windowing.GraphicsLibraryFramework.Keys.W, Key.W },
             { OpenTK.Windowing.GraphicsLibraryFramework.Keys.S, Key.S },
@@ -92,6 +93,16 @@ namespace ProjectWS.Editor
             { OpenTK.Windowing.GraphicsLibraryFramework.Keys.R, Key.R },
         };
 
+        Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key> opentkKeyMap = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key>()
+        {
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.W, Engine.Input.User32Wrapper.Key.W },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.S, Engine.Input.User32Wrapper.Key.S },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.A, Engine.Input.User32Wrapper.Key.A },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.D, Engine.Input.User32Wrapper.Key.D },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.C, Engine.Input.User32Wrapper.Key.C },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space, Engine.Input.User32Wrapper.Key.Space },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.R, Engine.Input.User32Wrapper.Key.R },
+        };
         void InputInitialize()
         {
             if (this.engine == null) return;
@@ -110,11 +121,15 @@ namespace ProjectWS.Editor
             {
                 foreach (var item in opentkKeyMap)
                 {
-                    this.engine.input.keyStates[item.Key] = Keyboard.IsKeyDown(item.Value);
+                    //this.engine.input.keyStates[item.Key] = Keyboard.IsKeyDown(item.Value);
+                    this.engine.input.keyStates[item.Key] = Engine.Input.User32Wrapper.GetAsyncKeyState(item.Value) != 0;
                 }
             }
 
-            var mousePosition = Mouse.GetPosition(this.focusedControl);
+            //var mousePosition = Mouse.GetPosition(this.focusedControl);
+
+            ProjectWS.Engine.Input.User32Wrapper.GetCursorPos(out var lpPoint);
+            var mousePosition = this.focusedControl.PointFromScreen(new Point(lpPoint.X, lpPoint.Y));
 
             this.engine.input.mousePosPerControl[this.engine.focusedRendererID] = new Vector3((float)mousePosition.X, (float)mousePosition.Y, this.mouseWheelPos);
             
@@ -226,9 +241,12 @@ namespace ProjectWS.Editor
                 }
             }
 
-            this.engine.input.LMB = Mouse.LeftButton == MouseButtonState.Pressed;
-            this.engine.input.RMB = Mouse.RightButton == MouseButtonState.Pressed;
-            this.engine.input.MMB = Mouse.MiddleButton == MouseButtonState.Pressed;
+            this.engine.input.LMB = Engine.Input.User32Wrapper.GetAsyncKeyState(Engine.Input.User32Wrapper.Key.LeftMouseBtn) != 0;
+            this.engine.input.RMB = Engine.Input.User32Wrapper.GetAsyncKeyState(Engine.Input.User32Wrapper.Key.RightMouseBtn) != 0;
+            this.engine.input.MMB = Engine.Input.User32Wrapper.GetAsyncKeyState(Engine.Input.User32Wrapper.Key.MidMouseBtn) != 0;
+            //this.engine.input.LMB = Mouse.LeftButton == MouseButtonState.Pressed;
+            //this.engine.input.RMB = Mouse.RightButton == MouseButtonState.Pressed;
+            //this.engine.input.MMB = Mouse.MiddleButton == MouseButtonState.Pressed;
 
             // Allow mouse drag beyond the window borders
             if (this.engine.input.RMB)

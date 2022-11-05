@@ -1,6 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using ProjectWS.Engine.Input;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using ProjectWS.Engine;
 
 namespace ProjectWS.Engine.Rendering
 {
@@ -12,7 +12,7 @@ namespace ProjectWS.Engine.Rendering
         public float aspect;
         public bool interactive;
 
-        public Viewport(Renderer renderer, Input input, int x, int y, int width, int height, bool interactive, Camera.CameraMode cameraMode)
+        public Viewport(Renderer renderer, Input.Input input, int x, int y, int width, int height, bool interactive, Camera.CameraMode cameraMode)
         {
             this.x = x;
             this.y = y;

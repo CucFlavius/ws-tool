@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ProjectWS.Engine.Input;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -16,7 +17,7 @@ namespace ProjectWS.Engine.Rendering
         public List<Objects.GameObject> objects;
         public List<Lighting.Light> lights;
 
-        public ModelRenderer(Engine engine, int ID, Input input) : base(engine)
+        public ModelRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
             Debug.Log("Create Model Renderer " + ID);
             this.ID = ID;

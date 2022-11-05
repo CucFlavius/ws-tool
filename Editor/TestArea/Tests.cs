@@ -50,7 +50,7 @@ namespace ProjectWS.TestArea
             LoadTestWorld();
             //LoadTestTexture();
             //PrintTestDatabase();
-            LoadAnM3ForDebug();
+            //LoadAnM3ForDebug();
             //TestSkyFile();
         }
 

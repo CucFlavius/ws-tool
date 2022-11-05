@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using ProjectWS.Engine.Input;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Runtime.CompilerServices;
 
@@ -48,10 +49,10 @@ namespace ProjectWS.Engine.Components
         public Camera.CameraMode cameraMode = Camera.CameraMode.Orbit;
 
         Camera camera;
-        Input input;
+        Input.Input input;
         int rendererID;
 
-        public CameraController(Camera camera, Input input) : base()
+        public CameraController(Camera camera, Input.Input input) : base()
         {
             SetDefaults();
 

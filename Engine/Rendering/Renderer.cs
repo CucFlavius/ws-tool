@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using ProjectWS.Engine.Input;
+using OpenTK.Mathematics;
 using ProjectWS.Engine.Components;
 
 namespace ProjectWS.Engine.Rendering
@@ -7,7 +8,7 @@ namespace ProjectWS.Engine.Rendering
     {
         public int ID;
         public Engine engine;
-        public Input input;
+        public Input.Input input;
         public bool rendering = false;
         public bool mouseOver = false;
         public int x;

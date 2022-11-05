@@ -20,6 +20,13 @@ namespace ProjectWS
             Console.ResetColor();
         }
 
+        public static void Log(object anything, ConsoleColor color = LOG_COLOR)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine(anything.ToString());
+            Console.ResetColor();
+        }
+
         public static void Log(bool value, ConsoleColor color = LOG_COLOR)
         {
             Console.ForegroundColor = color;
