@@ -107,18 +107,11 @@ namespace ProjectWS.Engine.World
             float cameraBehindCharacterOffset = 9.5f;
 
             this.controller.worldPosition = new Vector3(x, y + cameraUpOffset, z - cameraBehindCharacterOffset);
-            if (FindRenderer())
-            {
-                if (this.renderer != null && this.renderer.viewports != null)
-                {
-                    //if (this.renderer.viewports.Count == 2)
-                    {
-                        (this.renderer.viewports[0].mainCamera.components[0] as Components.CameraController).Pos = this.controller.worldPosition;
-                        //this.renderer.viewports[1].mainCamera.transform.SetPosition(this.controller.worldPosition + new Vector3(0, 1000, 0));
-                        //this.renderer.viewports[1].mainCamera.transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(-90), 0, 0));
-                    }
-                }
-            }
+
+            var mainCam = this.renderer.viewports[0].mainCamera;
+            var camController = mainCam.components[0] as Components.CameraController;
+            mainCam.transform.SetPosition(this.controller.worldPosition);
+            camController.Teleport(this.controller.worldPosition.X, this.controller.worldPosition.Y, this.controller.worldPosition.Z);
 
             // Load world around spawn position
             LoadWorld(worldID);

@@ -74,7 +74,6 @@ namespace ProjectWS.TestArea
 
             var modelRenderer = renderer as Engine.Rendering.ModelRenderer;
             modelRenderer.objects.Add(new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine));
-            //modelRenderer.SetShadingOverride(Renderer.ShadingOverride.Wireframe);
         }
 
         void PrintTestDatabase()

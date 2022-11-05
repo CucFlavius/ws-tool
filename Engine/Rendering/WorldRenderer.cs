@@ -98,10 +98,9 @@ namespace ProjectWS.Engine.Rendering
             }
 
             // Temp : Updating topdown camera manually
-            var p = this.viewports[0].mainCamera.transform.GetPosition() + new Vector3(0, 1000, 0);
-
             if (this.viewports.Count == 2)
             {
+                var p = this.viewports[0].mainCamera.transform.GetPosition() + new Vector3(0, 1000, 0);
                 this.viewports[1].mainCamera.view = Matrix4.LookAt(p, p - Vector3.UnitY, Vector3.UnitZ);
                 this.viewports[1].mainCamera.transform.SetPosition(p);
             }

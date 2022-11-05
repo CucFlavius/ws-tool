@@ -1,10 +1,13 @@
-﻿namespace ProjectWS.Engine.Rendering
+﻿using OpenTK.Mathematics;
+using ProjectWS.Engine.Components;
+
+namespace ProjectWS.Engine.Rendering
 {
     public abstract class Renderer
     {
         public int ID;
-        public Engine? engine;
-        public Input? input;
+        public Engine engine;
+        public Input input;
         public bool rendering = false;
         public bool mouseOver = false;
         public int x;
@@ -71,19 +74,114 @@
                 this.viewports = new List<Viewport>();
 
             this.viewportMode = mode;
-            this.viewports.Clear();
 
             if (mode == ViewMode.Default)
             {
                 // Full view
-                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true));
+
+                // Save camera controller
+                Vector3 camPos = SaveCameraController();
+
+                if (this.viewports.Count > 0)
+                {
+                    camPos = this.viewports[0].mainCamera.transform.GetPosition();
+                    Debug.Log("Set Viewport Mode " + mode + " | Saved Pos " + camPos.ToString());
+                }
+
+                ClearViewports();
+
+                if (this is ModelRenderer)
+                {
+                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, Components.CameraController.CameraMode.Orbit));
+                }
+                else if (this is WorldRenderer)
+                {
+                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, Components.CameraController.CameraMode.Fly));
+                }
+
+                // Restore camera controller
+                RestoreCameraController(camPos);
             }
             else if (mode == ViewMode.SideBySide)
             {
+                // Save camera controller
+                Vector3 camPos = SaveCameraController();
+
+                ClearViewports();
+
                 // Side by side
-                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true));
-                this.viewports.Add(new Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false));
+                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true, Components.CameraController.CameraMode.Fly));
+                this.viewports.Add(new Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false, Components.CameraController.CameraMode.OrthoTop));
+
+                // Restore camera controller
+                RestoreCameraController(camPos);
+
+                // Temp : Hard coded map camera settings
+                this.viewports[1].mainCamera.farDistance = 10000.0f;
+                this.viewports[1].mainCamera.transform.SetPosition(camPos.X, 200, camPos.Z);
+                this.viewports[1].mainCamera.transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(90), 0, 0));
             }
+        }
+
+        Vector3 SaveCameraController()
+        {
+            if (this.viewports != null)
+            {
+                if (this.viewports.Count > 0 && this.viewports[0].mainCamera != null && this.viewports[0].mainCamera.components != null)
+                {
+                    for (int i = 0; i < this.viewports[0].mainCamera.components.Count; i++)
+                    {
+                        if (this.viewports[0].mainCamera.components[i] is CameraController)
+                        {
+                            var camController = this.viewports[0].mainCamera.components[i] as CameraController;
+                            if (camController != null)
+                                return camController.Pos;
+                        }
+                    }
+                }
+            }
+
+            return Vector3.Zero;
+        }
+
+        void RestoreCameraController(Vector3 camPos)
+        {
+            if (this.viewports == null) return;
+
+            if (this.viewports.Count > 0 && this.viewports[0].mainCamera != null && this.viewports[0].mainCamera.components != null)
+            {
+                for (int i = 0; i < this.viewports[0].mainCamera.components.Count; i++)
+                {
+                    if (this.viewports[0].mainCamera.components[i] is CameraController)
+                    {
+                        var camController = this.viewports[0].mainCamera.components[i] as CameraController;
+                        if (camController != null)
+                            camController.Pos = camPos;
+                    }
+                }
+            }
+        }
+
+        void ClearViewports()
+        {
+            if (this.viewports == null)
+                this.viewports = new List<Viewport>();
+
+            for (int v = 0; v < this.viewports.Count; v++)
+            {
+                var vp = this.viewports[v];
+
+                if (vp.mainCamera != null)
+                {
+                    if (vp.mainCamera.gizmo != null && this.gizmos != null)
+                    {
+                        this.gizmos.Remove(vp.mainCamera.gizmo);
+                    }
+                }
+
+            }
+
+            this.viewports.Clear();
         }
 
         public void RecalculateViewports()

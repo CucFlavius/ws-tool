@@ -61,7 +61,7 @@ namespace ProjectWS.Editor
                 if (Program.app != null && this.fps != null)
                     //Program.app.MainWindow.Title = this.fps.Get().ToString() + " " + WorldRenderer.drawCalls;
                     if (this.engine.renderers.Count > 1)
-                    Program.app.MainWindow.Title = this.engine.renderers[1].viewports[0].mainCamera.transform.GetPosition().ToString();
+                        Program.app.MainWindow.Title = this.engine.renderers[1].viewports[0].mainCamera.transform.GetPosition().ToString();
             }
         }
 
@@ -130,37 +130,98 @@ namespace ProjectWS.Editor
                         {
                             if ((Mouse.LeftButton == MouseButtonState.Pressed && !this.engine.input.LMB) || (Mouse.RightButton == MouseButtonState.Pressed && !this.engine.input.RMB))
                             {
-                                for (int v = 0; v < renderer.viewports.Count; v++)
+                                if (renderer.viewports.Count == 1)
                                 {
-                                    var vp = renderer.viewports[v];
-                                    if (mousePosition.X < vp.x + vp.width && mousePosition.X > vp.x &&
-                                        mousePosition.Y < vp.y + vp.height && mousePosition.Y > vp.y)
+                                    renderer.viewports[0].interactive = true;
+                                }
+                                else
+                                {
+                                    for (int v = 0; v < renderer.viewports.Count; v++)
                                     {
-                                        vp.interactive = true;
-                                    }
-                                    else
-                                    {
-                                        vp.interactive = false;
+                                        var vp = renderer.viewports[v];
+                                        if (mousePosition.X < vp.x + vp.width && mousePosition.X > vp.x &&
+                                            mousePosition.Y < vp.y + vp.height && mousePosition.Y > vp.y)
+                                        {
+                                            vp.interactive = true;
+                                        }
+                                        else
+                                        {
+                                            vp.interactive = false;
+                                        }
                                     }
                                 }
                             }
 
-                            for (int v = 0; v < renderer.viewports.Count; v++)
+                            if (renderer.viewports.Count > 1)
                             {
-                                if (renderer.viewports[v].interactive)
+                                wPane.ViewportRect0.Visibility = Visibility.Visible;
+
+                                for (int v = 0; v < renderer.viewports.Count; v++)
                                 {
-                                    wPane.ViewportRect0.Margin = new Thickness(renderer.viewports[v].x, renderer.viewports[v].y, 0, 0);
-                                    wPane.ViewportRect0.Width = renderer.viewports[v].width;
-                                    if (renderer.viewports[v].height > 0)
-                                        wPane.ViewportRect0.Height = renderer.viewports[v].height - 2;
+                                    if (renderer.viewports[v].interactive)
+                                    {
+                                        wPane.ViewportRect0.Margin = new Thickness(renderer.viewports[v].x, renderer.viewports[v].y, 0, 0);
+                                        wPane.ViewportRect0.Width = renderer.viewports[v].width;
+                                        if (renderer.viewports[v].height > 0)
+                                            wPane.ViewportRect0.Height = renderer.viewports[v].height - 2;
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                wPane.ViewportRect0.Visibility = Visibility.Hidden;
                             }
                         }
                     }
 
                     if (this.modelRendererPanes.TryGetValue(renderer.ID, out ModelRendererPane? mPane))
                     {
+                        if (renderer.viewports != null)
+                        {
+                            if ((Mouse.LeftButton == MouseButtonState.Pressed && !this.engine.input.LMB) || (Mouse.RightButton == MouseButtonState.Pressed && !this.engine.input.RMB))
+                            {
+                                if (renderer.viewports.Count == 1)
+                                {
+                                    renderer.viewports[0].interactive = true;
+                                }
+                                else
+                                {
+                                    for (int v = 0; v < renderer.viewports.Count; v++)
+                                    {
+                                        var vp = renderer.viewports[v];
+                                        if (mousePosition.X < vp.x + vp.width && mousePosition.X > vp.x &&
+                                            mousePosition.Y < vp.y + vp.height && mousePosition.Y > vp.y)
+                                        {
+                                            vp.interactive = true;
+                                        }
+                                        else
+                                        {
+                                            vp.interactive = false;
+                                        }
+                                    }
+                                }
+                            }
 
+                            if (renderer.viewports.Count > 1)
+                            {
+                                mPane.ViewportRect0.Visibility = Visibility.Visible;
+
+                                for (int v = 0; v < renderer.viewports.Count; v++)
+                                {
+                                    if (renderer.viewports[v].interactive)
+                                    {
+                                        mPane.ViewportRect0.Margin = new Thickness(renderer.viewports[v].x, renderer.viewports[v].y, 0, 0);
+                                        mPane.ViewportRect0.Width = renderer.viewports[v].width;
+                                        if (renderer.viewports[v].height > 0)
+                                            mPane.ViewportRect0.Height = renderer.viewports[v].height - 2;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                mPane.ViewportRect0.Visibility = Visibility.Hidden;
+                            }
+                        }
                     }
                 }
             }

@@ -1,5 +1,6 @@
 ﻿using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Runtime.CompilerServices;
 
 namespace ProjectWS.Engine.Components
 {
@@ -20,6 +21,7 @@ namespace ProjectWS.Engine.Components
         {
             Fly,
             Orbit,
+            OrthoTop,
         }
 
         // Default camera values
@@ -53,10 +55,10 @@ namespace ProjectWS.Engine.Components
         public CameraMode cameraMode = CameraMode.Orbit;
 
         Camera camera;
-        Input? input;
+        Input input;
         int rendererID;
 
-        public CameraController(Camera camera, Input? input) : base()
+        public CameraController(Camera camera, Input input) : base()
         {
             SetDefaults();
 
@@ -79,6 +81,11 @@ namespace ProjectWS.Engine.Components
             this.MouseSensitivity_Orbit = SENSITIVITY_ORBIT;
             this.Zoom = ZOOM;
             this.distanceToOrigin = DISTANCE;
+        }
+
+        public void Teleport(float x, float y, float z)
+        {
+            this.Pos = new Vector3(x, y, z);
         }
 
         // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
@@ -105,12 +112,12 @@ namespace ProjectWS.Engine.Components
         // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
         public void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true)
         {
-            if (cameraMode == CameraMode.Fly)
+            if (this.cameraMode == CameraMode.Fly)
             {
                 xoffset *= this.MouseSensitivity_Fly;
                 yoffset *= this.MouseSensitivity_Fly;
             }
-            else if (cameraMode == CameraMode.Orbit)
+            else if (this.cameraMode == CameraMode.Orbit)
             {
                 xoffset *= this.MouseSensitivity_Orbit;
                 yoffset *= this.MouseSensitivity_Orbit;
@@ -193,7 +200,9 @@ namespace ProjectWS.Engine.Components
         {
             if (this.camera.renderer == null) return;
             if (this.camera.renderer.engine == null) return;
-            if (this.input == null) return;
+
+            //if (this.cameraMode == CameraMode.Fly)
+            //    Debug.Log(this.Pos.ToString());
 
             if (this.rendererID == this.camera.renderer.engine.focusedRendererID)
             {

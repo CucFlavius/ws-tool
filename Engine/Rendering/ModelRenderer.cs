@@ -15,7 +15,6 @@ namespace ProjectWS.Engine.Rendering
     {
         public List<Objects.GameObject> objects;
         public List<Lighting.Light> lights;
-        Input input;
 
         public ModelRenderer(Engine engine, int ID, Input input) : base(engine)
         {
@@ -28,25 +27,6 @@ namespace ProjectWS.Engine.Rendering
             //AddDefaultCamera();
             SetViewportMode(0);
             AddDefaultLight();
-        }
-
-        void AddDefaultCamera()
-        {
-            Debug.Log("Model Renderer : Add Default Camera.");
-            /*
-            this.aspect = (float)(this.width) / (float)this.height;
-
-            var mainCamera = new Camera(this, new Vector3(0, 0, 0), MathHelper.DegreesToRadians(45), this.aspect, 0.1f, 1000.0f);
-            var camController = new Components.CameraController(mainCamera, this.input);
-            camController.cameraMode = Components.CameraController.CameraMode.Orbit;
-            mainCamera.components.Add(camController);
-            this.cameras.Add(mainCamera);
-            //this.activeCamera = mainCamera;
-
-            //var secondCamera = new Camera(this, new Vector3(0, 200, 0), MathHelper.DegreesToRadians(45), this.aspect, 0.1f, 1000.0f);
-            //this.cameras.Add(secondCamera);
-            //secondCamera.transform.SetRotation(Quaternion.FromEulerAngles(MathHelper.DegreesToRadians(90), 0, 0));
-            */
         }
 
         void AddDefaultLight()

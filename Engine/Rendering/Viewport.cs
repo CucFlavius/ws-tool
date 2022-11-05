@@ -12,7 +12,7 @@ namespace ProjectWS.Engine.Rendering
         public float aspect;
         public bool interactive;
 
-        public Viewport(Renderer renderer, Input? input, int x, int y, int width, int height, bool interactive)
+        public Viewport(Renderer renderer, Input input, int x, int y, int width, int height, bool interactive, Components.CameraController.CameraMode cameraMode)
         {
             this.x = x;
             this.y = y;
@@ -23,7 +23,7 @@ namespace ProjectWS.Engine.Rendering
 
             this.mainCamera = new Camera(renderer, new Vector3(0, 0, 0), MathHelper.DegreesToRadians(45), this.aspect, 0.1f, 1000.0f);
             var camController = new Components.CameraController(this.mainCamera, input);
-            camController.cameraMode = Components.CameraController.CameraMode.Fly;
+            camController.cameraMode = cameraMode;
             this.mainCamera.components.Add(camController);
         }
 
