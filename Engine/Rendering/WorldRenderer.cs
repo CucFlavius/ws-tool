@@ -9,13 +9,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OpenTK.Windowing.Desktop;
 
 namespace ProjectWS.Engine.Rendering
 {
     public class WorldRenderer : Renderer
     {
         World.World? world;
+        FogParameters fogParameters;
         public static int drawCalls;
+
+        Color4 envColor = new Color4(0.7f, 0.7f, 0.7f, 1.0f);
 
         public WorldRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
@@ -26,6 +30,8 @@ namespace ProjectWS.Engine.Rendering
             //this.lights = new List<Lighting.Light>();
             SetViewportMode(ViewMode.Default);
             //AddDefaultLight();
+            //this.fogParameters = new FogParameters(this.envColor, 0, 1000, 0.1f, 0);  // Linear
+            this.fogParameters = new FogParameters(this.envColor, 0, 0, 0.0025f, 2);    // Exponential
         }
 
         public void SetWorld(World.World world) => this.world = world;
@@ -36,7 +42,7 @@ namespace ProjectWS.Engine.Rendering
 
             drawCalls = 0;
 
-            GL.ClearColor(new Color4(0.1f, 0.1f, 0.1f, 1.0f));
+            GL.ClearColor(this.envColor);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
@@ -48,6 +54,7 @@ namespace ProjectWS.Engine.Rendering
                 if (world != null)
                 {
                     this.terrainShader.Use();
+                    this.terrainShader.SetFogParameters(this.fogParameters);
                     this.viewports[v].mainCamera.SetToShader(this.terrainShader);
                     this.world.Render(this.terrainShader);
                 }
