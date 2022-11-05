@@ -88,7 +88,7 @@ namespace ProjectWS.Editor
 					var worldRendererPane = activeContent.Content as WorldRendererPane;
 					if (worldRendererPane != null)
 						focusedControl = worldRendererPane.GetOpenTKControl();
-				}
+                }
                 if (activeContent.Content is ModelRendererPane)
                 {
                     var modelRendererPane = activeContent.Content as ModelRendererPane;

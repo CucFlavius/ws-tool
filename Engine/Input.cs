@@ -12,7 +12,8 @@ namespace ProjectWS.Engine
     public class Input
     {
         Engine engine;
-        public Vector3 mousePos;
+        //public Vector3 mousePos;
+        public Dictionary<int, Vector3> mousePosPerControl;
         Vector3 mouseLastPos;
         Vector3 mouseDiff;
 
@@ -32,7 +33,8 @@ namespace ProjectWS.Engine
         {
             this.keyStates = new Dictionary<Keys, bool>();
             this.lastKeyStates = new Dictionary<Keys, bool>();
-            this.mousePos = new Vector3();
+            //this.mousePos = new Vector3();
+            this.mousePosPerControl = new Dictionary<int, Vector3>();
             this.mouseLastPos = new Vector3();
             this.mouseDiff = new Vector3();
             this.engine = engine;
@@ -40,14 +42,16 @@ namespace ProjectWS.Engine
 
         public void Update()
         {
-            // Get Mouse State
-            this.mouseDiff.X = this.mousePos.X - this.mouseLastPos.X;
-            this.mouseDiff.Y = this.mouseLastPos.Y - this.mousePos.Y; // reversed since y-coordinates go from bottom to top
-            this.mouseDiff.Z = this.mousePos.Z - this.mouseLastPos.Z;
+            var mousePos = this.mousePosPerControl[this.engine.focusedRendererID];
 
-            this.mouseLastPos.X = this.mousePos.X;
-            this.mouseLastPos.Y = this.mousePos.Y;
-            this.mouseLastPos.Z = this.mousePos.Z;
+            // Get Mouse State
+            this.mouseDiff.X = mousePos.X - this.mouseLastPos.X;
+            this.mouseDiff.Y = this.mouseLastPos.Y - mousePos.Y; // reversed since y-coordinates go from bottom to top
+            this.mouseDiff.Z = mousePos.Z - this.mouseLastPos.Z;
+
+            this.mouseLastPos.X = mousePos.X;
+            this.mouseLastPos.Y = mousePos.Y;
+            this.mouseLastPos.Z = mousePos.Z;
 
             // Mouse button state changes
             if (LMB != this.LMBPrevious)
@@ -103,7 +107,7 @@ namespace ProjectWS.Engine
 
         public Vector3 GetMousePosition()
         {
-            return this.mousePos;
+            return this.mousePosPerControl[this.engine.focusedRendererID];
         }
 
         public Vector3 GetMouseDiff()

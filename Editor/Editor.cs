@@ -116,8 +116,8 @@ namespace ProjectWS.Editor
 
             var mousePosition = Mouse.GetPosition(this.focusedControl);
 
-            this.engine.input.mousePos = new Vector3((float)mousePosition.X, (float)mousePosition.Y, this.mouseWheelPos);
-
+            this.engine.input.mousePosPerControl[this.engine.focusedRendererID] = new Vector3((float)mousePosition.X, (float)mousePosition.Y, this.mouseWheelPos);
+            
             for (int r = 0; r < this.engine.renderers.Count; r++)
             {
                 var renderer = this.engine.renderers[r];
@@ -344,14 +344,7 @@ namespace ProjectWS.Editor
         {
             // Find which control is focused, and only update if ID matches
             // This is so that Update is only called one time, not for every render control call
-            int focusedID = 0;
-            foreach (var item in controls)
-            {
-                if (this.focusedControl == item.Value)
-                    focusedID = item.Key;
-            }
-
-            if (ID == focusedID)
+            if (ID == this.engine.focusedRendererID)
             {
                 Update();
             }

@@ -194,9 +194,6 @@ namespace ProjectWS.Engine.Components
             if (this.camera.renderer == null) return;
             if (this.camera.renderer.engine == null) return;
 
-            //if (this.cameraMode == CameraMode.Fly)
-            //    Debug.Log(this.Pos.ToString());
-
             if (this.rendererID == this.camera.renderer.engine.focusedRendererID)
             {
                 if (this.input.GetKeyDown(Keys.W))
