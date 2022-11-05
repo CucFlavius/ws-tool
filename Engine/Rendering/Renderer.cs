@@ -92,11 +92,11 @@ namespace ProjectWS.Engine.Rendering
 
                 if (this is ModelRenderer)
                 {
-                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, Components.CameraController.CameraMode.Orbit));
+                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, Camera.CameraMode.Orbit));
                 }
                 else if (this is WorldRenderer)
                 {
-                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, Components.CameraController.CameraMode.Fly));
+                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, Camera.CameraMode.Fly));
                 }
 
                 // Restore camera controller
@@ -110,8 +110,8 @@ namespace ProjectWS.Engine.Rendering
                 ClearViewports();
 
                 // Side by side
-                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true, Components.CameraController.CameraMode.Fly));
-                this.viewports.Add(new Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false, Components.CameraController.CameraMode.OrthoTop));
+                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true, Camera.CameraMode.Fly));
+                this.viewports.Add(new Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false, Camera.CameraMode.OrthoTop));
 
                 // Restore camera controller
                 RestoreCameraController(camPos);

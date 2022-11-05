@@ -20,6 +20,13 @@ namespace ProjectWS.Engine
         public Matrix4 projection;
         public Matrix4 view;
 
+        public enum CameraMode
+        {
+            Fly,
+            Orbit,
+            OrthoTop,
+        }
+
         public Camera(Rendering.Renderer renderer, Vector3 position, float fov, float aspectRatio, float nearDistance, float farDistance)
         {
             this.renderer = renderer;

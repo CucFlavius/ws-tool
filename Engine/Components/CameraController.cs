@@ -17,13 +17,6 @@ namespace ProjectWS.Engine.Components
             DOWN
         }
 
-        public enum CameraMode
-        {
-            Fly,
-            Orbit,
-            OrthoTop,
-        }
-
         // Default camera values
         const float YAW = -90.0f;
         const float PITCH = 0.0f;
@@ -52,7 +45,7 @@ namespace ProjectWS.Engine.Components
         public float MouseSensitivity_Orbit;
         public float Zoom;
 
-        public CameraMode cameraMode = CameraMode.Orbit;
+        public Camera.CameraMode cameraMode = Camera.CameraMode.Orbit;
 
         Camera camera;
         Input input;
@@ -91,7 +84,7 @@ namespace ProjectWS.Engine.Components
         // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
         public void ProcessKeyboard(CameraMovement direction, float deltaTime)
         {
-            if (cameraMode == CameraMode.Fly)
+            if (cameraMode == Camera.CameraMode.Fly)
             {
                 float speed = this.MovementSpeed * deltaTime;
                 if (direction == CameraMovement.FORWARD)
@@ -112,21 +105,21 @@ namespace ProjectWS.Engine.Components
         // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
         public void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true)
         {
-            if (this.cameraMode == CameraMode.Fly)
+            if (this.cameraMode == Camera.CameraMode.Fly)
             {
                 xoffset *= this.MouseSensitivity_Fly;
                 yoffset *= this.MouseSensitivity_Fly;
             }
-            else if (this.cameraMode == CameraMode.Orbit)
+            else if (this.cameraMode == Camera.CameraMode.Orbit)
             {
                 xoffset *= this.MouseSensitivity_Orbit;
                 yoffset *= this.MouseSensitivity_Orbit;
             }
 
             this.Yaw += xoffset;
-            if (this.cameraMode == CameraMode.Fly)
+            if (this.cameraMode == Camera.CameraMode.Fly)
                 this.Pitch += yoffset;
-            else if (this.cameraMode == CameraMode.Orbit)
+            else if (this.cameraMode == Camera.CameraMode.Orbit)
                 this.Pitch -= yoffset;
 
             // make sure that when pitch is out of bounds, screen doesn't get flipped
@@ -144,7 +137,7 @@ namespace ProjectWS.Engine.Components
 
         public void ProcessMousePan(float xoffset, float yoffset)
         {
-            if (cameraMode == CameraMode.Orbit)
+            if (cameraMode == Camera.CameraMode.Orbit)
             {
                 this.lookAtPoint.Y -= yoffset * 0.01f;
             }
@@ -153,7 +146,7 @@ namespace ProjectWS.Engine.Components
         // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
         public void ProcessMouseScroll(float scroll)
         {
-            if (this.cameraMode == CameraMode.Fly)
+            if (this.cameraMode == Camera.CameraMode.Fly)
             {
                 this.Zoom -= scroll;
                 if (this.Zoom < 1.0f)
@@ -162,7 +155,7 @@ namespace ProjectWS.Engine.Components
                     this.Zoom = 45.0f;
             }
 
-            else if (this.cameraMode == CameraMode.Orbit)
+            else if (this.cameraMode == Camera.CameraMode.Orbit)
             {
                 this.distanceToOrigin -= scroll * 0.5f;
                 if (this.distanceToOrigin <= 0.01f)
@@ -181,12 +174,12 @@ namespace ProjectWS.Engine.Components
             front.Y = (float)Math.Sin(MathHelper.DegreesToRadians(this.Pitch));
             front.Z = (float)(Math.Sin(MathHelper.DegreesToRadians(this.Yaw)) * Math.Cos(MathHelper.DegreesToRadians(this.Pitch)));
 
-            if (cameraMode == CameraMode.Orbit)
+            if (cameraMode == Camera.CameraMode.Orbit)
             {
                 this.Front = Vector3.Normalize(front);
                 this.Pos = front * this.distanceToOrigin;
             }
-            else if (cameraMode == CameraMode.Fly)
+            else if (cameraMode == Camera.CameraMode.Fly)
             {
                 this.Front = Vector3.Normalize(front);
             }
@@ -236,11 +229,11 @@ namespace ProjectWS.Engine.Components
 
             Matrix4 cameraMat;
 
-            if (this.cameraMode == CameraMode.Orbit)
+            if (this.cameraMode == Camera.CameraMode.Orbit)
             {
                 cameraMat = Matrix4.LookAt(this.Pos + this.lookAtPoint, this.lookAtPoint, this.Up);
             }
-            else if (this.cameraMode == CameraMode.Fly)
+            else if (this.cameraMode == Camera.CameraMode.Fly)
             {
                 cameraMat = Matrix4.LookAt(this.Pos, this.Pos + this.Front, this.Up);
             }

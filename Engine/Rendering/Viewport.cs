@@ -12,7 +12,7 @@ namespace ProjectWS.Engine.Rendering
         public float aspect;
         public bool interactive;
 
-        public Viewport(Renderer renderer, Input input, int x, int y, int width, int height, bool interactive, Components.CameraController.CameraMode cameraMode)
+        public Viewport(Renderer renderer, Input input, int x, int y, int width, int height, bool interactive, Camera.CameraMode cameraMode)
         {
             this.x = x;
             this.y = y;

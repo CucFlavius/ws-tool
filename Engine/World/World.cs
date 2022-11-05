@@ -154,47 +154,6 @@ namespace ProjectWS.Engine.World
             Debug.Log($"Start: chunk {this.controller.chunkPosition} | world {this.controller.worldPosition}");
         }
 
-        // remove
-        /*
-        public void LoadMap(uint ID, Vector2 spawnPoint)
-        {
-            if (this.loadedMapID != 0)
-            {
-                // A map is already loaded or loading, dispose of it
-            }
-
-            // Load new Map
-            this.loadedMapID = ID;
-            Database.Definitions.MapContinent mapContinentRecord = this.database.mapContinent.Get(ID);
-
-            Debug.Log($"Loading Map Continent {ID} at asset path {mapContinentRecord.assetPath}");
-
-            if (mapContinentRecord == null)
-            {
-                Debug.LogWarning("MapContinent Record doesn't exist for ID " + ID);
-                return;
-            }
-
-            List<Vector2> availableChunks = CreateChunks(mapContinentRecord.assetPath);
-
-            if (availableChunks == null)
-            {
-                Debug.LogWarning("Couldn't find any chunks");
-                return;
-            }
-
-            if (availableChunks.Count == 0)
-            {
-                Debug.LogWarning("Couldn't find any chunks");
-                return;
-            }
-
-            this.controller.spawn = true;
-            this.controller.camChunkPosition = spawnPoint;
-            this.renderer.activeCamera.transform.SetPosition(Utilities.ChunkToWorldCoords(spawnPoint) + (Vector3.UnitY * 10f));
-        }
-        */
-
         public void LoadProp(Data.M3 data, uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
         {
             /*

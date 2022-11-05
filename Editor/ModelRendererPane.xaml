@@ -14,7 +14,7 @@
             </ToolBar>
 
         </ToolBarTray>
-        <glControl:GLWpfControl Name="GLWpfControl" Margin="0,50,0,-18"/>
+        <glControl:GLWpfControl Name="GLWpfControl" Margin="0,50,0,-18" Focusable="True"/>
         <Rectangle Name="ViewportRect0" HorizontalAlignment="Left" Height="100" Margin="0,24,0,0" Stroke="White" VerticalAlignment="Bottom" Width="100" IsHitTestVisible="False"/>
         <ToolBar HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="500" Margin="0,26,0,0" ToolBarTray.IsLocked="True">
             <TextBlock IsHitTestVisible="False" Name="txtSelectRenderMode" Foreground="#d0d0d0" Text="Render Mode" TextAlignment="Center" VerticalAlignment="Center" Margin="10,0"/>

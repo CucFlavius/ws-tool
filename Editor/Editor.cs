@@ -106,7 +106,7 @@ namespace ProjectWS.Editor
         {
             if (this.engine == null) return;
 
-            if(Application.Current.MainWindow.IsKeyboardFocused)
+            if(Application.Current.MainWindow.IsKeyboardFocusWithin)
             {
                 foreach (var item in opentkKeyMap)
                 {
@@ -339,10 +339,22 @@ namespace ProjectWS.Editor
             return renderer;
         }
 
+
         void OpenTkControl_OnRender(TimeSpan delta, int ID)
         {
-            if (ID == 0)
+            // Find which control is focused, and only update if ID matches
+            // This is so that Update is only called one time, not for every render control call
+            int focusedID = 0;
+            foreach (var item in controls)
+            {
+                if (this.focusedControl == item.Value)
+                    focusedID = item.Key;
+            }
+
+            if (ID == focusedID)
+            {
                 Update();
+            }
 
             Render(ID);
         }
