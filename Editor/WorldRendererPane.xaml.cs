@@ -24,6 +24,7 @@ namespace Editor
     public partial class WorldRendererPane : UserControl
     {
         public Action<int>? changeViewMode;
+        public Action<bool>? toggleFog;
         public ObservableCollection<string>? viewModes { get; set; }
 
         public WorldRendererPane()
@@ -56,13 +57,25 @@ namespace Editor
         {
             this.viewModeComboBox.Focusable = false;
 
-            if (changeViewMode != null)
-                changeViewMode.Invoke(this.viewModeComboBox.SelectedIndex);
+            if (this.changeViewMode != null)
+                this.changeViewMode.Invoke(this.viewModeComboBox.SelectedIndex);
         }
 
         private void viewModeComboBox_Loaded(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ToggleFogOn(object sender, RoutedEventArgs e)
+        {
+            if (this.toggleFog != null)
+                this.toggleFog.Invoke(true);
+        }
+
+        private void ToggleFogOff(object sender, RoutedEventArgs e)
+        {
+            if (this.toggleFog != null)
+                this.toggleFog.Invoke(false);
         }
     }
 }

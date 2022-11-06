@@ -102,6 +102,14 @@
         <Setter Property="Margin" Value="1"/>
     </Style>
 
+    <Style x:Key="{x:Static ToolBar.ToggleButtonStyleKey}" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="#d6d6d6"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="1"/>
+    </Style>
+
     <Style x:Key="{x:Static ToolBar.ComboBoxStyleKey}" TargetType="ComboBox">
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>

@@ -54,6 +54,7 @@ namespace ProjectWS.Engine.Rendering
                 if (world != null)
                 {
                     this.terrainShader.Use();
+                    this.fogParameters.isEnabled = Engine.settings.wRenderer.toggles.fog;
                     this.terrainShader.SetFogParameters(this.fogParameters);
                     this.viewports[v].mainCamera.SetToShader(this.terrainShader);
                     this.world.Render(this.terrainShader);

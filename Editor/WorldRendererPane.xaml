@@ -15,6 +15,12 @@
                 <TextBlock IsHitTestVisible="False" Name="txtSelectViewMode" Foreground="#d0d0d0" Text="View" TextAlignment="Center" VerticalAlignment="Center" Margin="10,0"/>
                 <ComboBox Text="ViewMode" Width="150" Height="21" SelectionChanged="viewModeComboBox_SelectionChanged" Name="viewModeComboBox" VerticalAlignment="Center" Margin="0,0,0,0" ItemsSource="{Binding viewModes}" Loaded="viewModeComboBox_Loaded" />
             </ToolBar>
+            <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center" Width="500" Margin="0,0">
+                <ToggleButton x:Name = "tb" Content = "Fog" Checked = "ToggleFogOn" Unchecked = "ToggleFogOff"
+                                Width = "50" HorizontalAlignment = "Center"/>
+
+
+            </ToolBar>
         </ToolBarTray>
 
     </Grid>

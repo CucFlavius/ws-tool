@@ -59,9 +59,7 @@ namespace ProjectWS.Editor
                 this.engine.Update(this.deltaTime, this.timeScale);
 
                 if (Program.app != null && this.fps != null)
-                    //Program.app.MainWindow.Title = this.fps.Get().ToString() + " " + WorldRenderer.drawCalls;
-                    if (this.engine.renderers.Count > 1)
-                        Program.app.MainWindow.Title = this.engine.renderers[1].viewports[0].mainCamera.transform.GetPosition().ToString();
+                    Program.app.MainWindow.Title = this.fps.Get().ToString() + " " + WorldRenderer.drawCalls;
             }
         }
 
@@ -300,6 +298,7 @@ namespace ProjectWS.Editor
                 this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(gizmo));
 
                 rendererPane.changeViewMode = renderer.SetViewportMode;
+                rendererPane.toggleFog = renderer.ToggleFog;
 
                 var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
                 if (renderer.gizmos != null)

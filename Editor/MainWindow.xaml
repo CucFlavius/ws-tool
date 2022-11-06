@@ -28,7 +28,7 @@
             IsVirtualizingAnchorable="True"
             IsVirtualizingDocument="True">
             <DockingManager.Theme>
-                <Vs2013DarkTheme />
+                <Vs2013DarkTheme/>
             </DockingManager.Theme>
             <DockingManager.DocumentHeaderTemplate>
                 <DataTemplate>

@@ -201,6 +201,13 @@ namespace ProjectWS.Engine.Rendering
             }
         }
 
+        public void ToggleFog(bool on)
+        {
+            Debug.Log("FOG " + on);
+            Engine.settings.wRenderer.toggles.fog = on;
+            SettingsSerializer.Save();
+        }
+
         public enum ShadingOverride
         {
             Shaded = 0,

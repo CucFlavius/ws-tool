@@ -19,6 +19,7 @@ namespace ProjectWS.Engine
     /// </summary>
     public class Engine
     {
+        public static Settings settings = new Settings();
         bool running = false;
         public bool contextAvailable = false;
         public float deltaTime;
@@ -37,13 +38,13 @@ namespace ProjectWS.Engine
 
         public Dictionary<int, Rendering.Renderer> rendererMap;
         public List<Rendering.Renderer> renderers;
-        //public UI.MainUI ui;
 
         /// <summary>
         /// Code to be executed on application launch
         /// </summary>
         public Engine()
         {
+            SettingsSerializer.Load();
             this.taskManager = new TaskManager.Manager(this);
             this.resourceManager = new Data.ResourceManager.Manager(this);
             this.rendererMap = new Dictionary<int, Rendering.Renderer>();
