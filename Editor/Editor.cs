@@ -299,6 +299,8 @@ namespace ProjectWS.Editor
 
                 rendererPane.changeViewMode = renderer.SetViewportMode;
                 rendererPane.toggleFog = renderer.ToggleFog;
+                rendererPane.fogToggle.IsChecked = Engine.Engine.settings.wRenderer.toggles.fog;
+
 
                 var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
                 if (renderer.gizmos != null)
