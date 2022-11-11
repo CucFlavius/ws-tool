@@ -16,7 +16,11 @@ namespace ProjectWS.Engine.Rendering
     public class WorldRenderer : Renderer
     {
         World.World? world;
-        FogParameters fogParameters;
+        ShaderParams.FogParameters fogParameters;
+        ShaderParams.TerrainEditorParameters tEditorParameters;
+        ShaderParams.SunParameters sunParameters;
+        ShaderParams.EnvironmentParameters envParameters;
+
         public static int drawCalls;
 
         Color4 envColor = new Color4(0.7f, 0.7f, 0.7f, 1.0f);
@@ -31,7 +35,10 @@ namespace ProjectWS.Engine.Rendering
             SetViewportMode(ViewMode.Default);
             //AddDefaultLight();
             //this.fogParameters = new FogParameters(this.envColor, 0, 1000, 0.1f, 0);  // Linear
-            this.fogParameters = new FogParameters(this.envColor, 0, 0, 0.0025f, 2);    // Exponential
+            this.fogParameters = new ShaderParams.FogParameters(this.envColor, 0, 0, 0.0025f, 2);    // Exponential
+            this.tEditorParameters = new ShaderParams.TerrainEditorParameters(false, false);
+            this.sunParameters = new ShaderParams.SunParameters(new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), 1.0f);
+            this.envParameters = new ShaderParams.EnvironmentParameters(new Vector3(0.4f, 0.4f, 0.4f));
         }
 
         public void SetWorld(World.World world) => this.world = world;
@@ -50,14 +57,31 @@ namespace ProjectWS.Engine.Rendering
             {
                 this.viewports[v].Use();
 
+                // Set global shader parameters
+                if (Engine.settings != null && Engine.settings.wRenderer != null && Engine.settings.wRenderer.toggles != null)
+                {
+                    this.fogParameters.Toggle(Engine.settings.wRenderer.toggles.fog);
+                    this.tEditorParameters.enableAreaGrid = Engine.settings.wRenderer.toggles.displayAreaGrid;
+                    this.tEditorParameters.enableChunkGrid = Engine.settings.wRenderer.toggles.displayChunkGrid;
+                }
+
                 // Render World
                 if (world != null)
                 {
+                    // Terrain
                     this.terrainShader.Use();
-                    this.fogParameters.isEnabled = Engine.settings.wRenderer.toggles.fog;
-                    this.terrainShader.SetFogParameters(this.fogParameters);
+                    this.fogParameters.SetToShader(this.terrainShader);
+                    this.tEditorParameters.SetToShader(this.terrainShader);
+                    this.sunParameters.SetToShader(this.terrainShader);
+                    this.envParameters.SetToShader(this.terrainShader);
                     this.viewports[v].mainCamera.SetToShader(this.terrainShader);
-                    this.world.Render(this.terrainShader);
+                    this.world.RenderTerrain(this.terrainShader);
+
+                    // Water
+                    this.waterShader.Use();
+                    this.viewports[v].mainCamera.SetToShader(this.waterShader);
+                    this.waterShader.SetMat4("model", Matrix4.Identity);    // Water vertices are in world space
+                    this.world.RenderWater(this.waterShader);
                 }
 
                 // Render Gizmos

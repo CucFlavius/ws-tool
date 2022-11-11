@@ -10,7 +10,7 @@ namespace ProjectWS.Engine
 {
     public class Shader
     {
-        int Handle;
+        public int Handle;
         string vertexPath;
         string fragmentPath;
 
@@ -95,16 +95,6 @@ namespace ProjectWS.Engine
         public void Use()
         {
             GL.UseProgram(Handle);
-        }
-
-        public void SetFogParameters(Rendering.FogParameters fogParameters)
-        {
-            GL.Uniform3(GL.GetUniformLocation(Handle, "fogParams.color"), fogParameters.color);
-            GL.Uniform1(GL.GetUniformLocation(Handle, "fogParams.linearStart"), fogParameters.linearStart);
-            GL.Uniform1(GL.GetUniformLocation(Handle, "fogParams.linearEnd"), fogParameters.linearEnd);
-            GL.Uniform1(GL.GetUniformLocation(Handle, "fogParams.density"), fogParameters.density);
-            GL.Uniform1(GL.GetUniformLocation(Handle, "fogParams.equation"), fogParameters.equation);
-            GL.Uniform1(GL.GetUniformLocation(Handle, "fogParams.isEnabled"), fogParameters.isEnabled ? 1 : 0);
         }
 
         public void SetInt(string name, int value)

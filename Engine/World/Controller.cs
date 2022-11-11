@@ -13,6 +13,8 @@ namespace ProjectWS.Engine.World
         public bool spawn;
         public Vector2 chunkPosition;
         public Vector3 worldPosition;
+        public Vector2 subchunkPosition;
+        public int subchunkIndex;
         public World world;
 
         public Controller(World world)
@@ -43,6 +45,15 @@ namespace ProjectWS.Engine.World
             }
 
             this.worldPosition = camera.transform.GetPosition();
+
+            // Determine chunk position
+            var halfW = (World.AREA_SIZE * World.WORLD_SIZE);
+            var modX = (halfW + this.worldPosition.X) % 512.0f;
+            var sX = (int)Math.Floor((modX / 512.0f) * 16.0);
+            var modY = (halfW + this.worldPosition.Z) % 512.0f;
+            var sY = (int)Math.Abs((modY / 512.0f) * 16.0);
+            this.subchunkPosition = new Vector2i(sX, sY);
+            this.subchunkIndex = ((sY * 16) + sX);
         }
 
         void Spiral(int X, int Y)

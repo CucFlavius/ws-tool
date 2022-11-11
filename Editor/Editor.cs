@@ -12,6 +12,7 @@ using System.Windows.Input;
 
 namespace ProjectWS.Editor
 {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
     public class Editor
     {
         DateTime time1 = DateTime.Now;
@@ -299,8 +300,11 @@ namespace ProjectWS.Editor
 
                 rendererPane.changeViewMode = renderer.SetViewportMode;
                 rendererPane.toggleFog = renderer.ToggleFog;
+                rendererPane.toggleAreaGrid = renderer.ToggleAreaGrid;
+                rendererPane.toggleChunkGrid = renderer.ToggleChunkGrid;
                 rendererPane.fogToggle.IsChecked = Engine.Engine.settings.wRenderer.toggles.fog;
-
+                rendererPane.displayAreaToggle.IsChecked = Engine.Engine.settings.wRenderer.toggles.displayAreaGrid;
+                rendererPane.displayChunkToggle.IsChecked = Engine.Engine.settings.wRenderer.toggles.displayChunkGrid;
 
                 var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
                 if (renderer.gizmos != null)
@@ -373,13 +377,14 @@ namespace ProjectWS.Editor
         void OpenTkControl_OnLoaded(object sender, RoutedEventArgs e, Renderer renderer, Grid control)
         {
             renderer.SetDimensions(0, 0, (int)control.ActualWidth, (int)control.ActualHeight);
-            renderer.modelShader = new Shader("shader_vert.glsl", "shader_frag.glsl");
+            renderer.modelShader = new Shader("shaders/shader_vert.glsl", "shaders/shader_frag.glsl");
             renderer.shader = renderer.modelShader;
-            renderer.wireframeShader = new Shader("wireframe_vert.glsl", "wireframe_frag.glsl");
-            renderer.normalShader = new Shader("normal_vert.glsl", "normal_frag.glsl");
-            renderer.terrainShader = new Shader("terrain_vert.glsl", "terrain_frag.glsl");
-            renderer.lineShader = new Shader("line_vert.glsl", "line_frag.glsl");
-            renderer.infiniteGridShader = new Shader("infinite_grid_vert.glsl", "infinite_grid_frag.glsl");
+            renderer.wireframeShader = new Shader("shaders/wireframe_vert.glsl", "shaders/wireframe_frag.glsl");
+            renderer.normalShader = new Shader("shaders/normal_vert.glsl", "shaders/normal_frag.glsl");
+            renderer.terrainShader = new Shader("shaders/terrain_vert.glsl", "shaders/terrain_frag.glsl");
+            renderer.waterShader = new Shader("shaders/water_vert.glsl", "shaders/water_frag.glsl");
+            renderer.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
+            renderer.infiniteGridShader = new Shader("shaders/infinite_grid_vert.glsl", "shaders/infinite_grid_frag.glsl");
         }
 
         void OpenTkControl_OnSizeChanged(object sender, SizeChangedEventArgs e, Renderer renderer)

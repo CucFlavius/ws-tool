@@ -10,33 +10,15 @@ using System.Threading.Tasks;
 
 namespace ProjectWS.Engine.Materials
 {
-    public class TerrainMaterial : Material
+    public class WaterMaterial : Material
     {
-        Data.Area.SubChunk subChunk;
-        uint blendMapPtr;
-        uint colorMapPtr;
-        uint unkMap2Ptr;
-        Vector4 heightScale;
-        Vector4 heightOffset;
-        Vector4 parallaxScale;
-        Vector4 parallaxOffset;
-        Vector4 metersPerTextureTile;
+        Data.Area.Water water;
+        //WaterParameters wParams;
 
-        const string LAYER0 = "layer0";
-        const string LAYER1 = "layer1";
-        const string LAYER2 = "layer2";
-        const string LAYER3 = "layer3";
-        const string NORMAL0 = "normal0";
-        const string NORMAL1 = "normal1";
-        const string NORMAL2 = "normal2";
-        const string NORMAL3 = "normal3";
-
-        TerrainParameters tParams;
-
-        public TerrainMaterial(Data.Area.SubChunk subChunk)
+        public WaterMaterial(Data.Area.Water water)
         {
-            this.subChunk = subChunk;
-            this.tParams = new TerrainParameters();
+            this.water = water;
+            //this.wParams = new WaterParameters();
         }
 
         public override void Build()
@@ -46,22 +28,21 @@ namespace ProjectWS.Engine.Materials
             this.isBuilding = true;
 
             this.texturePtrs = new Dictionary<string, uint>();
+            /*
+            BuildMap(this.water.blendMap, InternalFormat.CompressedRgbaS3tcDxt1Ext, out blendMapPtr);
+            BuildMap(this.water.colorMap, InternalFormat.CompressedRgbaS3tcDxt5Ext, out colorMapPtr);
 
-            BuildMap(this.subChunk.blendMap, InternalFormat.CompressedRgbaS3tcDxt1Ext, out blendMapPtr);
-            BuildMap(this.subChunk.unknownMap2, InternalFormat.CompressedRgbaS3tcDxt1Ext, out unkMap2Ptr);
-            BuildMap(this.subChunk.colorMap, InternalFormat.CompressedRgbaS3tcDxt5Ext, out colorMapPtr);
-
-            if (this.subChunk.textureIDs != null)
+            if (this.water.textureIDs != null)
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    if (this.subChunk.textureIDs[i] != 0)
+                    if (this.water.textureIDs[i] != 0)
                     {
-                        var record = this.subChunk.chunk.gameData.database.worldLayer.Get(this.subChunk.textureIDs[i]);
+                        var record = this.water.chunk.gameData.database.worldLayer.Get(this.water.textureIDs[i]);
                         if (record != null)
                         {
-                            this.subChunk.chunk.gameData.resourceManager.AssignTexture(record.ColorMapPath, this, $"layer{i}");
-                            this.subChunk.chunk.gameData.resourceManager.AssignTexture(record.NormalMapPath, this, $"normal{i}");
+                            this.water.chunk.gameData.resourceManager.AssignTexture(record.ColorMapPath, this, $"layer{i}");
+                            this.water.chunk.gameData.resourceManager.AssignTexture(record.NormalMapPath, this, $"normal{i}");
 
                             heightScale[i] = record.HeightScale;
                             heightOffset[i] = record.HeightOffset;
@@ -74,12 +55,13 @@ namespace ProjectWS.Engine.Materials
             }
 
             this.isBuilt = true;
+            */
         }
 
         public override void SetToShader(Shader shader)
         {
             if (!this.isBuilt) return;
-
+            /*
             if (this.texturePtrs.TryGetValue(LAYER0, out uint layer0Ptr))
             {
                 GL.ActiveTexture(TextureUnit.Texture0);
@@ -159,12 +141,6 @@ namespace ProjectWS.Engine.Materials
                 GL.BindTexture(TextureTarget.Texture2D, this.colorMapPtr);
             }
 
-            if (this.unkMap2Ptr != 0)
-            {
-                GL.ActiveTexture(TextureUnit.Texture10);
-                GL.BindTexture(TextureTarget.Texture2D, this.unkMap2Ptr);
-            }
-
             this.tParams.heightScale = this.heightScale;
             this.tParams.heightOffset = this.heightOffset;
             this.tParams.parallaxScale = this.parallaxScale;
@@ -172,6 +148,7 @@ namespace ProjectWS.Engine.Materials
             this.tParams.metersPerTextureTile = this.metersPerTextureTile;
 
             this.tParams.SetToShader(shader);
+            */
         }
 
         void BuildMap(byte[] data, InternalFormat format, out uint ptr)

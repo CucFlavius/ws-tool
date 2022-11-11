@@ -1,6 +1,8 @@
-﻿using OpenTK.Mathematics;
+﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+using System.Reflection.Metadata;
 
-namespace ProjectWS.Engine.Rendering
+namespace ProjectWS.Engine.Rendering.ShaderParams
 {
     public class FogParameters
     {
@@ -19,7 +21,7 @@ namespace ProjectWS.Engine.Rendering
             this.linearEnd = linearEnd;
             this.density = density;
             this.equation = equation;
-            this.isEnabled = true;
+            isEnabled = true;
         }
 
         public FogParameters(Color4 color, float linearStart, float linearEnd, float density, int equation)
@@ -29,12 +31,22 @@ namespace ProjectWS.Engine.Rendering
             this.linearEnd = linearEnd;
             this.density = density;
             this.equation = equation;
-            this.isEnabled = true;
+            isEnabled = true;
+        }
+
+        public void SetToShader(Shader shader)
+        {
+            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "fogParams.color"), this.color);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.linearStart"), this.linearStart);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.linearEnd"), this.linearEnd);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.density"), this.density);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.equation"), this.equation);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.isEnabled"), this.isEnabled ? 1 : 0);
         }
 
         public void Toggle(bool on)
         {
-            this.isEnabled = on;
+            isEnabled = on;
         }
     }
 }

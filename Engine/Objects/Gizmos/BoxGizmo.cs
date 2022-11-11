@@ -20,6 +20,8 @@ namespace ProjectWS.Engine.Objects.Gizmos
 
         public override void Build()
         {
+            if (this.isBuilt) return;
+
             float cubeSize = 1.0f;
             float ch = cubeSize / 2.0f;
 

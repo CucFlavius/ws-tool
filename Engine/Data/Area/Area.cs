@@ -4,6 +4,7 @@ using ProjectWS.Engine.Data.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,12 +20,14 @@ namespace ProjectWS.Engine.Data
 
         public float minHeight;
         public float maxHeight;
+        const string area = "area";
+        const string AREA = "AREA";
 
         public Header header;
-        public List<SubChunk> subChunks;    // Variable size, not always 16*16
-        public Prop[] props;
-        public Dictionary<uint, Prop> uuidPropMap;
-        public Curt[] curts;
+        public List<SubChunk>? subChunks;    // Variable size, not always 16*16
+        public Prop[]? props;
+        public Dictionary<uint, Prop>? uuidPropMap;
+        public Curt[]? curts;
 
         public Area(World.Chunk chunk, int lod)
         {
@@ -42,9 +45,12 @@ namespace ProjectWS.Engine.Data
         {
             try
             {
-                using (Stream str = this.gameData.GetFileData(this.fileEntry))
+                using (Stream? str = this.gameData.GetFileData(this.fileEntry))
                 {
-                    using (BinaryReader br = new BinaryReader(str))
+                    if (str == null) return;
+                    if (str.Length == 0) return;
+
+                    using (var br = new BinaryReader(str))
                     {
                         this.header = new Header(br);
 
@@ -61,19 +67,100 @@ namespace ProjectWS.Engine.Data
                             {
                                 case ChunkID.CHNK:
                                     {
-                                        this.subChunks = new List<SubChunk>();
-                                        long save = br.BaseStream.Position;
-                                        int index = 0;
-                                        while (br.BaseStream.Position < save + chunkSize)
+                                        if (this.header.magic == AREA)
                                         {
-                                            var subchunk = new SubChunk(br, chunk, index++, this.lod);
-                                            this.subChunks.Add(subchunk);
+                                            // Compressed Area file
+                                            var chunkStart = br.BaseStream.Position;
+                                            var chunkData = br.ReadBytes(chunkSize);
+                                            using MemoryStream chunkMS = new MemoryStream(chunkData);
+                                            using BinaryReader chunkBR = new BinaryReader(chunkMS);
+                                            int size = chunkBR.ReadInt32();
+                                            var save = chunkBR.BaseStream.Position;
+                                            using var headerZlibStream = new ZLibStream(chunkMS, CompressionMode.Decompress);
+                                            Span<byte> decompressedHeader = new byte[1024];
+                                            headerZlibStream.Read(decompressedHeader);
+                                            using MemoryStream decompHeaderMS = new MemoryStream(decompressedHeader.ToArray());
+                                            using BinaryReader decompHeaderBR = new BinaryReader(decompHeaderMS);
+                                            List<uint> blobSizes = new List<uint>();
+                                            List<byte[]> blobs = new List<byte[]>();
+                                            chunkBR.BaseStream.Position = save + size;
+                                            for (int i = 0; i < 1024 / 4; i++)
+                                            {
+                                                uint blobSize = decompHeaderBR.ReadUInt32();
+                                                blobSizes.Add(blobSize);
+                                                if (blobSize != 0)
+                                                {
+                                                    blobs.Add(chunkBR.ReadBytes((int)blobSize));
+                                                }
+                                                else
+                                                {
+                                                    blobs.Add(null);
+                                                }
+                                            }
 
-                                            // Calc minmax
-                                            if (subchunk.mesh.minHeight < this.minHeight)
-                                                this.minHeight = subchunk.mesh.minHeight;
-                                            if (subchunk.mesh.maxHeight > this.maxHeight)
-                                                this.maxHeight = subchunk.mesh.maxHeight;
+                                            this.subChunks = new List<SubChunk>();
+
+                                            for (int i = 0; i < blobs.Count; i++)
+                                            {
+                                                if (blobSizes[i] != 0)
+                                                {
+                                                    using MemoryStream blobMS = new MemoryStream(blobs[i]);
+                                                    using BinaryReader blobBR = new BinaryReader(blobMS);
+                                                    var decompSize = blobBR.ReadInt32();
+                                                    using var blobZlibStream = new ZLibStream(blobMS, CompressionMode.Decompress);
+
+                                                    Span<byte> decompData = new byte[decompSize];
+                                                    blobZlibStream.Read(decompData);
+
+                                                    var decompBlob = new byte[decompSize + 4];
+
+                                                    // Copy size at the front of the data
+                                                    var bSize = BitConverter.GetBytes(decompSize);
+                                                    decompBlob[0] = bSize[0];
+                                                    decompBlob[1] = bSize[1];
+                                                    decompBlob[2] = bSize[2];
+                                                    decompBlob[3] = bSize[3];
+
+                                                    // Copy data after size
+                                                    Array.Copy(decompData.ToArray(), 0, decompBlob, 4, decompSize);
+
+                                                    using (var decompDataMS = new MemoryStream(decompBlob))
+                                                    {
+                                                        using (var decompDataBR = new BinaryReader(decompDataMS))
+                                                        {
+                                                            var subchunk = new SubChunk(decompDataBR, this.chunk, i, this.lod, true);
+                                                            this.subChunks.Add(subchunk);
+
+                                                            // Calc minmax
+                                                            if (subchunk.mesh.minHeight < this.minHeight)
+                                                                this.minHeight = subchunk.mesh.minHeight;
+                                                            if (subchunk.mesh.maxHeight > this.maxHeight)
+                                                                this.maxHeight = subchunk.mesh.maxHeight;
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            br.BaseStream.Position = chunkStart + chunkSize;
+                                        }
+
+                                        if (this.header.magic == area)
+                                        {
+                                            this.subChunks = new List<SubChunk>();
+                                            long save = br.BaseStream.Position;
+                                            int index = 0;
+
+                                            while (br.BaseStream.Position < save + chunkSize)
+                                            {
+                                                var subchunk = new SubChunk(br, this.chunk, index++, this.lod, false);
+                                                this.subChunks.Add(subchunk);
+
+                                                // Calc minmax
+                                                if (subchunk.mesh.minHeight < this.minHeight)
+                                                    this.minHeight = subchunk.mesh.minHeight;
+                                                if (subchunk.mesh.maxHeight > this.maxHeight)
+                                                    this.maxHeight = subchunk.mesh.maxHeight;
+                                            }
                                         }
                                     }
                                     break;

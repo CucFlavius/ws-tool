@@ -11,13 +11,14 @@ namespace ProjectWS.Engine.Data
             public class Mesh
             {
                 const int VERTEXCOUNT = 361;
-                const int VERTEXSIZE = 32;
+                const int VERTEXSIZE = 48;
 
                 [StructLayout(LayoutKind.Sequential)]
                 struct TerrainVertex
                 {
                     public Vector3 position;
                     public Vector3 normal;
+                    public Vector4 tangent;
                     public Vector2 uv;
                 }
 
@@ -114,6 +115,59 @@ namespace ProjectWS.Engine.Data
                                 this.vertices[u + v * 17].uv = new Vector2(u / 16.0f, v / 16.0f);
                             }
                         }
+
+                        // Tangents //
+                        Vector3[] tan1 = new Vector3[this.vertices.Length];
+                        Vector3[] tan2 = new Vector3[this.vertices.Length];
+                        for (long a = 0; a < this.indexData.Length; a += 3)
+                        {
+                            long i1 = this.indexData[a + 0];
+                            long i2 = this.indexData[a + 1];
+                            long i3 = this.indexData[a + 2];
+
+                            Vector3 v1 = this.vertices[i1].position;
+                            Vector3 v2 = this.vertices[i2].position;
+                            Vector3 v3 = this.vertices[i3].position;
+
+                            Vector2 w1 = this.vertices[i1].uv;
+                            Vector2 w2 = this.vertices[i2].uv;
+                            Vector2 w3 = this.vertices[i3].uv;
+
+                            float x1 = v2.X - v1.X;
+                            float x2 = v3.X - v1.X;
+                            float y1 = v2.Y - v1.Y;
+                            float y2 = v3.Y - v1.Y;
+                            float z1 = v2.Z - v1.Z;
+                            float z2 = v3.Z - v1.Z;
+
+                            float s1 = w2.X - w1.X;
+                            float s2 = w3.X - w1.X;
+                            float t1 = w2.Y - w1.Y;
+                            float t2 = w3.Y - w1.Y;
+
+                            float r = 1.0f / (s1 * t2 - s2 * t1);
+
+                            Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+                            Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+
+                            tan1[i1] += sdir;
+                            tan1[i2] += sdir;
+                            tan1[i3] += sdir;
+
+                            tan2[i1] += tdir;
+                            tan2[i2] += tdir;
+                            tan2[i3] += tdir;
+                        }
+
+                        for (long a = 0; a < this.vertices.Length; ++a)
+                        {
+                            Vector3 n = this.vertices[a].normal;
+                            Vector3 t = tan1[a];
+
+                            Vector3 tmp = (t - n * Vector3.Dot(n, t)).Normalized();
+                            this.vertices[a].tangent = new Vector4(tmp.X, tmp.Y, tmp.Z, 1.0f); // or -1.0? if uv is flipped?
+                        }
+
                     }
                     else
                     {
@@ -136,10 +190,12 @@ namespace ProjectWS.Engine.Data
                     GL.EnableVertexAttribArray(0);
                     GL.EnableVertexAttribArray(1);
                     GL.EnableVertexAttribArray(2);
+                    GL.EnableVertexAttribArray(3);
 
                     GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, VERTEXSIZE, 0);
                     GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, true, VERTEXSIZE, 12);
-                    GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, VERTEXSIZE, 24);
+                    GL.VertexAttribPointer(2, 4, VertexAttribPointerType.Float, true, VERTEXSIZE, 24);
+                    GL.VertexAttribPointer(3, 2, VertexAttribPointerType.Float, false, VERTEXSIZE, 40);
 
                     int _elementBufferObject = GL.GenBuffer();
                     GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);

@@ -14,10 +14,14 @@ namespace ProjectWS.Engine
             public class Toggles
             {
                 public bool fog { get; set; }
+                public bool displayAreaGrid { get; set; }
+                public bool displayChunkGrid { get; set; }
 
                 public Toggles()
                 {
                     this.fog = true;
+                    this.displayAreaGrid = false;
+                    this.displayChunkGrid = false;
                 }
             }
 

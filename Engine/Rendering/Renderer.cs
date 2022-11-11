@@ -21,6 +21,7 @@ namespace ProjectWS.Engine.Rendering
         public Shader wireframeShader;
         public Shader normalShader;
         public Shader terrainShader;
+        public Shader waterShader;
         public Shader lineShader;
         public Shader infiniteGridShader;
 
@@ -203,9 +204,32 @@ namespace ProjectWS.Engine.Rendering
 
         public void ToggleFog(bool on)
         {
-            Debug.Log("FOG " + on);
-            Engine.settings.wRenderer.toggles.fog = on;
-            SettingsSerializer.Save();
+            if (Engine.settings != null && Engine.settings.wRenderer != null && Engine.settings.wRenderer.toggles != null)
+            {
+                Debug.Log("FOG " + on);
+                Engine.settings.wRenderer.toggles.fog = on;
+                SettingsSerializer.Save();
+            }
+        }
+
+        public void ToggleAreaGrid(bool on)
+        {
+            if (Engine.settings != null && Engine.settings.wRenderer != null && Engine.settings.wRenderer.toggles != null)
+            {
+                Debug.Log("AREA GRID " + on);
+                Engine.settings.wRenderer.toggles.displayAreaGrid = on;
+                SettingsSerializer.Save();
+            }
+        }
+
+        public void ToggleChunkGrid(bool on)
+        {
+            if (Engine.settings != null && Engine.settings.wRenderer != null && Engine.settings.wRenderer.toggles != null)
+            {
+                Debug.Log("CHUNK GRID " + on);
+                Engine.settings.wRenderer.toggles.displayChunkGrid = on;
+                SettingsSerializer.Save();
+            }
         }
 
         public enum ShadingOverride

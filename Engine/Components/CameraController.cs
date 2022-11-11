@@ -21,7 +21,7 @@ namespace ProjectWS.Engine.Components
         // Default camera values
         const float YAW = -90.0f;
         const float PITCH = 0.0f;
-        const float SPEED = 200.0f;
+        const float SPEED = 50.0f;
         const float SENSITIVITY_FLY = 0.1f;
         const float SENSITIVITY_ORBIT = 0.2f;
         const float ZOOM = 45.0f;

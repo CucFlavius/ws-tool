@@ -25,6 +25,9 @@ namespace Editor
     {
         public Action<int>? changeViewMode;
         public Action<bool>? toggleFog;
+        public Action<bool>? toggleChunkGrid;
+        public Action<bool>? toggleAreaGrid;
+
         public ObservableCollection<string>? viewModes { get; set; }
 
         public WorldRendererPane()
@@ -76,6 +79,30 @@ namespace Editor
         {
             if (this.toggleFog != null)
                 this.toggleFog.Invoke(false);
+        }
+
+        private void ToggleAreaGridOn(object sender, RoutedEventArgs e)
+        {
+            if (this.toggleAreaGrid != null)
+                this.toggleAreaGrid.Invoke(true);
+        }
+
+        private void ToggleAreaGridOff(object sender, RoutedEventArgs e)
+        {
+            if (this.toggleAreaGrid != null)
+                this.toggleAreaGrid.Invoke(false);
+        }
+
+        private void ToggleChunkGridOn(object sender, RoutedEventArgs e)
+        {
+            if (this.toggleChunkGrid != null)
+                this.toggleChunkGrid.Invoke(true);
+        }
+
+        private void ToggleChunkGridOff(object sender, RoutedEventArgs e)
+        {
+            if (this.toggleChunkGrid != null)
+                this.toggleChunkGrid.Invoke(false);
         }
     }
 }

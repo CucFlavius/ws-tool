@@ -33,6 +33,24 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvalonDock", "Libs\AvalonDo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvalonDock.Themes.VS2013", "Libs\AvalonDock\source\Components\AvalonDock.Themes.VS2013\AvalonDock.Themes.VS2013.csproj", "{BA001498-5533-4335-8B22-1A2476EE15CC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{7F2ADAF6-4D33-4E83-A1E0-B5497E4FC9D2}"
+	ProjectSection(SolutionItems) = preProject
+		Editor\bin\Debug\net6.0-windows\Shaders\infinite_grid_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\infinite_grid_frag.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\infinite_grid_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\infinite_grid_vert.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\line_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\line_frag.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\line_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\line_vert.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\normal_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\normal_frag.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\normal_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\normal_vert.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\shader_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\shader_frag.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\shader_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\shader_vert.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\terrain_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\terrain_frag.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\terrain_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\terrain_vert.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\water_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\water_frag.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\water_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\water_vert.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\wireframe_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\wireframe_frag.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\wireframe_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\wireframe_vert.glsl
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

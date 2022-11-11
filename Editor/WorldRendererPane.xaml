@@ -16,9 +16,9 @@
                 <ComboBox Text="ViewMode" Width="150" Height="21" SelectionChanged="viewModeComboBox_SelectionChanged" Name="viewModeComboBox" VerticalAlignment="Center" Margin="0,0,0,0" ItemsSource="{Binding viewModes}" Loaded="viewModeComboBox_Loaded" />
             </ToolBar>
             <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center" Width="500" Margin="0,0">
-                <ToggleButton x:Name = "fogToggle" Content = "Fog" Checked = "ToggleFogOn" Unchecked = "ToggleFogOff"
-                                Width = "50" HorizontalAlignment = "Center"/>
-
+                <ToggleButton x:Name = "fogToggle" Content = "Fog" Checked = "ToggleFogOn" Unchecked = "ToggleFogOff" Width = "50"/>
+                <ToggleButton x:Name = "displayAreaToggle" Content = "Area Grid" Checked = "ToggleAreaGridOn" Unchecked = "ToggleAreaGridOff" Width = "100"/>
+                <ToggleButton x:Name = "displayChunkToggle" Content = "Chunk Grid" Checked = "ToggleChunkGridOn" Unchecked = "ToggleChunkGridOff" Width = "100"/>
 
             </ToolBar>
         </ToolBarTray>

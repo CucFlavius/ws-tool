@@ -86,6 +86,7 @@ namespace ProjectWS.Engine
                     this.renderers[i].wireframeShader.Load();
                     this.renderers[i].terrainShader.Load();
                     this.renderers[i].infiniteGridShader.Load();
+                    this.renderers[i].waterShader.Load();
                 }
             }
 

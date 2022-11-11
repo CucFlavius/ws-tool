@@ -1,11 +1,8 @@
-﻿using OpenTK;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
+using ProjectWS.Engine.Data.Extensions;
+using ProjectWS.Engine.Objects.Gizmos;
+using ProjectWS.Engine.Rendering;
 
 namespace ProjectWS.Engine.World
 {
@@ -53,6 +50,9 @@ namespace ProjectWS.Engine.World
         volatile bool cullTaskProcess;
         volatile bool cullTaskUpdate;
 
+        // Tests
+        BoxGizmo chunkGizmo;
+
         #endregion
 
         public World(Engine engine, uint worldUUID = 0, bool setActive = false)
@@ -84,6 +84,12 @@ namespace ProjectWS.Engine.World
                     this.renderer.SetWorld(this);
                 }
             }
+
+            this.chunkGizmo = new BoxGizmo(new Vector4(1, 1, 0, 1));
+            if (this.renderer.gizmos != null)
+                this.renderer.gizmos.Add(this.chunkGizmo);
+            if (this.renderer.engine != null)
+                this.renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.chunkGizmo));
         }
 
         public void TeleportToWorldLocation(uint ID)
@@ -182,9 +188,32 @@ namespace ProjectWS.Engine.World
 
             CullingMT();
             TasksUpdate();
+
+            //var pos = this.controller.worldPosition - new Vector3(0, 2, 0);
+            //this.chunkGizmo.transform.SetPosition(pos);
+            if (this.controller != null)
+            {
+                if (this.chunks.TryGetValue(this.controller.chunkPosition, out var chunk))
+                {
+                    if (chunk.area != null && chunk.area.subChunks != null)
+                    {
+                        if (this.controller.subchunkIndex >= 0)
+                        {
+                            if (chunk.area.subChunks.Count > this.controller.subchunkIndex)
+                            {
+                                var pos = chunk.area.subChunks[this.controller.subchunkIndex].centerPosition;
+                                this.chunkGizmo.transform.SetPosition(new Vector3(pos));
+                                this.chunkGizmo.transform.SetScale(Vector3.One * 32.0f);
+
+                                Debug.Log(chunk.area.subChunks[this.controller.subchunkIndex].X + " " + chunk.area.subChunks[this.controller.subchunkIndex].Y);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        public void Render(Shader shader)
+        public void RenderTerrain(Shader shader)
         {
             if (this.activeChunks == null) return;
 
@@ -193,7 +222,20 @@ namespace ProjectWS.Engine.World
 
             foreach (KeyValuePair<Vector2, Chunk> chunk in this.activeChunks)
             {
-                chunk.Value.Render(shader);
+                chunk.Value.RenderTerrain(shader);
+            }
+        }
+
+        public void RenderWater(Shader shader)
+        {
+            if (this.activeChunks == null) return;
+
+            GL.Disable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
+
+            foreach (KeyValuePair<Vector2, Chunk> chunk in this.activeChunks)
+            {
+                chunk.Value.RenderWater(shader);
             }
         }
 

@@ -57,7 +57,7 @@ namespace ProjectWS.Engine.World
 
         public int GetLoDQuadrant(int index) => this.lodQuadrants[index];
 
-        public void Render(Shader shader)
+        public void RenderTerrain(Shader terrainShader)
         {
             if (!this.isVisible)
                 return;
@@ -69,13 +69,13 @@ namespace ProjectWS.Engine.World
                     bool rendered = false;
                     if (this.lod0Available)
                     {
-                        RenderLod0(shader);
+                        RenderLod0Terrain(terrainShader);
                         rendered = true;
                     }
 
                     if (this.lod1Available && !rendered)
                     {
-                        RenderLod1();
+                        RenderLod1Terrain();
                         rendered = true;
                     }
                 }
@@ -83,13 +83,45 @@ namespace ProjectWS.Engine.World
                 {
                     if (this.lod1Available)
                     {
-                        RenderLod1();
+                        RenderLod1Terrain();
                     }
                 }
             }
         }
 
-        void RenderLod0(Shader shader)
+        public void RenderWater(Shader terrainShader)
+        {
+            if (!this.isVisible)
+                return;
+
+            if (this.lod != -1)
+            {
+                if (this.lod == 0)
+                {
+                    bool rendered = false;
+                    if (this.lod0Available)
+                    {
+                        RenderLod0Water(terrainShader);
+                        rendered = true;
+                    }
+
+                    if (this.lod1Available && !rendered)
+                    {
+                        RenderLod1Water();
+                        rendered = true;
+                    }
+                }
+                else if (this.lod == 1)
+                {
+                    if (this.lod1Available)
+                    {
+                        RenderLod1Water();
+                    }
+                }
+            }
+        }
+
+        void RenderLod0Terrain(Shader shader)
         {
             if (this.area == null) return;
 
@@ -105,39 +137,38 @@ namespace ProjectWS.Engine.World
 
                     this.area.subChunks[i].Render(shader);
                 }
+            }
+        }
 
-                /*
+        void RenderLod0Water(Shader shader)
+        {
+            if (this.area == null) return;
+
+            for (int i = 0; i < this.area.subChunks.Count; i++)
+            {
+                if (!this.area.subChunks[i].isVisible)
+                    continue;
+
                 if (this.area.subChunks[i].hasWater)
                 {
                     for (int j = 0; j < this.area.subChunks[i].waters.Length; j++)
                     {
-                        Graphics.DrawMesh(this.area.subChunks[i].waters[j].mesh, Matrix4x4.identity, this.area.subChunks[i].waters[j].material, 0, cam.camera, 0);
+                        this.area.subChunks[i].waters[j].Render(shader);
                     }
                 }
-
-                if (this.area.subChunks[i].propUniqueIDs != null)
-                {
-                    for (int j = 0; j < this.area.subChunks[i].propUniqueIDs.Length; j++)
-                    {
-                        var uuid = this.area.subChunks[i].propUniqueIDs[j];
-                        if (this.area.uuidPropMap.TryGetValue(uuid, out Data.Area.Prop pData))
-                        {
-                            if (pData.modelType == Data.Area.Prop.ModelType.M3)
-                            {
-                                if (this.world.props.TryGetValue(pData.path, out Prop prop))
-                                {
-                                    prop.Render(cam.camera);
-                                    this.world.propsRendered += prop.instances.Count;
-                                }
-                            }
-                        }
-                    }
-                }
-                */
             }
         }
 
-        void RenderLod1()
+
+        void RenderLod1Terrain()
+        {
+            if (this.areaLow != null)
+            {
+
+            }
+        }
+
+        void RenderLod1Water()
         {
             if (this.areaLow != null)
             {

@@ -8,6 +8,8 @@ namespace ProjectWS.Engine.Data
         public partial class SubChunk
         {
             public int index;
+            public int X;
+            public int Y;
             public Flags flags;
             public ushort[] heightMap;
             public uint[] textureIDs;
@@ -16,6 +18,7 @@ namespace ProjectWS.Engine.Data
             public ushort[] unknownMap;
             public ushort[] lodHeightMap;
             public ushort[] lodHeightRange;     // [0] Minimum, [1] Maximum
+            public byte[] unknownMap2;  // Seems to be a layer blend adjust map (gets added to blendMap in shader)
 
 
             public uint[] propUniqueIDs;
@@ -42,18 +45,14 @@ namespace ProjectWS.Engine.Data
             // Reference //
             public World.Chunk chunk;
 
-            public SubChunk(BinaryReader br, World.Chunk chunk, int index, int lod)
+            public SubChunk(BinaryReader br, World.Chunk chunk, int index, int lod, bool areaCompressed)
             {
                 this.minHeight = ushort.MaxValue;
                 this.maxHeight = 0;
                 this.chunk = chunk;
                 uint subchunkSize = br.ReadUInt32();
-                if (subchunkSize > br.BaseStream.Length)
-                {
-                    br.BaseStream.Position -= 4;
-                    subchunkSize = br.ReadUInt16();
-                    ushort unk = br.ReadUInt16();
-                }
+                if (!areaCompressed)
+                    subchunkSize = subchunkSize & 0xFFFFFF;
 
                 long save = br.BaseStream.Position;
                 this.index = index;
@@ -100,7 +99,7 @@ namespace ProjectWS.Engine.Data
                 if (this.flags.HasFlag(Flags.hasColorMap))
                 {
                     this.colorMap = new byte[65 * 65 * 4];
-                    for (int i = 0; i < this.colorMap.Length; i++)
+                    for (int i = 0; i < 65 * 65; i++)
                     {
                         ushort val = br.ReadUInt16();
                     }
@@ -154,6 +153,7 @@ namespace ProjectWS.Engine.Data
                 // 4225 bytes
                 if (this.flags.HasFlag(Flags.hasShadowMap))
                 {
+                    Debug.Log("Shadow map");
                     br.ReadBytes(65 * 65);
                 }
 
@@ -198,6 +198,7 @@ namespace ProjectWS.Engine.Data
                 // Unknown Map DXT1 //
                 if (this.flags.HasFlag(Flags.hasUnkMap0))
                 {
+                    Debug.Log("ye0");
                     br.ReadBytes(2312);
                 }
 
@@ -223,7 +224,7 @@ namespace ProjectWS.Engine.Data
                 // Unknown Map DXT1 //
                 if (this.flags.HasFlag(Flags.hasUnkMap1))
                 {
-                    br.ReadBytes(2312);
+                    this.unknownMap2 = br.ReadBytes(2312);
                 }
 
                 // Unknown Map DXT1 //
@@ -235,6 +236,7 @@ namespace ProjectWS.Engine.Data
                 // Unknown Map DXT1 //
                 if (this.flags.HasFlag(Flags.hasUnkMap3))
                 {
+                    Debug.Log("ye2");
                     br.ReadBytes(2312);
                 }
 
@@ -307,6 +309,7 @@ namespace ProjectWS.Engine.Data
                 // Unknown Map DXT1 //
                 if (this.flags.HasFlag(Flags.hasUnkMap4))
                 {
+                    Debug.Log("yeA");
                     br.ReadBytes(2312);
                 }
 
@@ -362,6 +365,8 @@ namespace ProjectWS.Engine.Data
                 // Calc Model Matrix
                 int chunkX = index % 16;
                 int chunkY = index / 16;
+                this.X = chunkX;
+                this.Y = chunkY;
                 this.subCoords = (this.chunk.coords * 16) + new Vector2(chunkX, chunkY);
                 Vector3 subchunkRelativePosition = new Vector3(chunkX * 32f, 0, chunkY * 32f);
                 this.matrix = Matrix4.CreateTranslation(subchunkRelativePosition);
@@ -370,14 +375,14 @@ namespace ProjectWS.Engine.Data
                 // Calc AABB
                 float hMin = this.mesh.minHeight;
                 float hMax = this.mesh.maxHeight;
-                this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, -16f);
+                this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, 16f);
                 this.AABB = new Data.BoundingBox(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
                 this.cullingAABB = new Data.BoundingBox(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
             }
 
-            internal void Render(Shader shader)
+            internal void Render(Shader terrainShader)
             {
-                this.material.SetToShader(shader);
+                this.material.SetToShader(terrainShader);
                 this.mesh.Draw();
             }
 
@@ -390,8 +395,13 @@ namespace ProjectWS.Engine.Data
                 this.material.Build();
 
                 // Water //
-                //if (this.waters != null && this.hasWater)
-                //    BuildWater();
+                if (this.waters != null && this.hasWater)
+                {
+                    for (int i = 0; i < this.waters.Length; i++)
+                    {
+                        this.waters[i].Build();
+                    }
+                }
 
                 // Curd test //
                 // Seem to be some sort of paths or poligonal areas
@@ -403,14 +413,6 @@ namespace ProjectWS.Engine.Data
                     go.transform.localScale = Vector3.one * 10f;
                 }
                 */
-            }
-
-            void BuildWater()
-            {
-                for (int i = 0; i < this.waters.Length; i++)
-                {
-                    this.waters[i].Build();
-                }
             }
         }
     }

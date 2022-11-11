@@ -32,6 +32,7 @@ namespace ProjectWS.TestArea
 
             //CompareBetaAndRetailTextures();
             //FindBoneFlags();
+            //TestSkyFile();
         }
 
         void OnDataLoaded(Engine.Data.GameData data)
@@ -66,11 +67,13 @@ namespace ProjectWS.TestArea
         {
             var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Model", 1, 1);
             //string path0 = @"Art\Character\Chua\Male\Chua_M.m3";
-            string path0 = @"Art\Creature\AgressorBot\AgressorBot.m3";
+            //string path0 = @"Art\Creature\AgressorBot\AgressorBot.m3";
             //string path0 = @"Art\Prop\Constructed\Quest\Taxi\TaxiKiosk\PRP_Taxi_Kiosk_000.m3";
             //string path0 = @"Art\Prop\Constructed\Ship\Defiance\PRP_Ship_DefianceTransport_000.m3";
             //string path1 = @"Art\Prop\Natural\Tree\Deciduous_RootyMangrove\PRP_Tree_Deciduous_RootyMangrove_Blue_000.m3";
             //string path1 = @"Art\Creature\Asura\Asura.m3";
+
+            string path0 = @"Art\Sky\SkyBox\DemoSkybox.m3";
 
             var modelRenderer = renderer as Engine.Rendering.ModelRenderer;
             modelRenderer.objects.Add(new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine));
