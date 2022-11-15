@@ -43,6 +43,17 @@ namespace ProjectWS.Engine.Data.Extensions
             return new Vector4(br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f);
         }
 
+        public static Vector4 ReadColor(this BinaryReader br)
+        {
+            return new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+        }
+
+        public static Vector4 ReadVector4(this BinaryReader br)
+        {
+            return new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+        }
+
+
         public static string ReadWString(this BinaryReader br)
         {
             byte[] array = new byte[0];
@@ -78,10 +89,18 @@ namespace ProjectWS.Engine.Data.Extensions
 
         public static void SkipChunk(this BinaryReader br, string chunkID, int chunkSize, string type)
         {
-#if UNITY_EDITOR
             Debug.LogWarning($"{type} | Skipping chunk : {chunkID}");
-#endif
             br.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+        }
+
+        public static void Align(this BinaryReader br, int alignment = 4)
+        {
+            int loc = (int)br.BaseStream.Position;
+            int pad = (alignment - (loc % alignment));
+            if (pad != 0 && pad < alignment)
+            {
+                br.BaseStream.Position += pad;
+            }
         }
     }
 }

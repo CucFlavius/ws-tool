@@ -47,7 +47,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
         {
             this.state = Manager.ResourceState.IsLoading;
 
-            //Debug.Log(this.manager.engine.cacheLocation + this.filePath);
+            Debug.Log(this.manager.engine.cacheLocation + this.filePath);
 
             if (File.Exists(this.manager.engine.cacheLocation + this.filePath))
             {

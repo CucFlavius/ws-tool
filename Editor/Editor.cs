@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace ProjectWS.Editor
 {
@@ -28,6 +29,8 @@ namespace ProjectWS.Editor
         public Dictionary<int, GLWpfControl> controls;
         public Dictionary<int, WorldRendererPane> worldRendererPanes;
         public Dictionary<int, ModelRendererPane> modelRendererPanes;
+
+        public SkyEditorPane skyEditorPane;
 
         FPSCounter? fps;
 
@@ -361,6 +364,19 @@ namespace ProjectWS.Editor
             return renderer;
         }
 
+        public void CreateSkyEditorPane(MainWindow window)
+        {
+            this.skyEditorPane = new SkyEditorPane();
+            this.skyEditorPane.engine = this.engine;
+            var layoutAnchorable = new LayoutAnchorable();
+            layoutAnchorable.Title = "Sky Editor";
+            layoutAnchorable.ContentId = "SkyEditorPane";
+            layoutAnchorable.Content = this.skyEditorPane;
+
+            LayoutAnchorablePane layoutAnchorablePane = new LayoutAnchorablePane(layoutAnchorable);
+
+            window.LayoutAnchorablePaneGroup.Children.Add(layoutAnchorablePane);
+        }
 
         void OpenTkControl_OnRender(TimeSpan delta, int ID)
         {
@@ -377,14 +393,7 @@ namespace ProjectWS.Editor
         void OpenTkControl_OnLoaded(object sender, RoutedEventArgs e, Renderer renderer, Grid control)
         {
             renderer.SetDimensions(0, 0, (int)control.ActualWidth, (int)control.ActualHeight);
-            renderer.modelShader = new Shader("shaders/shader_vert.glsl", "shaders/shader_frag.glsl");
-            renderer.shader = renderer.modelShader;
-            renderer.wireframeShader = new Shader("shaders/wireframe_vert.glsl", "shaders/wireframe_frag.glsl");
-            renderer.normalShader = new Shader("shaders/normal_vert.glsl", "shaders/normal_frag.glsl");
-            renderer.terrainShader = new Shader("shaders/terrain_vert.glsl", "shaders/terrain_frag.glsl");
-            renderer.waterShader = new Shader("shaders/water_vert.glsl", "shaders/water_frag.glsl");
-            renderer.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
-            renderer.infiniteGridShader = new Shader("shaders/infinite_grid_vert.glsl", "shaders/infinite_grid_frag.glsl");
+            renderer.Load();
         }
 
         void OpenTkControl_OnSizeChanged(object sender, SizeChangedEventArgs e, Renderer renderer)

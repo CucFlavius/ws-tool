@@ -33,67 +33,67 @@ namespace ProjectWS.Engine.Input
 
         public Input(Engine engine)
         {
-            keyStates = new Dictionary<Keys, bool>();
-            lastKeyStates = new Dictionary<Keys, bool>();
+            this.keyStates = new Dictionary<Keys, bool>();
+            this.lastKeyStates = new Dictionary<Keys, bool>();
             //this.mousePos = new Vector3();
-            mousePosPerControl = new Dictionary<int, Vector3>();
-            mouseLastPos = new Vector3();
-            mouseDiff = new Vector3();
+            this.mousePosPerControl = new Dictionary<int, Vector3>();
+            this.mouseLastPos = new Vector3();
+            this.mouseDiff = new Vector3();
             this.engine = engine;
         }
 
         public void Update()
         {
-            var mousePos = mousePosPerControl[engine.focusedRendererID];
+            var mousePos = this.mousePosPerControl[this.engine.focusedRendererID];
 
             // Get Mouse State
-            mouseDiff.X = mousePos.X - mouseLastPos.X;
-            mouseDiff.Y = mouseLastPos.Y - mousePos.Y; // reversed since y-coordinates go from bottom to top
-            mouseDiff.Z = mousePos.Z - mouseLastPos.Z;
+            this.mouseDiff.X = mousePos.X - this.mouseLastPos.X;
+            this.mouseDiff.Y = this.mouseLastPos.Y - mousePos.Y; // reversed since y-coordinates go from bottom to top
+            this.mouseDiff.Z = mousePos.Z - this.mouseLastPos.Z;
 
-            mouseLastPos.X = mousePos.X;
-            mouseLastPos.Y = mousePos.Y;
-            mouseLastPos.Z = mousePos.Z;
+            this.mouseLastPos.X = mousePos.X;
+            this.mouseLastPos.Y = mousePos.Y;
+            this.mouseLastPos.Z = mousePos.Z;
 
             // Mouse button state changes
-            if (LMB != LMBPrevious)
+            if (this.LMB != this.LMBPrevious)
             {
-                if (LMB)
-                    LMBClicked = -1;
+                if (this.LMB)
+                    this.LMBClicked = -1;
 
-                LMBPrevious = LMB;
+                this.LMBPrevious = this.LMB;
             }
 
-            if (RMB != RMBPrevious)
+            if (this.RMB != this.RMBPrevious)
             {
-                if (RMB)
-                    RMBClicked = -1;
+                if (this.RMB)
+                    this.RMBClicked = -1;
 
-                RMBPrevious = RMB;
+                this.RMBPrevious = this.RMB;
             }
 
-            if (MMB != MMBPrevious)
+            if (this.MMB != this.MMBPrevious)
             {
-                if (MMB)
-                    MMBClicked = -1;
+                if (this.MMB)
+                    this.MMBClicked = -1;
 
-                MMBPrevious = MMB;
+                this.MMBPrevious = this.MMB;
             }
         }
 
         public bool GetKeyDown(Keys key)
         {
-            return keyStates[key];
+            return this.keyStates[key];
         }
 
         public bool GetKeyPress(Keys key)
         {
-            if (lastKeyStates.ContainsKey(key))
+            if (this.lastKeyStates.ContainsKey(key))
             {
-                if (keyStates[key] != lastKeyStates[key])
+                if (this.keyStates[key] != this.lastKeyStates[key])
                 {
-                    lastKeyStates[key] = keyStates[key];
-                    return keyStates[key];
+                    this.lastKeyStates[key] = this.keyStates[key];
+                    return this.keyStates[key];
                 }
                 else
                 {
@@ -102,19 +102,19 @@ namespace ProjectWS.Engine.Input
             }
             else
             {
-                lastKeyStates[key] = keyStates[key];
+                this.lastKeyStates[key] = keyStates[key];
                 return keyStates[key];
             }
         }
 
         public Vector3 GetMousePosition()
         {
-            return mousePosPerControl[engine.focusedRendererID];
+            return this.mousePosPerControl[this.engine.focusedRendererID];
         }
 
         public Vector3 GetMouseDiff()
         {
-            return mouseDiff;
+            return this.mouseDiff;
         }
     }
 }

@@ -10,6 +10,7 @@ namespace ProjectWS.Engine.Objects
 {
     public class GameObject
     {
+        public bool visible = true;
         public Components.Transform transform;
         public List<Components.Component> components;
 

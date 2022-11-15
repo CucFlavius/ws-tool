@@ -46,5 +46,30 @@ namespace ProjectWS.Engine.Rendering
         {
             GL.Viewport(this.x, this.y, this.width, this.height);
         }
+
+
+        public bool PointToScreen(Vector3 point, out Vector2 screen)
+        {
+            var coord = new Vector4(point, 1.0f);
+
+            // OpenTK matrices use row instead of column vectors so multiplication order is reversed
+            coord *= this.mainCamera.view * this.mainCamera.projection;
+
+            if (coord.W == 0)
+            {
+                screen = Vector2.Zero;
+                return false;
+            }
+
+            coord.X /= coord.W;
+            coord.Y /= coord.W;
+            coord.Z /= coord.W;
+
+            coord.X = (coord.X + 1.0f) * this.width * 0.5f;
+            coord.Y = this.height - ((coord.Y + 1.0f) * this.height * 0.5f);
+            screen = new Vector2(coord.X, coord.Y);
+
+            return true;
+        }
     }
 }

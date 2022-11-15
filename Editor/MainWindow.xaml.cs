@@ -50,6 +50,8 @@ namespace ProjectWS.Editor
 
             // Create main render/update loop renderer
             this.editor.CreateRendererPane(this, "World", 0, 0);
+
+			this.editor.CreateSkyEditorPane(this);
         }
 
 		#region FocusedElement
@@ -100,7 +102,7 @@ namespace ProjectWS.Editor
 				{
 					this.editor.focusedControl = focusedControl;
 
-					foreach (var item in this.editor.controls)
+                    foreach (var item in this.editor.controls)
 					{
 						if (item.Value == focusedControl)
 						{
@@ -120,5 +122,27 @@ namespace ProjectWS.Editor
 			if (MessageBox.Show("Are you sure you want to close the document?", "AvalonDock Sample", MessageBoxButton.YesNo) == MessageBoxResult.No)
 				e.Cancel = true;
 		}
-    }
+
+		private void Window_Loaded(object sender, RoutedEventArgs e)
+		{
+			this.Top = Engine.Engine.settings.window.top;
+            this.Left = Engine.Engine.settings.window.left;
+            this.Width = Engine.Engine.settings.window.width;
+            this.Height = Engine.Engine.settings.window.height;
+
+			this.WindowState = (WindowState)Engine.Engine.settings.window.windowState;
+        }
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			Engine.Engine.settings.window.top = this.Top;
+            Engine.Engine.settings.window.left = this.Left;
+            Engine.Engine.settings.window.width = this.Width;
+            Engine.Engine.settings.window.height = this.Height;
+
+            Engine.Engine.settings.window.windowState = (int)this.WindowState;
+
+			SettingsSerializer.Save();
+        }
+	}
 }

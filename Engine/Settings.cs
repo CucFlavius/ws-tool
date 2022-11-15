@@ -5,6 +5,7 @@ namespace ProjectWS.Engine
 {
     public class Settings
     {
+        public Window? window { get; set; }
         public WorldRenderer? wRenderer { get; set; }
 
         public class WorldRenderer
@@ -31,9 +32,28 @@ namespace ProjectWS.Engine
             }
         }
 
+        public class Window
+        {
+            public int windowState { get; set; }
+            public double left { get; set; }
+            public double top { get; set; }
+            public double height { get; set; }
+            public double width { get; set; }
+
+            public Window()
+            {
+                this.windowState = 0;
+                this.left = 0;
+                this.top = 0;
+                this.height = 720;
+                this.width = 1280;
+            }
+        }
+
         public Settings()
         {
             this.wRenderer = new WorldRenderer();
+            this.window = new Window();
         }
     }
 }

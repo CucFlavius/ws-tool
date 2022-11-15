@@ -34,7 +34,6 @@ namespace Editor
         {
             InitializeComponent();
 
-
             this.viewModeComboBox.DataContext = this;
             this.viewModes = new ObservableCollection<string>();
 

@@ -4,7 +4,8 @@ namespace ProjectWS.Engine.Database.Definitions
 	{
 		public override string GetFileName() => "World";
 		public override uint GetID() => this.ID;
-		
+
+
 		public uint ID;
 		public string assetPath;
 		public uint flags;

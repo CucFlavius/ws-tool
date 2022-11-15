@@ -10,7 +10,6 @@ namespace ProjectWS.Engine.Rendering
         public Engine engine;
         public Input.Input input;
         public bool rendering = false;
-        public bool mouseOver = false;
         public int x;
         public int y;
         public int width;
@@ -24,6 +23,7 @@ namespace ProjectWS.Engine.Rendering
         public Shader waterShader;
         public Shader lineShader;
         public Shader infiniteGridShader;
+        public Shader fontShader;
 
         public List<Viewport>? viewports;
         public List<Objects.GameObject>? gizmos;
@@ -37,6 +37,7 @@ namespace ProjectWS.Engine.Rendering
             this.viewports = new List<Viewport>();
         }
 
+        public abstract void Load();
         public abstract void Update(float deltaTime);
         public abstract void Render();
 

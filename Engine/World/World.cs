@@ -1,8 +1,13 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using ProjectWS.Engine.Data.Extensions;
+using ProjectWS.Engine.Database.Definitions;
+using ProjectWS.Engine.Database;
 using ProjectWS.Engine.Objects.Gizmos;
 using ProjectWS.Engine.Rendering;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using ProjectWS.Engine.Data;
 
 namespace ProjectWS.Engine.World
 {
@@ -19,20 +24,22 @@ namespace ProjectWS.Engine.World
         // Refs
         public Engine engine;
         Rendering.WorldRenderer renderer;
+        public Environment environment;
 
         // Data
         Data.GameData gameData;
-        Database.Tables database;
+        public Database.Tables database;
 
         // Map
         uint worldUUID;
         uint loadedMapID;
         uint loadedWorldID;
-        public Dictionary<Vector2, Chunk> chunks;
-        public Dictionary<Vector2, Chunk> activeChunks;
+        public Dictionary<Vector2i, Chunk> chunks;
+        public Dictionary<Vector2i, Chunk> activeChunks;
         Dictionary<int, Chunk> areaIDtoChunk;
         List<Data.Submesh> distanceSortedSubchunksBuffer;
         ChunkDistanceComparer chunkComparer;
+        uint currentWorldSkyID = 0;
 
         // Prop
         List<string> loadedProps;
@@ -40,7 +47,7 @@ namespace ProjectWS.Engine.World
         HashSet<uint> culledUUIDs;
 
         // Controller
-        Controller controller;
+        public Controller controller;
 
         // Culling
         Thread cullingThread;
@@ -51,48 +58,118 @@ namespace ProjectWS.Engine.World
         volatile bool cullTaskUpdate;
 
         // Tests
-        BoxGizmo chunkGizmo;
+        public BoxGizmo subchunkGizmo;
 
         #endregion
 
         public World(Engine engine, uint worldUUID = 0, bool setActive = false)
         {
-            this.chunks = new Dictionary<Vector2, Chunk>();
-            this.activeChunks = new Dictionary<Vector2, Chunk>();
+            this.chunks = new Dictionary<Vector2i, Chunk>();
+            this.activeChunks = new Dictionary<Vector2i, Chunk>();
             this.areaIDtoChunk = new Dictionary<int, Chunk>();
             this.distanceSortedSubchunksBuffer = new List<Data.Submesh>();
             this.chunkComparer = new ChunkDistanceComparer();
             //this.loadedProps = new Dictionary<string, Prop>();
             this.controller = new Controller(this);
+            this.controller.onChunkPositionChange = OnChunkPositionChange;
+            this.controller.onSubchunkPositionChange = OnSubchunkPositionChange;
+            this.controller.onWorldPositionChange = OnWorldPositionChange;
             this.cullingStopwatch = new System.Diagnostics.Stopwatch();
             this.culledUUIDs = new HashSet<uint>();
+            this.environment = new Environment(this);
 
             this.engine = engine;
             this.gameData = engine.data;
-            this.database = this.gameData.database;
+            if (this.gameData != null)
+                this.database = this.gameData.database;
             this.worldUUID = worldUUID;
             this.loadedMapID = 0;
 
             if (engine.worlds.ContainsKey(worldUUID))
                 this.worldUUID = (uint)Utilities.Random();
             engine.worlds.Add(this.worldUUID, this);
+
             if (setActive)
             {
                 if (FindRenderer())
                 {
-                    Debug.Log("Set World");
-                    this.renderer.SetWorld(this);
+                    if (this.renderer != null)
+                    {
+                        Debug.Log("Set World");
+                        this.renderer.SetWorld(this);
+                    }
                 }
             }
 
-            this.chunkGizmo = new BoxGizmo(new Vector4(1, 1, 0, 1));
-            if (this.renderer.gizmos != null)
-                this.renderer.gizmos.Add(this.chunkGizmo);
-            if (this.renderer.engine != null)
-                this.renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.chunkGizmo));
+            this.subchunkGizmo = new BoxGizmo(new Vector4(1, 1, 0, 1));
+            if (this.renderer != null)
+            {
+                if (this.renderer.gizmos != null)
+                    this.renderer.gizmos.Add(this.subchunkGizmo);
+                if (this.renderer.engine != null)
+                    this.renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.subchunkGizmo));
+            }
         }
 
-        public void TeleportToWorldLocation(uint ID)
+        public void CreateNew(string worldName)
+        {
+            //string installLocation = @"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\";
+            //var worldTblPath = installLocation + @"Data\DB\World.tbl";
+            //var worldTbl = Tbl<Database.Definitions.World>.Open(worldTblPath);
+
+            var worldTbl = this.gameData.database.world;
+
+            // WorldLocation2 - Find available ID
+            uint newWorldID = (uint)worldTbl.lookup.Count;//(worldTbl.header.maxID + 1);
+            
+            // Create DB entry
+            worldTbl.Add(new Database.Definitions.World()
+            {
+                ID = newWorldID,
+                assetPath = $"Map\\{worldName}",
+                flags = 0,
+                type = 0,
+                screenPath = "",
+                screenModelPath = "",
+                //
+                chunkBounds00 = 0,
+                chunkBounds01 = 0,
+                chunkBounds02 = 0,
+                chunkBounds03 = 0,
+                //
+                plugAverageHeight = 0,
+                localizedTextIdName = 0,
+                minItemLevel = 0,
+                maxItemLevel = 0,
+                primeLevelOffset = 0,
+                primeLevelMax = 0,
+                veteranTierScalingType = 0,
+                heroismMenaceLevel = 0,
+                rewardRotationContentId = 0
+            }, newWorldID);
+            var mapDir = $"{this.gameData.gamePath}\\Data\\Map\\{worldName}";
+            if (!Directory.Exists(mapDir))
+                Directory.CreateDirectory(mapDir);
+
+            Teleport(0, 0, 0, newWorldID, 1);
+
+            CreateChunk(new Vector2i(64, 64), worldName);
+
+            //worldTbl.Write();
+        }
+
+        public void CreateChunk(Vector2i coords, string worldName)
+        {
+            var mapDir = $"{this.gameData.gamePath}\\Data\\Map\\{worldName}";
+            var chunk = new Chunk(coords, this.gameData, this);
+            string x = coords.X.ToString("X").ToLower();
+            string y = coords.Y.ToString("X").ToLower();
+            chunk.areaFilePath = $"{mapDir}\\{worldName}.{y}{x}.area";
+            var area = new Area(chunk, 0);
+            area.Create();
+        }
+
+        public void TeleportToWorldLocation(uint ID, int projectID)
         {
             var record = this.database.worldLocation.Get(ID);
 
@@ -102,10 +179,10 @@ namespace ProjectWS.Engine.World
                 return;
             }
 
-            Teleport(record.position0, record.position1, record.position2, record.worldId);
+            Teleport(record.position0, record.position1, record.position2, record.worldId, projectID);
         }
 
-        public void Teleport(float x, float y, float z, uint worldID)
+        public void Teleport(float x, float y, float z, uint worldID, int projectID)
         {
             Debug.Log($"Teleport : {x}, {y}, {z}, {worldID}");
             // Move camera to spatial position first
@@ -120,10 +197,10 @@ namespace ProjectWS.Engine.World
             camController.Teleport(this.controller.worldPosition.X, this.controller.worldPosition.Y, this.controller.worldPosition.Z);
 
             // Load world around spawn position
-            LoadWorld(worldID);
+            LoadWorld(worldID, projectID);
         }
 
-        public void LoadWorld(uint ID)
+        public void LoadWorld(uint ID, int projectID)
         {
             var record = this.database.world.Get(ID);
 
@@ -140,8 +217,7 @@ namespace ProjectWS.Engine.World
 
             this.loadedWorldID = ID;
 
-
-            List<Vector2> availableChunks = CreateChunks(record.assetPath);
+            List<Vector2> availableChunks = CreateChunks(record.assetPath, projectID);
 
             if (availableChunks == null)
             {
@@ -188,29 +264,6 @@ namespace ProjectWS.Engine.World
 
             CullingMT();
             TasksUpdate();
-
-            //var pos = this.controller.worldPosition - new Vector3(0, 2, 0);
-            //this.chunkGizmo.transform.SetPosition(pos);
-            if (this.controller != null)
-            {
-                if (this.chunks.TryGetValue(this.controller.chunkPosition, out var chunk))
-                {
-                    if (chunk.area != null && chunk.area.subChunks != null)
-                    {
-                        if (this.controller.subchunkIndex >= 0)
-                        {
-                            if (chunk.area.subChunks.Count > this.controller.subchunkIndex)
-                            {
-                                var pos = chunk.area.subChunks[this.controller.subchunkIndex].centerPosition;
-                                this.chunkGizmo.transform.SetPosition(new Vector3(pos));
-                                this.chunkGizmo.transform.SetScale(Vector3.One * 32.0f);
-
-                                Debug.Log(chunk.area.subChunks[this.controller.subchunkIndex].X + " " + chunk.area.subChunks[this.controller.subchunkIndex].Y);
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         public void RenderTerrain(Shader shader)
@@ -220,9 +273,10 @@ namespace ProjectWS.Engine.World
             GL.Disable(EnableCap.Blend);
             GL.Enable(EnableCap.DepthTest);
 
-            foreach (KeyValuePair<Vector2, Chunk> chunk in this.activeChunks)
+            foreach (KeyValuePair<Vector2i, Chunk> chunk in this.activeChunks)
             {
                 chunk.Value.RenderTerrain(shader);
+                chunk.Value.RenderDebug();
             }
         }
 
@@ -233,7 +287,7 @@ namespace ProjectWS.Engine.World
             GL.Disable(EnableCap.Blend);
             GL.Enable(EnableCap.DepthTest);
 
-            foreach (KeyValuePair<Vector2, Chunk> chunk in this.activeChunks)
+            foreach (KeyValuePair<Vector2i, Chunk> chunk in this.activeChunks)
             {
                 chunk.Value.RenderWater(shader);
             }
@@ -296,6 +350,24 @@ namespace ProjectWS.Engine.World
             }
 
             return false;
+        }
+
+        void OnChunkPositionChange(Vector2i cPos)
+        {
+
+        }
+
+        void OnSubchunkPositionChange(int index)
+        {
+            if (this.environment != null)
+            {
+                this.environment.SubchunkChange();
+            }
+        }
+
+        void OnWorldPositionChange(Vector3 pos)
+        {
+
         }
 
         /// <summary>
@@ -625,47 +697,106 @@ namespace ProjectWS.Engine.World
             */
         }
 
-        List<Vector2> CreateChunks(string assetPath)
+        List<Vector2>? CreateChunks(string assetPath, int projectID)
         {
             List<Vector2> list = new List<Vector2>();
-            var mapDirectory = $"{Data.Archive.rootBlockName}\\{assetPath}";
-            Dictionary<string, Data.Block.FileEntry> allFilesInMapDir = this.gameData.GetFileEntries(mapDirectory);
-            if (allFilesInMapDir == null) return null;
 
-            string fileName = Path.GetFileName(assetPath);
-
-            // Area Low Files //
-            Dictionary<Vector2, Data.Block.FileEntry> allAreaLowFiles = new Dictionary<Vector2, Data.Block.FileEntry>();
-            for (int i = 0; i < 16; i++)
+            if (projectID == -1)
             {
-                for (int j = 0; j < 16; j++)
+                var mapDirectory = $"{Data.Archive.rootBlockName}\\{assetPath}";
+
+                Dictionary<string, Data.Block.FileEntry> allFilesInMapDir = this.gameData.GetFileEntries(mapDirectory);
+
+                if (allFilesInMapDir == null) return null;
+
+                string fileName = Path.GetFileName(assetPath);
+
+                // Area Low Files //
+                Dictionary<Vector2, Data.Block.FileEntry> allAreaLowFiles = new Dictionary<Vector2, Data.Block.FileEntry>();
+                for (int i = 0; i < 16; i++)
                 {
-                    string x = i.ToString("X").ToLower();
-                    string y = j.ToString("X").ToLower();
-                    string path = $"{fileName}_Low.{y}{x}.area";
-                    if (allFilesInMapDir.ContainsKey(path))
+                    for (int j = 0; j < 16; j++)
                     {
-                        Vector2 coords = new Vector2(i, j);
-                        allAreaLowFiles.Add(coords, allFilesInMapDir[path]);
+                        string x = i.ToString("X").ToLower();
+                        string y = j.ToString("X").ToLower();
+                        string path = $"{fileName}_Low.{y}{x}.area";
+                        if (allFilesInMapDir.ContainsKey(path))
+                        {
+                            Vector2 coords = new Vector2(i, j);
+                            allAreaLowFiles.Add(coords, allFilesInMapDir[path]);
+                        }
+                    }
+                }
+
+                for (int i = 0; i < WORLD_SIZE; i++)
+                {
+                    for (int j = 0; j < WORLD_SIZE; j++)
+                    {
+                        string x = i.ToString("X").ToLower();
+                        string y = j.ToString("X").ToLower();
+                        string path = $"{fileName}.{y}{x}.area";
+                        if (allFilesInMapDir.ContainsKey(path))
+                        {
+                            Vector2i coords = new Vector2i(i, j);
+                            list.Add(coords);
+
+                            // TODO : find which area low file belongs to this chunk and add the file reference to Chunk constructor
+
+                            this.chunks.Add(coords, new Chunk(coords, allFilesInMapDir[path], this.gameData, this));
+                        }
                     }
                 }
             }
-
-            for (int i = 0; i < WORLD_SIZE; i++)
+            else
             {
-                for (int j = 0; j < WORLD_SIZE; j++)
+                string mapDirectory = $"{this.gameData.gamePath}\\Data\\{assetPath}";
+
+                if (!Directory.Exists(mapDirectory))
+                    return null;
+
+                List<string> allFilesInMapDir = new List<string>(Directory.GetFiles(mapDirectory));
+
+                if (allFilesInMapDir == null)
                 {
-                    string x = i.ToString("X").ToLower();
-                    string y = j.ToString("X").ToLower();
-                    string path = $"{fileName}.{y}{x}.area";
-                    if (allFilesInMapDir.ContainsKey(path))
+                    Debug.LogWarning("No files in map dir.");
+                    return null;
+                }
+
+                string fileName = Path.GetFileName(assetPath);
+
+                // Area Low Files //
+                Dictionary<Vector2, string> allAreaLowFiles = new Dictionary<Vector2, string>();
+                for (int i = 0; i < 16; i++)
+                {
+                    for (int j = 0; j < 16; j++)
                     {
-                        Vector2 coords = new Vector2(i, j);
-                        list.Add(coords);
+                        string x = i.ToString("X").ToLower();
+                        string y = j.ToString("X").ToLower();
+                        string path = $"{mapDirectory}\\{fileName}_Low.{y}{x}.area";
+                        if (allFilesInMapDir.Contains(path))
+                        {
+                            Vector2 coords = new Vector2(i, j);
+                            allAreaLowFiles.Add(coords, path);
+                        }
+                    }
+                }
 
-                        // TODO : find which area low file belongs to this chunk and add the file reference to Chunk constructor
+                for (int i = 0; i < WORLD_SIZE; i++)
+                {
+                    for (int j = 0; j < WORLD_SIZE; j++)
+                    {
+                        string x = i.ToString("X").ToLower();
+                        string y = j.ToString("X").ToLower();
+                        string path = $"{mapDirectory}\\{fileName}.{y}{x}.area";
+                        if (allFilesInMapDir.Contains(path))
+                        {
+                            Vector2i coords = new Vector2i(i, j);
+                            list.Add(coords);
 
-                        this.chunks.Add(coords, new Chunk(coords, allFilesInMapDir[path], this.gameData, this));
+                            // TODO : find which area low file belongs to this chunk and add the file reference to Chunk constructor
+
+                            this.chunks.Add(coords, new Chunk(coords, path, this.gameData, this));
+                        }
                     }
                 }
             }

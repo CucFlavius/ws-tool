@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="MainWindow" Height="720" Width="1280">
+        Title="MainWindow" Height="720" Width="1280" Loaded="Window_Loaded" Closing="Window_Closing">
     <Grid x:Name="layoutRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -40,16 +40,16 @@
             </DockingManager.DocumentHeaderTemplate>
             <LayoutRoot PropertyChanged="OnLayoutRootPropertyChanged" x:Name="LayoutRoot">
                 <LayoutPanel Orientation="Horizontal">
-
                     <LayoutDocumentPaneGroup x:Name="LayoutDocumentPaneGroup">
                         <LayoutDocumentPane x:Name="LayoutDocumentPane">
                         </LayoutDocumentPane>
                     </LayoutDocumentPaneGroup>
-                    <LayoutAnchorablePaneGroup DockWidth="250">
+                    <LayoutAnchorablePaneGroup DockWidth="400" x:Name="LayoutAnchorablePaneGroup">
 
                     </LayoutAnchorablePaneGroup>
                 </LayoutPanel>
             </LayoutRoot>
         </DockingManager>
+ 
     </Grid>
 </Window>

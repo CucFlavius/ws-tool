@@ -22,6 +22,7 @@
 
             </ToolBar>
         </ToolBarTray>
+        <Button Content="Button" Name="TESTPoint" HorizontalAlignment="Left" Margin="0,0,0,0" Width="10" Height="10" VerticalAlignment="Top"/>
 
     </Grid>
 </UserControl>

@@ -12,11 +12,11 @@ namespace ProjectWS.Engine.World
     {
         static Random random;
 
-        public static Vector2 WorldToChunkCoords(Vector3 worldCoords)
+        public static Vector2i WorldToChunkCoords(Vector3 worldCoords)
         {
             int X = FloorToInt(64 + (worldCoords.X / World.AREA_SIZE));
             int Y = FloorToInt(64 + (worldCoords.Z / World.AREA_SIZE));
-            return new Vector2(X, Y);
+            return new Vector2i(X, Y);
         }
 
         public static Vector3 ChunkToWorldCoords(Vector2 chunkCoords)

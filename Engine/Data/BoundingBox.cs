@@ -20,6 +20,8 @@ namespace ProjectWS.Engine.Data
             this.center = center;
             this.extents = extents;
             this.size = this.extents * 2;
+            this.min = center - extents;
+            this.max = center + extents;
         }
 
         public BoundingBox(BinaryReader br)
@@ -35,13 +37,13 @@ namespace ProjectWS.Engine.Data
         {
             return new Vector3[]
             {
-                    new Vector3(center.X + extents.X, center.Y - extents.Y, center.Z - extents.Z),
-                    new Vector3(center.X - extents.X, center.Y - extents.Y, center.Z + extents.Z),
-                    new Vector3(center.X + extents.X, center.Y - extents.Y, center.Z + extents.Z),
-                    new Vector3(center.X - extents.X, center.Y + extents.Y, center.Z - extents.Z),
-                    new Vector3(center.X + extents.X, center.Y + extents.Y, center.Z - extents.Z),
-                    new Vector3(center.X - extents.X, center.Y + extents.Y, center.Z + extents.Z),
-                    new Vector3(center.X + extents.X, center.Y + extents.Y, center.Z + extents.Z)
+                new Vector3(center.X + extents.X, center.Y - extents.Y, center.Z - extents.Z),
+                new Vector3(center.X - extents.X, center.Y - extents.Y, center.Z + extents.Z),
+                new Vector3(center.X + extents.X, center.Y - extents.Y, center.Z + extents.Z),
+                new Vector3(center.X - extents.X, center.Y + extents.Y, center.Z - extents.Z),
+                new Vector3(center.X + extents.X, center.Y + extents.Y, center.Z - extents.Z),
+                new Vector3(center.X - extents.X, center.Y + extents.Y, center.Z + extents.Z),
+                new Vector3(center.X + extents.X, center.Y + extents.Y, center.Z + extents.Z)
             };
         }
 
@@ -205,7 +207,18 @@ namespace ProjectWS.Engine.Data
             IMDraw.WireBox3D(position, rotation, size, color);
         }
         */
-        /*
+
+        public Vector2 RayBoxIntersect(Vector3 rayOrigin, Vector3 rayDir)
+        {
+            Vector3 tMin = (this.min - rayOrigin) / rayDir;
+            Vector3 tMax = (this.max - rayOrigin) / rayDir;
+            Vector3 t1 = new Vector3(MathF.Min(tMin.X, tMax.X), MathF.Min(tMin.Y, tMax.Y), MathF.Min(tMin.Z, tMax.Z));
+            Vector3 t2 = new Vector3(MathF.Max(tMin.X, tMax.X), MathF.Max(tMin.Y, tMax.Y), MathF.Max(tMin.Z, tMax.Z));
+            float tNear = MathF.Max(MathF.Max(t1.X, t1.Y), t1.Z);
+            float tFar = MathF.Min(MathF.Min(t2.X, t2.Y), t2.Z);
+            return new Vector2(tNear, tFar);
+        }
+
         /// <summary>
         /// Check if ray intersects bounds
         /// This is faster than unity *.bounds.IntersectRay(ray)
@@ -213,25 +226,28 @@ namespace ProjectWS.Engine.Data
         /// </summary>
         /// <param name="ray">Ray to check</param>
         /// <returns>Intersection distance, if > 0 it intersects</returns>
-        public float RayBoxIntersect(Ray ray, Matrix4x4 transform)
+        public float RayBoxIntersect(Vector3 origin, Vector3 direction, Matrix4 transform)
         {
+            Vector3 tMin = this.min;
+            Vector3 tMax = this.max;
+            /*
             Vector3 scale = transform.ExtractScale();
-            Vector3 transformedMin = this.min;
-            Vector3 transformedMax = this.max;
-            transformedMin.Scale(scale);
-            transformedMax.Scale(scale);
-            transformedMin += transform.ExtractPosition();
-            transformedMax += transform.ExtractPosition();
+            Vector3 tMin = this.min;
+            Vector3 tMax = this.max;
+            tMin *= scale;
+            tMax *= scale;
+            tMin += transform.ExtractPosition();
+            tMax += transform.ExtractPosition();
+            */
+            Vector3 rpos = origin;
+            Vector3 rdir = direction;
 
-            Vector3 rpos = ray.origin;
-            Vector3 rdir = ray.direction;
-
-            float t1 = (transformedMin.X - rpos.x) / rdir.x;
-            float t2 = (transformedMax.X - rpos.x) / rdir.x;
-            float t3 = (transformedMin.Y - rpos.y) / rdir.y;
-            float t4 = (transformedMax.Y - rpos.y) / rdir.y;
-            float t5 = (transformedMin.Z - rpos.Z) / rdir.z;
-            float t6 = (transformedMax.Z - rpos.Z) / rdir.z;
+            float t1 = (tMin.X - rpos.X) / rdir.X;
+            float t2 = (tMax.X - rpos.X) / rdir.X;
+            float t3 = (tMin.Y - rpos.Y) / rdir.Y;
+            float t4 = (tMax.Y - rpos.Y) / rdir.Y;
+            float t5 = (tMin.Z - rpos.Z) / rdir.Z;
+            float t6 = (tMax.Z - rpos.Z) / rdir.Z;
 
             float aMin = t1 < t2 ? t1 : t2;
             float bMin = t3 < t4 ? t3 : t4;
@@ -251,7 +267,7 @@ namespace ProjectWS.Engine.Data
 
             return t9;
         }
-        */
+
         /*
         public void RenderScreenBounds(Matrix4x4 transform, Color color, Matrix4x4 V, Matrix4x4 P)
         {

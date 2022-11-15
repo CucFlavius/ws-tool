@@ -2,6 +2,7 @@
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System.Runtime.CompilerServices;
+using ProjectWS.Engine.Data.Extensions;
 
 namespace ProjectWS.Engine.Components
 {
@@ -244,7 +245,7 @@ namespace ProjectWS.Engine.Components
             {
                 this.camera.transform.SetRotation(cameraMat.ExtractRotation());
                 this.camera.transform.SetPosition(this.Pos);
-                //this.camera.transform.SetMatrix(mat);
+                //this.camera.transform.SetMatrix(cameraMat);
                 this.camera.view = cameraMat;
             }
         }

@@ -14,7 +14,7 @@ namespace ProjectWS.Engine.Data
                 const int VERTEXSIZE = 48;
 
                 [StructLayout(LayoutKind.Sequential)]
-                struct TerrainVertex
+                public struct TerrainVertex
                 {
                     public Vector3 position;
                     public Vector3 normal;
@@ -22,7 +22,7 @@ namespace ProjectWS.Engine.Data
                     public Vector2 uv;
                 }
 
-                TerrainVertex[] vertices;
+                public TerrainVertex[] vertices;
 
                 public float minHeight;
                 public float maxHeight;
@@ -30,6 +30,7 @@ namespace ProjectWS.Engine.Data
                 public uint[] indexData;
                 public bool isBuilt;
                 public int _vertexArrayObject;
+                public int _vertexBufferObject;
 
                 public Mesh(ushort[] heightMap)
                 {
@@ -180,9 +181,9 @@ namespace ProjectWS.Engine.Data
                     // Some subchunks don't exist
                     if (this.vertices == null) return;
 
-                    int _vertexBufferObject = GL.GenBuffer();
-                    GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-                    GL.BufferData(BufferTarget.ArrayBuffer, this.vertices.Length * VERTEXSIZE, this.vertices, BufferUsageHint.StaticDraw);
+                    this._vertexBufferObject = GL.GenBuffer();
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, this._vertexBufferObject);
+                    GL.BufferData(BufferTarget.ArrayBuffer, this.vertices.Length * VERTEXSIZE, this.vertices, BufferUsageHint.DynamicDraw);
 
                     _vertexArrayObject = GL.GenVertexArray();
                     GL.BindVertexArray(_vertexArrayObject);
@@ -204,6 +205,14 @@ namespace ProjectWS.Engine.Data
                     GL.BindVertexArray(0);
 
                     this.isBuilt = true;
+                }
+
+                public void ReBuild()
+                {
+                    throw new NotImplementedException("Need to do this properly");
+                    // https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, this._vertexBufferObject);
+                    GL.BufferData(BufferTarget.ArrayBuffer, this.vertices.Length * VERTEXSIZE, this.vertices, BufferUsageHint.DynamicDraw);
                 }
 
                 public void Draw()

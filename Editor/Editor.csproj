@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <StartupObject>ProjectWS.Editor.Program</StartupObject>
+    <RootNamespace>ProjectWS.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +22,7 @@
     <ProjectReference Include="..\Engine\Engine.csproj" />
     <ProjectReference Include="..\Libs\AvalonDock\source\Components\AvalonDock.Themes.VS2013\AvalonDock.Themes.VS2013.csproj" />
     <ProjectReference Include="..\Libs\AvalonDock\source\Components\AvalonDock\AvalonDock.csproj" />
+    <ProjectReference Include="..\Libs\ColorPicker-master\src\ColorPicker\ColorPicker.csproj" />
     <ProjectReference Include="..\Libs\GLWpfControl\src\GLWpfControl\GLWpfControl.csproj" />
     <ProjectReference Include="..\Libs\Selen.Wpf\Selen.Wpf.Core\Selen.Wpf.Core.csproj" />
     <ProjectReference Include="..\Libs\Selen.Wpf\Selen.Wpf.GenericAppTree.Contracts\Selen.Wpf.GenericAppTree.Contracts.csproj" />
@@ -29,6 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="SkyEditorPane.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WorldRendererPane.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

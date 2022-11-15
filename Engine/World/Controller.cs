@@ -11,11 +11,14 @@ namespace ProjectWS.Engine.World
     public class Controller
     {
         public bool spawn;
-        public Vector2 chunkPosition;
+        public Vector2i chunkPosition;
         public Vector3 worldPosition;
-        public Vector2 subchunkPosition;
+        public Vector2i subchunkPosition;
         public int subchunkIndex;
         public World world;
+        public Action<Vector2i>? onChunkPositionChange;
+        public Action<int>? onSubchunkPositionChange;
+        public Action<Vector3>? onWorldPositionChange;
 
         public Controller(World world)
         {
@@ -27,24 +30,30 @@ namespace ProjectWS.Engine.World
             if (this.world == null) return;
             if (camera == null) return;
 
-            Vector2 newChunkPosition = Utilities.WorldToChunkCoords(camera.transform.GetPosition());
+            var newWorldPosition = camera.transform.GetPosition();
+            if (this.worldPosition != newWorldPosition || spawn)
+            {
+                this.worldPosition = newWorldPosition;
+                if (this.onWorldPositionChange != null)
+                    this.onWorldPositionChange.Invoke(newWorldPosition);
+            }
+
+            Vector2i newChunkPosition = Utilities.WorldToChunkCoords(this.worldPosition);
 
             // Did we move to a different chunk, or we just spawned
-            if (spawn || chunkPosition != newChunkPosition)
+            if (this.spawn || chunkPosition != newChunkPosition)
             {
                 chunkPosition = newChunkPosition;
 
-                if (spawn)
-                {
+                if (this.spawn)
                     camera.transform.SetPosition(this.worldPosition);
-                    spawn = false;
-                }
 
                 Spiral((int)newChunkPosition.X, (int)newChunkPosition.Y);
                 DeactivateChunks();
-            }
 
-            this.worldPosition = camera.transform.GetPosition();
+                if (this.onChunkPositionChange != null)
+                    this.onChunkPositionChange.Invoke(newChunkPosition);
+            }
 
             // Determine chunk position
             var halfW = (World.AREA_SIZE * World.WORLD_SIZE);
@@ -52,8 +61,19 @@ namespace ProjectWS.Engine.World
             var sX = (int)Math.Floor((modX / 512.0f) * 16.0);
             var modY = (halfW + this.worldPosition.Z) % 512.0f;
             var sY = (int)Math.Abs((modY / 512.0f) * 16.0);
-            this.subchunkPosition = new Vector2i(sX, sY);
-            this.subchunkIndex = ((sY * 16) + sX);
+
+            var newSubchunkPosition = new Vector2i(sX, sY);
+            if (newSubchunkPosition != this.subchunkPosition || this.spawn)
+            {
+                this.subchunkPosition = newSubchunkPosition;
+                this.subchunkIndex = ((sY * 16) + sX);
+
+                if (this.onSubchunkPositionChange != null)
+                    this.onSubchunkPositionChange.Invoke(this.subchunkIndex);
+            }
+
+            if (this.spawn)
+                this.spawn = false;
         }
 
         void Spiral(int X, int Y)
@@ -83,8 +103,8 @@ namespace ProjectWS.Engine.World
                     else if (absx <= World.DRAWDIST2 && absy <= World.DRAWDIST2)
                         lod = 2;
 
-                    Vector2 coords = new Vector2(xCoord, yCoord);
-                    if (this.world.chunks.TryGetValue(coords, out Chunk chunk))
+                    Vector2i coords = new Vector2i(xCoord, yCoord);
+                    if (this.world.chunks.TryGetValue(coords, out Chunk? chunk))
                     {
                         this.world.activeChunks.Add(coords, chunk);
                         chunk.SetLod(lod, center);
@@ -103,7 +123,7 @@ namespace ProjectWS.Engine.World
 
         void DeactivateChunks()
         {
-            foreach (KeyValuePair<Vector2, Chunk> item in this.world.chunks)
+            foreach (KeyValuePair<Vector2i, Chunk> item in this.world.chunks)
             {
                 if (!this.world.activeChunks.ContainsKey(item.Key))
                 {

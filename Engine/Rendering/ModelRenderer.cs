@@ -40,6 +40,18 @@ namespace ProjectWS.Engine.Rendering
             this.lights.Add(new Lighting.AmbientLight(ambientColor));
         }
 
+        public override void Load()
+        {
+            this.modelShader = new Shader("shaders/shader_vert.glsl", "shaders/shader_frag.glsl");
+            this.shader = this.modelShader;
+            this.wireframeShader = new Shader("shaders/wireframe_vert.glsl", "shaders/wireframe_frag.glsl");
+            this.normalShader = new Shader("shaders/normal_vert.glsl", "shaders/normal_frag.glsl");
+            this.terrainShader = new Shader("shaders/terrain_vert.glsl", "shaders/terrain_frag.glsl");
+            this.waterShader = new Shader("shaders/water_vert.glsl", "shaders/water_frag.glsl");
+            this.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
+            this.infiniteGridShader = new Shader("shaders/infinite_grid_vert.glsl", "shaders/infinite_grid_frag.glsl");
+        }
+
         public override void Update(float deltaTime)
         {
             for (int i = 0; i < this.viewports.Count; i++)

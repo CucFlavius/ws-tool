@@ -14,12 +14,16 @@ namespace ProjectWS.Engine.Data
             public ushort[] heightMap;
             public uint[] textureIDs;
             public byte[] blendMap;
+            public MapMode blendMapMode;
             public byte[] colorMap;
+            public MapMode colorMapMode;
             public ushort[] unknownMap;
+            public int unk;
+            public SkyCorner[] skyCorners;
             public ushort[] lodHeightMap;
             public ushort[] lodHeightRange;     // [0] Minimum, [1] Maximum
             public byte[] unknownMap2;  // Seems to be a layer blend adjust map (gets added to blendMap in shader)
-
+            public uint[] zoneIDs;
 
             public uint[] propUniqueIDs;
             public Curd curd;                   // https://cdn.discordapp.com/attachments/487618232279105540/924871987392823327/unknown.png
@@ -44,6 +48,12 @@ namespace ProjectWS.Engine.Data
 
             // Reference //
             public World.Chunk chunk;
+
+            public enum MapMode
+            {
+                Raw,
+                DXT1,
+            }
 
             public SubChunk(BinaryReader br, World.Chunk chunk, int index, int lod, bool areaCompressed)
             {
@@ -83,6 +93,7 @@ namespace ProjectWS.Engine.Data
                 // Blend Map //
                 if (this.flags.HasFlag(Flags.hasBlendMap))
                 {
+                    this.blendMapMode = MapMode.Raw;
                     this.blendMap = new byte[65 * 65 * 4];
                     for (int i = 0; i < 65 * 65; i++)
                     {
@@ -125,27 +136,32 @@ namespace ProjectWS.Engine.Data
                 // Unknown data 4 bytes //
                 if (this.flags.HasFlag(Flags.unk0x20))
                 {
-                    br.ReadBytes(4);
+                    unk = br.ReadInt32();
                 }
 
-                // Environment Data //
-                if (this.flags.HasFlag(Flags.hasUnkLayerData))
+                // World Sky IDs //
+                if (this.flags.HasFlag(Flags.hasSkyIDs))
                 {
+                    this.skyCorners = new SkyCorner[4];
                     for (int i = 0; i < 4; i++)
                     {
-                        for (int j = 0; j < 4; j++)
-                        {
-                            br.ReadInt32();
-                        }
+                        this.skyCorners[i] = new SkyCorner(br);
                     }
                 }
 
-                // Environment Weights //
-                if (this.flags.HasFlag(Flags.hasUnkLayerColor))
+                // World Sky Weights //
+                if (this.flags.HasFlag(Flags.hasSkyWeights))
                 {
-                    for (int i = 0; i < 4; i++)
+                    if (this.skyCorners != null)
                     {
-                        new Vector4(br.ReadByte(), br.ReadByte(), br.ReadByte(), br.ReadByte());
+                        for (int i = 0; i < 4; i++)
+                        {
+                            this.skyCorners[i].ReadWeights(br);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError("Sky corners should not be null.");
                     }
                 }
 
@@ -218,6 +234,7 @@ namespace ProjectWS.Engine.Data
                 // DXT1 65x65 texture, no mips, clamp
                 if (this.flags.HasFlag(Flags.hasBlendMapDXT))
                 {
+                    this.blendMapMode = MapMode.DXT1;
                     this.blendMap = br.ReadBytes(2312);
                 }
 
@@ -288,9 +305,10 @@ namespace ProjectWS.Engine.Data
                 // Zone IDs //
                 if (this.flags.HasFlag(Flags.hasZoneIDs))
                 {
+                    this.zoneIDs = new uint[4];
                     for (int i = 0; i < 4; i++)
                     {
-                        br.ReadUInt32();
+                        this.zoneIDs[i] = br.ReadUInt32();
                     }
                 }
 
@@ -378,12 +396,60 @@ namespace ProjectWS.Engine.Data
                 this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, 16f);
                 this.AABB = new Data.BoundingBox(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
                 this.cullingAABB = new Data.BoundingBox(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
+                GenerateMissingData();
             }
 
-            internal void Render(Shader terrainShader)
+            public SubChunk(World.Chunk chunk, int index, int lod)
+            {
+                this.minHeight = ushort.MaxValue;
+                this.maxHeight = 0;
+                this.chunk = chunk;
+                this.index = index;
+
+                this.flags = Flags.hasHeightmap;// | Flags.hasZoneIDs;
+                this.heightMap = new ushort[19 * 19];
+                for (int i = 0; i < this.heightMap.Length; i++)
+                {
+                    this.heightMap[i] = 8400;   // !tele 256 -998 256 3538
+                }
+                //this.zoneIDs = new uint[4] { 2141, 0, 0, 0 };
+            }
+
+            public void Render(Shader terrainShader)
             {
                 this.material.SetToShader(terrainShader);
                 this.mesh.Draw();
+            }
+
+            public void Write(BinaryWriter bw)
+            {
+                bw.Write((uint)0);          // Size pad
+                long subStart = bw.BaseStream.Position;
+                bw.Write((uint)this.flags); // Flags
+
+                // Height Map
+                if (this.heightMap != null)
+                {
+                    for (int x = 0; x < this.heightMap.Length; x++)
+                    {
+                        bw.Write(this.heightMap[x]);    // Height value
+                    }
+                }
+
+                // Zone IDs
+                if (this.zoneIDs != null)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        bw.Write(this.zoneIDs[i]);
+                    }
+                }
+
+                long subEnd = bw.BaseStream.Position;
+                uint subSize = (uint)(subEnd - subStart);
+                bw.BaseStream.Position = subStart - 4;
+                bw.Write(subSize);          // Size calculated
+                bw.BaseStream.Position = subEnd;
             }
 
             public void Build()
@@ -413,6 +479,38 @@ namespace ProjectWS.Engine.Data
                     go.transform.localScale = Vector3.one * 10f;
                 }
                 */
+            }
+
+            void GenerateMissingData()
+            {
+                if (this.blendMap == null)
+                {
+                    this.blendMapMode = MapMode.Raw;
+                    this.blendMap = new byte[65 * 65 * 4];
+                    byte fill = 255;
+                    for (int i = 0; i < 65 * 65; i++)
+                    {
+                        this.blendMap[i * 4 + 0] = fill;
+                        this.blendMap[i * 4 + 1] = 0;
+                        this.blendMap[i * 4 + 2] = 0;
+                        this.blendMap[i * 4 + 3] = 0;
+                    }
+                }
+
+                if (this.colorMap == null)
+                {
+                    this.colorMapMode = MapMode.Raw;
+                    this.colorMap = new byte[65 * 65 * 4];
+                    byte fill = 255;
+                    byte half = 128;
+                    for (int i = 0; i < 65 * 65; i++)
+                    {
+                        this.colorMap[i * 4 + 0] = half;
+                        this.colorMap[i * 4 + 1] = half;
+                        this.colorMap[i * 4 + 2] = half;
+                        this.colorMap[i * 4 + 3] = fill;
+                    }
+                }
             }
         }
     }

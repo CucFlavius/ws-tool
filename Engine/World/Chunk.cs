@@ -1,6 +1,10 @@
 ﻿using OpenTK.Mathematics;
 using ProjectWS.Engine.Data.Extensions;
+using SharpFont;
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
+using static ProjectWS.Engine.Data.Archive;
+using static ProjectWS.Engine.Data.Area;
 
 namespace ProjectWS.Engine.World
 {
@@ -11,6 +15,7 @@ namespace ProjectWS.Engine.World
         public Data.GameData gameData;
         public World world;
         public Data.Block.FileEntry areaFileEntry;
+        public string areaFilePath;
         public Vector2 coords;
         Vector2 center;
         Vector2 lowCoords;
@@ -29,12 +34,29 @@ namespace ProjectWS.Engine.World
         public Data.Area area;
         public Data.Area areaLow;
 
+        const float LABEL_DISTANCE = 300f;
+
+        public readonly Vector3[] corners = new Vector3[]
+        {
+            new Vector3(-1, 0, -1),
+            new Vector3(1, 0, -1),
+            new Vector3(-1, 0, 1),
+            new Vector3(1, 0, 1)
+        };
+
         // Tasks
         public ConcurrentQueue<TaskManager.TerrainTask> terrainTasks;
         public ConcurrentQueue<TaskManager.TerrainTask> buildTasks;
 
         #endregion
 
+        /// <summary>
+        /// Load chunk from game data
+        /// </summary>
+        /// <param name="coords"></param>
+        /// <param name="file"></param>
+        /// <param name="data"></param>
+        /// <param name="world"></param>
         public Chunk(Vector2 coords, Data.Block.FileEntry file, Data.GameData data, World world)
         {
             this.terrainTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
@@ -43,6 +65,50 @@ namespace ProjectWS.Engine.World
             this.gameData = data;
             this.world = world;
             this.areaFileEntry = file;
+            this.coords = coords;
+            this.worldCoords = Utilities.ChunkToWorldCoords(coords);
+            this.worldMatrix = new Matrix4().TRS(this.worldCoords, Quaternion.Identity, new Vector3(1, 1, 1));
+            this.lowCoords = Utilities.CalculateLowCoords(coords);
+            this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
+            this.AABB = new Data.BoundingBox(this.worldCoords, new Vector3(512f, 10000f, 512f));
+        }
+
+        /// <summary>
+        /// Load chunk from project
+        /// </summary>
+        /// <param name="coords"></param>
+        /// <param name="file"></param>
+        /// <param name="data"></param>
+        /// <param name="world"></param>
+        public Chunk(Vector2 coords, string file, Data.GameData data, World world)
+        {
+            this.terrainTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
+            this.buildTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
+
+            this.gameData = data;
+            this.world = world;
+            this.areaFilePath = file;
+            this.coords = coords;
+            this.worldCoords = Utilities.ChunkToWorldCoords(coords);
+            this.worldMatrix = new Matrix4().TRS(this.worldCoords, Quaternion.Identity, new Vector3(1, 1, 1));
+            this.lowCoords = Utilities.CalculateLowCoords(coords);
+            this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
+            this.AABB = new Data.BoundingBox(this.worldCoords, new Vector3(512f, 10000f, 512f));
+        }
+
+        /// <summary>
+        /// Create new flat chunk
+        /// </summary>
+        /// <param name="coords"></param>
+        /// <param name="data"></param>
+        /// <param name="world"></param>
+        public Chunk(Vector2 coords, Data.GameData data, World world)
+        {
+            this.terrainTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
+            this.buildTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
+
+            this.gameData = data;
+            this.world = world;
             this.coords = coords;
             this.worldCoords = Utilities.ChunkToWorldCoords(coords);
             this.worldMatrix = new Matrix4().TRS(this.worldCoords, Quaternion.Identity, new Vector3(1, 1, 1));
@@ -61,7 +127,7 @@ namespace ProjectWS.Engine.World
         {
             if (!this.isVisible)
                 return;
-            
+
             if (this.lod != -1)
             {
                 if (this.lod == 0)
@@ -125,6 +191,8 @@ namespace ProjectWS.Engine.World
         {
             if (this.area == null) return;
 
+            if (this.area.subChunks == null) return;
+
             for (int i = 0; i < this.area.subChunks.Count; i++)
             {
                 if (!this.area.subChunks[i].isVisible)
@@ -159,6 +227,55 @@ namespace ProjectWS.Engine.World
             }
         }
 
+        public void RenderDebug()
+        {
+            if (this.area == null) return;
+            if (this.area.subChunks == null) return;
+
+            for (int i = 0; i < this.area.subChunks.Count; i++)
+            {
+                if (!this.area.subChunks[i].isVisible)
+                    continue;
+
+                if (this.area.subChunks[i].mesh != null)
+                {
+                    var pos = this.area.subChunks[i].centerPosition;
+
+                    if (this.area.subChunks[i].distanceToCam < LABEL_DISTANCE)
+                    {
+                        if (this.world.controller.subchunkIndex == i)
+                        {
+                            float fade = MathF.Max(MathF.Min(1.0f - (this.area.subChunks[i].distanceToCam / LABEL_DISTANCE), 1.0f), 0.0f);
+                            if (this.areaFileEntry != null)
+                                Debug.DrawLabel($"{this.areaFileEntry.name} | {i}", pos, new Vector4(1.0f, 0.5f, 1.0f, fade), true);
+                            else if (this.areaFilePath != null)
+                                Debug.DrawLabel($"{this.areaFilePath} | {i}", pos, new Vector4(1.0f, 0.5f, 1.0f, fade), true);
+                        }
+                        /*
+                        for (int j = 0; j < 4; j++)
+                        {
+                            var corner = this.area.subChunks[i].skyCorners[j];
+
+                            if (corner != null)
+                            {
+                                //this.currentWorldSkyID = corner.worldSkyIDs[j];
+                                //var worldSkyRecord = this.database.worldSky.Get(corner.worldSkyIDs[j]);
+                                if (this.world.controller.subchunkIndex == i)
+                                {
+                                    //Debug.DrawLabel(j.ToString(), pos + (directions[j] * 16.0f), new Vector4(1.0f, 1.0f, 0.0f, 1.0f), true);
+                                    Debug.DrawLabel(corner.worldSkyIDs[3].ToString(), pos + (corners[j] * 16.0f), new Vector4(1.0f, 1.0f, 0.0f, 1.0f), true);
+                                }
+                                else
+                                {
+                                    Debug.DrawLabel(corner.worldSkyIDs[3].ToString(), pos + (corners[j] * 16.0f), Vector4.One, true);
+                                }
+                            }
+                        }
+                        */
+                    }
+                }
+            }
+        }
 
         void RenderLod1Terrain()
         {

@@ -1,12 +1,6 @@
-using ProjectWS.Engine.Input;
-using OpenTK;
-using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Input;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+using ProjectWS.Engine.Data;
 
 namespace ProjectWS.Engine
 {
@@ -30,13 +24,10 @@ namespace ProjectWS.Engine
 
         public TaskManager.Manager taskManager;
         public Data.ResourceManager.Manager resourceManager;
-        //public Renderer.WRenderer wRenderer;
-        //public CameraController cc;
         public Dictionary<uint, World.World> worlds;
         public Data.GameData data;
         public Input.Input input;
-
-        public Dictionary<int, Rendering.Renderer> rendererMap;
+        public Dictionary<uint, Sky> skyData;
         public List<Rendering.Renderer> renderers;
 
         /// <summary>
@@ -47,10 +38,10 @@ namespace ProjectWS.Engine
             SettingsSerializer.Load();
             this.taskManager = new TaskManager.Manager(this);
             this.resourceManager = new Data.ResourceManager.Manager(this);
-            this.rendererMap = new Dictionary<int, Rendering.Renderer>();
             this.renderers = new List<Rendering.Renderer>();
             this.input = new Input.Input(this);
             this.worlds = new Dictionary<uint, World.World>();
+            this.skyData = new Dictionary<uint, Sky>();
 
             // Load engine resources
             this.resourceManager.textureResources.Add(ResourceManager.EngineTextures.white, new Data.ResourceManager.TextureResource(ResourceManager.EngineTextures.white, this.resourceManager, null));
@@ -87,6 +78,7 @@ namespace ProjectWS.Engine
                     this.renderers[i].terrainShader.Load();
                     this.renderers[i].infiniteGridShader.Load();
                     this.renderers[i].waterShader.Load();
+                    this.renderers[i].fontShader.Load();
                 }
             }
 
@@ -136,6 +128,18 @@ namespace ProjectWS.Engine
                 GUI.Label(new Rect(Screen.width - 300, 100, 300, 20), $"{"Props Rendered : ", 30}{this.worlds[0].propsRendered}");
             }
             */
+        }
+
+        public Sky GetSky(uint ID)
+        {
+            if (this.skyData.ContainsKey(ID))
+                return this.skyData[ID];
+
+            var worldSkyRecord = this.data.database.worldSky.Get(ID);
+            Sky sky = new Sky(worldSkyRecord.assetPath, this.data);
+            sky.Read();
+            this.skyData.Add(ID, sky);
+            return sky;
         }
     }
 }

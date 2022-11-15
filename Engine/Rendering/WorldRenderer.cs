@@ -10,12 +10,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK.Windowing.Desktop;
+using System.Runtime.CompilerServices;
+using ProjectWS.Engine.Components;
 
 namespace ProjectWS.Engine.Rendering
 {
     public class WorldRenderer : Renderer
     {
-        World.World? world;
+        MousePick mousePick;
+        public World.World? world;
         ShaderParams.FogParameters fogParameters;
         ShaderParams.TerrainEditorParameters tEditorParameters;
         ShaderParams.SunParameters sunParameters;
@@ -23,7 +26,7 @@ namespace ProjectWS.Engine.Rendering
 
         public static int drawCalls;
 
-        Color4 envColor = new Color4(0.7f, 0.7f, 0.7f, 1.0f);
+        Color4 envColor = new Color4(0.1f, 0.1f, 0.1f, 1.0f);
 
         public WorldRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
@@ -37,11 +40,30 @@ namespace ProjectWS.Engine.Rendering
             //this.fogParameters = new FogParameters(this.envColor, 0, 1000, 0.1f, 0);  // Linear
             this.fogParameters = new ShaderParams.FogParameters(this.envColor, 0, 0, 0.0025f, 2);    // Exponential
             this.tEditorParameters = new ShaderParams.TerrainEditorParameters(false, false);
-            this.sunParameters = new ShaderParams.SunParameters(new Vector3(1.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f), 1.0f);
-            this.envParameters = new ShaderParams.EnvironmentParameters(new Vector3(0.4f, 0.4f, 0.4f));
+            var sunVector = new Vector3(1.0f, 1.0f, 1.0f);
+            sunVector.Normalize();
+            this.sunParameters = new ShaderParams.SunParameters(new Vector3(0.7f, 0.7f, 0.7f), sunVector, 1.0f);
+            this.envParameters = new ShaderParams.EnvironmentParameters(new Vector3(0.2f, 0.2f, 0.2f));
         }
 
         public void SetWorld(World.World world) => this.world = world;
+
+        public override void Load()
+        {
+            this.modelShader = new Shader("shaders/shader_vert.glsl", "shaders/shader_frag.glsl");
+            this.shader = this.modelShader;
+            this.wireframeShader = new Shader("shaders/wireframe_vert.glsl", "shaders/wireframe_frag.glsl");
+            this.normalShader = new Shader("shaders/normal_vert.glsl", "shaders/normal_frag.glsl");
+            this.terrainShader = new Shader("shaders/terrain_vert.glsl", "shaders/terrain_frag.glsl");
+            this.waterShader = new Shader("shaders/water_vert.glsl", "shaders/water_frag.glsl");
+            this.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
+            this.infiniteGridShader = new Shader("shaders/infinite_grid_vert.glsl", "shaders/infinite_grid_frag.glsl");
+            this.fontShader = new Shader("shaders/font_vert.glsl", "shaders/font_frag.glsl");
+
+            this.mousePick = new MousePick(this);
+
+            FreeType.Init();
+        }
 
         public override void Render()
         {
@@ -84,12 +106,17 @@ namespace ProjectWS.Engine.Rendering
                     this.world.RenderWater(this.waterShader);
                 }
 
+                // Render Text
+                Debug.RenderLabels(this, this.viewports[v]);
+
                 // Render Gizmos
                 if (this.gizmos != null)
                 {
                     for (int i = 0; i < this.gizmos.Count; i++)
                     {
                         if (this.gizmos[i] == null) continue;
+
+                        if (this.gizmos[i].visible == false) continue;
 
                         if (this.gizmos[i] is Objects.Gizmos.CameraGizmo)
                         {
@@ -113,6 +140,7 @@ namespace ProjectWS.Engine.Rendering
                         }
                     }
                 }
+
             }
         }
 
@@ -140,6 +168,9 @@ namespace ProjectWS.Engine.Rendering
 
             if (this.world != null)
                 this.world.Update(deltaTime);
+
+            if (this.mousePick != null)
+                this.mousePick.Update();
         }
     }
 }

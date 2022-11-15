@@ -37,6 +37,19 @@ namespace ProjectWS.TestArea
 
         void OnDataLoaded(Engine.Data.GameData data)
         {
+            // Populate world sky list in sky editor pane
+            int idx = 0;
+            int defaultIdx = 0;
+            foreach (var item in data.database.worldSky.records)
+            {
+                Program.editor.skyEditorPane.skies.Add(item.Value);
+                if (item.Value.ID == 21)
+                    defaultIdx = idx;
+
+                idx++;
+            }
+            Program.editor.skyEditorPane.skyDataGrid.SelectedIndex = defaultIdx;
+
             //Program.editor.mainForm.m_gameDataWindow.PopulateTreeView(data);
             StartAfterDataLoaded();
         }
@@ -53,14 +66,22 @@ namespace ProjectWS.TestArea
             //PrintTestDatabase();
             //LoadAnM3ForDebug();
             //TestSkyFile();
+            //CreateNewWorld();
         }
 
         void LoadTestWorld()
         {
             var testWorld = new Engine.World.World(this.engine, 0, true);
             //testWorld.LoadMap(6, new Vector2(64, 64));   // Map\Eastern, Middle of the map
-            testWorld.TeleportToWorldLocation(114);
+            //testWorld.TeleportToWorldLocation(114, -1); // !tele 3832.459 -1001.444 -4496.945 51
             //testWorld.Teleport(100, -1000, 100, 51);
+            testWorld.Teleport(256, -900, 256, 3538, 1);
+        }
+
+        void CreateNewWorld()
+        {
+            var newWorld = new Engine.World.World(this.engine, 0, true);
+            newWorld.CreateNew("ZeeTest");
         }
 
         void LoadAnM3ForDebug()
