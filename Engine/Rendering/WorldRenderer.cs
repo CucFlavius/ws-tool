@@ -1,28 +1,18 @@
-﻿using ProjectWS.Engine.Input;
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using ProjectWS.Engine.Objects.Gizmos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OpenTK.Windowing.Desktop;
-using System.Runtime.CompilerServices;
-using ProjectWS.Engine.Components;
 
 namespace ProjectWS.Engine.Rendering
 {
     public class WorldRenderer : Renderer
     {
-        MousePick mousePick;
+        public MousePick mousePick;
         public World.World? world;
-        ShaderParams.FogParameters fogParameters;
-        ShaderParams.TerrainEditorParameters tEditorParameters;
-        ShaderParams.SunParameters sunParameters;
-        ShaderParams.EnvironmentParameters envParameters;
+        public ShaderParams.FogParameters fogParameters;
+        public ShaderParams.TerrainEditorParameters tEditorParameters;
+        public ShaderParams.SunParameters sunParameters;
+        public ShaderParams.EnvironmentParameters envParameters;
+        public ShaderParams.BrushParameters brushParameters;
 
         public static int drawCalls;
 
@@ -44,6 +34,7 @@ namespace ProjectWS.Engine.Rendering
             sunVector.Normalize();
             this.sunParameters = new ShaderParams.SunParameters(new Vector3(0.7f, 0.7f, 0.7f), sunVector, 1.0f);
             this.envParameters = new ShaderParams.EnvironmentParameters(new Vector3(0.2f, 0.2f, 0.2f));
+            this.brushParameters = new ShaderParams.BrushParameters(ShaderParams.BrushParameters.BrushMode.Gradient, Vector3.Zero, 64.0f);
         }
 
         public void SetWorld(World.World world) => this.world = world;
@@ -92,17 +83,22 @@ namespace ProjectWS.Engine.Rendering
                 {
                     // Terrain
                     this.terrainShader.Use();
+
                     this.fogParameters.SetToShader(this.terrainShader);
                     this.tEditorParameters.SetToShader(this.terrainShader);
                     this.sunParameters.SetToShader(this.terrainShader);
                     this.envParameters.SetToShader(this.terrainShader);
                     this.viewports[v].mainCamera.SetToShader(this.terrainShader);
+                    this.brushParameters.SetToShader(this.terrainShader);
+
                     this.world.RenderTerrain(this.terrainShader);
 
                     // Water
                     this.waterShader.Use();
+
                     this.viewports[v].mainCamera.SetToShader(this.waterShader);
                     this.waterShader.SetMat4("model", Matrix4.Identity);    // Water vertices are in world space
+
                     this.world.RenderWater(this.waterShader);
                 }
 
@@ -171,6 +167,8 @@ namespace ProjectWS.Engine.Rendering
 
             if (this.mousePick != null)
                 this.mousePick.Update();
+
+            this.brushParameters.position = this.mousePick.terrainHitPoint;
         }
     }
 }

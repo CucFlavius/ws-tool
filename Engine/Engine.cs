@@ -46,6 +46,8 @@ namespace ProjectWS.Engine
             // Load engine resources
             this.resourceManager.textureResources.Add(ResourceManager.EngineTextures.white, new Data.ResourceManager.TextureResource(ResourceManager.EngineTextures.white, this.resourceManager, null));
             this.taskManager.textureThread.Enqueue(new TaskManager.TextureTask(ResourceManager.EngineTextures.white, TaskManager.Task.JobType.Read, this.resourceManager));
+            this.resourceManager.textureResources.Add(ResourceManager.EngineTextures.brushGradient, new Data.ResourceManager.TextureResource(ResourceManager.EngineTextures.brushGradient, this.resourceManager, null));
+            this.taskManager.textureThread.Enqueue(new TaskManager.TextureTask(ResourceManager.EngineTextures.brushGradient, TaskManager.Task.JobType.Read, this.resourceManager));
 
             this.running = true;
         }

@@ -197,6 +197,11 @@ namespace ProjectWS.Engine.Data
 
         public void Write(string filePath)
         {
+            if (this.source == DataSource.EngineResource)
+            {
+                return;
+            }
+
             string fileName = Path.GetFileName(filePath);
             string directory = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(directory))

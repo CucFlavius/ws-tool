@@ -21,6 +21,9 @@ namespace ProjectWS.Engine
 
         //public RayGizmo rayGizmo;
         public BoxGizmo hitGizmo;
+        public Vector3 terrainHitPoint;
+        public Vector2i terrainSubchunkHit;
+        public Vector2i areaHit;
 
         public MousePick(WorldRenderer renderer)
         {
@@ -67,6 +70,7 @@ namespace ProjectWS.Engine
             if (this.renderer.world != null)
             {
                 this.hitGizmo.visible = false;
+                this.renderer.brushParameters.isEnabled = false;
                 foreach (var chunkItem in this.renderer.world.chunks)
                 {
                     if (chunkItem.Value.area != null && chunkItem.Value.lod0Available && chunkItem.Value.area.subChunks != null)
@@ -78,12 +82,15 @@ namespace ProjectWS.Engine
                             if (result.X <= result.Y)
                             {
                                 var subPos = new Vector3(subChunk.X * 32f, 0f, subChunk.Y * 32f);// subChunk.centerPosition;//subChunk.matrix.ExtractPosition();
+                                this.terrainSubchunkHit = new Vector2i(subChunk.X, subChunk.Y);
+                                this.areaHit = chunkItem.Key;
+                                /*
                                 Debug.DrawLabel(
                                     subChunk.centerPosition.ToString(),
                                     subChunk.centerPosition,
                                     new Vector4(0.0f, 0.0f, 0.0f, 1.0f),
                                     false);
-
+                                */
                                 for (int i = 0; i < subChunk.mesh.indexData.Length; i+=3)
                                 {
                                     uint i0 = subChunk.mesh.indexData[i];
@@ -97,16 +104,18 @@ namespace ProjectWS.Engine
                                     if (RayTriangleIntersect(this.rayOrigin, this.rayVec, v0, v1, v2, out var point))
                                     {
                                         this.hitGizmo.visible = true;
-
+                                        this.renderer.brushParameters.isEnabled = true;
                                         //var hitPoint = GetPointOnRay(this.rayVec, result.X, this.rayOrigin);
                                         var gizmoMat = Matrix4.CreateTranslation(point);
                                         this.hitGizmo.transform.SetMatrix(gizmoMat);
 
-                                        subChunk.mesh.vertices[i0].position += Vector3.UnitY * 0.1f;
-                                        subChunk.mesh.vertices[i1].position += Vector3.UnitY * 0.1f;
-                                        subChunk.mesh.vertices[i2].position += Vector3.UnitY * 0.1f;
+                                        this.terrainHitPoint = point;
 
-                                        subChunk.mesh.ReBuild();
+                                        //subChunk.mesh.vertices[i0].position += Vector3.UnitY * 0.1f;
+                                        //subChunk.mesh.vertices[i1].position += Vector3.UnitY * 0.1f;
+                                        //subChunk.mesh.vertices[i2].position += Vector3.UnitY * 0.1f;
+
+                                        //subChunk.mesh.ReBuild();
 
                                     }
                                 }

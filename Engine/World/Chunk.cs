@@ -47,6 +47,7 @@ namespace ProjectWS.Engine.World
         // Tasks
         public ConcurrentQueue<TaskManager.TerrainTask> terrainTasks;
         public ConcurrentQueue<TaskManager.TerrainTask> buildTasks;
+        internal bool modified;
 
         #endregion
 

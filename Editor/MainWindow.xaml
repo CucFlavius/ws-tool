@@ -10,7 +10,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Menu Grid.Row="0">
+        <Menu>
+            <MenuItem Header="File">
+                <MenuItem Name="Save" Header="Save" Click="MenuFileSave_Click" IsEnabled="True"/>
+            </MenuItem>
             <MenuItem Header="Edit">
                 <MenuItem Command="Undo" />
                 <MenuItem Command="Redo" />

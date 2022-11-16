@@ -9,5 +9,6 @@ namespace ProjectWS.Engine.ResourceManager
     public static class EngineTextures
     {
         public const string white = @"Resources\Textures\white.jpg";
+        public const string brushGradient = @"Resources\Textures\BrushGradient.png";
     }
 }

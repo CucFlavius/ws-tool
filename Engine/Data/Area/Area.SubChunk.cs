@@ -53,6 +53,7 @@ namespace ProjectWS.Engine.Data
             {
                 Raw,
                 DXT1,
+                DXT5,
             }
 
             public SubChunk(BinaryReader br, World.Chunk chunk, int index, int lod, bool areaCompressed)
@@ -109,6 +110,7 @@ namespace ProjectWS.Engine.Data
                 // Color Map //
                 if (this.flags.HasFlag(Flags.hasColorMap))
                 {
+                    this.colorMapMode = MapMode.Raw;
                     this.colorMap = new byte[65 * 65 * 4];
                     for (int i = 0; i < 65 * 65; i++)
                     {
@@ -208,6 +210,7 @@ namespace ProjectWS.Engine.Data
                 // DXT5 65x65 texture, no mips, clamp
                 if (this.flags.HasFlag(Flags.hascolorMapDXT))
                 {
+                    this.colorMapMode = MapMode.DXT5;
                     this.colorMap = br.ReadBytes(4624);
                 }
 
@@ -374,9 +377,9 @@ namespace ProjectWS.Engine.Data
                 br.BaseStream.Position = subchunkSize + save;
 
                 if (lod == 0)
-                    this.mesh = new Mesh(this.heightMap);
+                    this.mesh = new Mesh(this.heightMap, this);
                 else if (lod == 1)
-                    this.mesh = new Mesh(this.lodHeightMap);
+                    this.mesh = new Mesh(this.lodHeightMap, this);
 
                 this.material = new Materials.TerrainMaterial(this);
 

@@ -144,5 +144,10 @@ namespace ProjectWS.Editor
 
 			SettingsSerializer.Save();
         }
+
+		private void MenuFileSave_Click(object sender, RoutedEventArgs e)
+		{
+			this.editor.Save();
+		}
 	}
 }

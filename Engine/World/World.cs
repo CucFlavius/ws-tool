@@ -17,13 +17,14 @@ namespace ProjectWS.Engine.World
 
         public const int WORLD_SIZE = 128;
         public const float AREA_SIZE = 512.0f;
+        public const float SUBCHUNK_SIZE = 32.0f;
         public const int DRAWDIST0 = 2;
         public const int DRAWDIST1 = 2;
         public const int DRAWDIST2 = 2;
 
         // Refs
         public Engine engine;
-        Rendering.WorldRenderer renderer;
+        public Rendering.WorldRenderer renderer;
         public Environment environment;
 
         // Data

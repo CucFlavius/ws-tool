@@ -2,6 +2,7 @@
 using Editor;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
+using ProjectWS.Editor.Tools;
 using ProjectWS.Engine;
 using ProjectWS.Engine.Rendering;
 using System;
@@ -22,6 +23,7 @@ namespace ProjectWS.Editor
         float deltaTime;
         float elapsedTime;
         float mouseWheelPos;
+        public bool keyboardFocused;
 
         public Engine.Engine? engine;
         private TestArea.Tests? tests;
@@ -31,6 +33,7 @@ namespace ProjectWS.Editor
         public Dictionary<int, ModelRendererPane> modelRendererPanes;
 
         public SkyEditorPane skyEditorPane;
+        public TerrainSculpt terrainSculpt;
 
         FPSCounter? fps;
 
@@ -61,6 +64,9 @@ namespace ProjectWS.Editor
             {
                 InputUpdate();
                 this.engine.Update(this.deltaTime, this.timeScale);
+
+                if (this.terrainSculpt != null)
+                    this.terrainSculpt.Update(this.deltaTime);
 
                 if (Program.app != null && this.fps != null)
                     Program.app.MainWindow.Title = this.fps.Get().ToString() + " " + WorldRenderer.drawCalls;
@@ -118,7 +124,9 @@ namespace ProjectWS.Editor
         {
             if (this.engine == null) return;
 
-            if(Application.Current.MainWindow.IsKeyboardFocusWithin)
+            this.keyboardFocused = Application.Current.MainWindow.IsKeyboardFocusWithin;
+
+            if (this.keyboardFocused)
             {
                 foreach (var item in opentkKeyMap)
                 {
@@ -290,7 +298,9 @@ namespace ProjectWS.Editor
                 var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
                 openTkControl.Start(settings);
 
-                renderer = new WorldRenderer(this.engine, ID, this.engine.input);
+                var worldRenderer = new WorldRenderer(this.engine, ID, this.engine.input);
+                renderer = worldRenderer;
+                this.terrainSculpt = new TerrainSculpt(this.engine, this, worldRenderer);
                 //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
                 this.engine.renderers.Add(renderer);
 
@@ -400,6 +410,17 @@ namespace ProjectWS.Editor
         {
             var size = e.NewSize;
             renderer.Resize((int)size.Width, (int)size.Height);
+        }
+
+        internal void Save()
+        {
+            foreach (var wItem in this.engine.worlds)
+            {
+                foreach (var cItem in wItem.Value.chunks)
+                {
+                    cItem.Value.area.Write();
+                }
+            }
         }
     }
 }

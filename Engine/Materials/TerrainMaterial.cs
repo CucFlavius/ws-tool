@@ -54,7 +54,7 @@ namespace ProjectWS.Engine.Materials
 
             BuildMap(this.subChunk.unknownMap2, InternalFormat.CompressedRgbaS3tcDxt1Ext, out unkMap2Ptr);
 
-            if (this.subChunk.colorMapMode == Data.Area.SubChunk.MapMode.DXT1)
+            if (this.subChunk.colorMapMode == Data.Area.SubChunk.MapMode.DXT5)
                 BuildMap(this.subChunk.colorMap, InternalFormat.CompressedRgbaS3tcDxt5Ext, out colorMapPtr);
             else if (this.subChunk.colorMapMode == Data.Area.SubChunk.MapMode.Raw)
                 BuildMap(this.subChunk.colorMap, InternalFormat.Rgba, out colorMapPtr);
@@ -90,6 +90,8 @@ namespace ProjectWS.Engine.Materials
                     metersPerTextureTile[i] = 1.0f;
                 }
             }
+
+            this.subChunk.chunk.gameData.resourceManager.AssignTexture(ResourceManager.EngineTextures.brushGradient, this, $"brushGradient");
 
             this.isBuilt = true;
         }
@@ -209,7 +211,6 @@ namespace ProjectWS.Engine.Materials
             if (format == InternalFormat.Rgba)
             {
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 65, 65, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, data);
-                //GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 65, 65, 0, PixelFormat.Rgba, PixelType.Byte, data);
             }
             else
             {
