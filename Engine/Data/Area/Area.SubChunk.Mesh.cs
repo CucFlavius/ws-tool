@@ -113,7 +113,6 @@ namespace ProjectWS.Engine.Data
 
                         // UVs //
                         var offs = 1.0f / 16.0f;
-
                         for (int u = 0; u < 19; u++)
                         {
                             for (int v = 0; v < 19; v++)
@@ -121,17 +120,6 @@ namespace ProjectWS.Engine.Data
                                 this.vertices[u + v * 19].uv = new Vector2(u / 16.0f - offs, v / 16.0f - offs);
                             }
                         }
-
-                        /*
-                        // UVs //
-                        for (int u = 0; u < 17; u++)
-                        {
-                            for (int v = 0; v < 17; v++)
-                            {
-                                this.vertices[u + v * 17].uv = new Vector2(u / 16.0f, v / 16.0f);
-                            }
-                        }
-                        */
 
                         /*
                         // Tangents //
@@ -233,16 +221,17 @@ namespace ProjectWS.Engine.Data
                         for (int x = -1; x < 18; ++x)
                         {
                             float h = this.vertices[index].position.Y;
-                            //((heightMap[(y + 1) * 19 + x + 1] & 0x7FFF) / 8.0f) - 2048.0f;
+
+                            // Update height map
                             this.subChunk.heightMap[(y + 1) * 19 + x + 1] = (ushort)((h + 2048.0f) * 8.0f);
 
-                            // Calc minmax
+                            // Recalculate minmax
                             if (h < this.minHeight)
                                 this.minHeight = h;
                             if (h > this.maxHeight)
                                 this.maxHeight = h;
 
-                            // Normals //
+                            // Recalculate normal
                             if (y > 0 && x > 0 && y <= 17 && y <= 17)
                             {
                                 Vector3 tl = this.vertices[(y - 1) * 19 + x - 1].position;
@@ -265,18 +254,8 @@ namespace ProjectWS.Engine.Data
                             index++;
                         }
                     }
-                    /*
-                    // Calc new bounds
-                    for (int i = 0; i < this.vertices.Length; i++)
-                    {
-                        var h = this.vertices[i].position.Y;
-                        // Calc minmax
-                        if (h < this.minHeight)
-                            this.minHeight = h;
-                        if (h > this.maxHeight)
-                            this.maxHeight = h;
-                    }
-                    */
+
+                    // Update bounds
                     Vector3 subchunkRelativePosition = new Vector3(this.subChunk.X * 32f, 0, this.subChunk.Y * 32f);
                     this.subChunk.centerPosition = this.subChunk.chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((this.maxHeight - this.minHeight) / 2f) + this.minHeight, 16f);
                     this.subChunk.AABB = new Data.BoundingBox(this.subChunk.centerPosition, new Vector3(32f, this.maxHeight - this.minHeight, 32f));            // Exact bounds

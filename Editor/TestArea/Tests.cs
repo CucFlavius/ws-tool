@@ -73,9 +73,9 @@ namespace ProjectWS.TestArea
         {
             var testWorld = new Engine.World.World(this.engine, 0, true);
             //testWorld.LoadMap(6, new Vector2(64, 64));   // Map\Eastern, Middle of the map
-            //testWorld.TeleportToWorldLocation(114, -1); // !tele 3832.459 -1001.444 -4496.945 51
+            testWorld.TeleportToWorldLocation(114, -1); // !tele 3832.459 -1001.444 -4496.945 51
             //testWorld.Teleport(100, -1000, 100, 51);
-            testWorld.Teleport(256, -900, 256, 3538, 1);
+            //testWorld.Teleport(256, -900, 256, 3538, 1);
         }
 
         void CreateNewWorld()

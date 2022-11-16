@@ -1,28 +1,19 @@
 ﻿using OpenTK.Wpf;
 using ProjectWS.Engine.Rendering;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace Editor
+namespace ProjectWS.Editor
 {
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
     public partial class WorldRendererPane : UserControl
     {
+        Editor editor;
+
         public Action<int>? changeViewMode;
         public Action<bool>? toggleFog;
         public Action<bool>? toggleChunkGrid;
@@ -30,8 +21,10 @@ namespace Editor
 
         public ObservableCollection<string>? viewModes { get; set; }
 
-        public WorldRendererPane()
+        public WorldRendererPane(Editor editor)
         {
+            this.editor = editor;
+
             InitializeComponent();
 
             this.viewModeComboBox.DataContext = this;
@@ -102,6 +95,16 @@ namespace Editor
         {
             if (this.toggleChunkGrid != null)
                 this.toggleChunkGrid.Invoke(false);
+        }
+
+        private void sculptTerrainButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.editor.terrainSculpt.mode = Tools.TerrainSculptTool.Mode.RaiseLower;
+        }
+
+        private void flattenTerrainButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.editor.terrainSculpt.mode = Tools.TerrainSculptTool.Mode.Flatten;
         }
     }
 }

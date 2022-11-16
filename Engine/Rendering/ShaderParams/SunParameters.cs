@@ -29,10 +29,10 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
 
         public void SetToShader(Shader shader)
         {
-            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "sunParams.color"), this.color);
-            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "sunParams.direction"), this.direction);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "sunParams.intensity"), this.intensity);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "sunParams.isEnabled"), this.isEnabled ? 1 : 0);
+            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "envParams.sunParams.color"), this.color);
+            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "envParams.sunParams.direction"), this.direction);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.sunParams.intensity"), this.intensity);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.sunParams.isEnabled"), this.isEnabled ? 1 : 0);
         }
 
         public void Toggle(bool on)

@@ -36,12 +36,12 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
 
         public void SetToShader(Shader shader)
         {
-            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "fogParams.color"), this.color);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.linearStart"), this.linearStart);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.linearEnd"), this.linearEnd);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.density"), this.density);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.equation"), this.equation);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "fogParams.isEnabled"), this.isEnabled ? 1 : 0);
+            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.color"), this.color);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.linearStart"), this.linearStart);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.linearEnd"), this.linearEnd);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.density"), this.density);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.equation"), this.equation);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.isEnabled"), this.isEnabled ? 1 : 0);
         }
 
         public void Toggle(bool on)

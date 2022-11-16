@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:glControl="clr-namespace:OpenTK.Wpf;assembly=GLWpfControl"
-             xmlns:editor="clr-namespace:Editor"
+             xmlns:editor="clr-namespace:ProjectWS.Editor"
              mc:Ignorable="d"
              d:DesignHeight="1000" Loaded="UserControl_Loaded" d:DesignWidth="400">
     <Grid Name="MainGrid" Background="#1f1f1f">

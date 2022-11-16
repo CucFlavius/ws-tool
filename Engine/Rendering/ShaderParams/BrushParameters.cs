@@ -28,10 +28,10 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
 
         public void SetToShader(Shader shader)
         {
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "brushParams.mode"), (int)this.mode);
-            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "brushParams.position"), this.position);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "brushParams.size"), this.size);
-            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "brushParams.isEnabled"), this.isEnabled ? 1 : 0);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "tEditorParams.brushParams.mode"), (int)this.mode);
+            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "tEditorParams.brushParams.position"), this.position);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "tEditorParams.brushParams.size"), this.size);
+            GL.Uniform1(GL.GetUniformLocation(shader.Handle, "tEditorParams.brushParams.isEnabled"), this.isEnabled ? 1 : 0);
         }
 
         public void Toggle(bool on)

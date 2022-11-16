@@ -7,28 +7,12 @@
    License (Ms-PL) as published at https://opensource.org/licenses/MS-PL
  ************************************************************************/
 
-using System;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Threading;
-using AvalonDock.Layout;
-using System.Diagnostics;
-using System.IO;
-using AvalonDock.Layout.Serialization;
 using AvalonDock;
-using System.Diagnostics.CodeAnalysis;
-using OpenTK;
-using OpenTK.Mathematics;
-using OpenTK.Graphics.OpenGL4;
+using AvalonDock.Layout;
 using OpenTK.Wpf;
-using ProjectWS.Engine.Rendering;
 using ProjectWS.Engine;
-using SevenZip.Compression.LZ;
-using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
-using Editor;
+using System.Windows;
+using System.Windows.Input;
 
 namespace ProjectWS.Editor
 {

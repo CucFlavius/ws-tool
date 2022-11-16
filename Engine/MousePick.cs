@@ -4,12 +4,14 @@ using ProjectWS.Engine.Data.Extensions;
 using ProjectWS.Engine.Lighting;
 using ProjectWS.Engine.Objects.Gizmos;
 using ProjectWS.Engine.Rendering;
+using ProjectWS.Engine.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static ProjectWS.Engine.Data.Area;
+using static ProjectWS.Engine.Data.Area.SubChunk;
 
 namespace ProjectWS.Engine
 {
@@ -75,48 +77,39 @@ namespace ProjectWS.Engine
                 {
                     if (chunkItem.Value.area != null && chunkItem.Value.lod0Available && chunkItem.Value.area.subChunks != null)
                     {
-                        foreach (var subChunk in chunkItem.Value.area.subChunks)
+                        var areaPos = chunkItem.Value.worldCoords;
+
+                        foreach (var sc in chunkItem.Value.area.subChunks)
                         {
-                            Vector2 result = subChunk.AABB.RayBoxIntersect(this.rayOrigin, this.rayVec);
-
-                            if (result.X <= result.Y)
+                            if (sc.isVisible)
                             {
-                                var subPos = new Vector3(subChunk.X * 32f, 0f, subChunk.Y * 32f);// subChunk.centerPosition;//subChunk.matrix.ExtractPosition();
-                                this.terrainSubchunkHit = new Vector2i(subChunk.X, subChunk.Y);
-                                this.areaHit = chunkItem.Key;
-                                /*
-                                Debug.DrawLabel(
-                                    subChunk.centerPosition.ToString(),
-                                    subChunk.centerPosition,
-                                    new Vector4(0.0f, 0.0f, 0.0f, 1.0f),
-                                    false);
-                                */
-                                for (int i = 0; i < subChunk.mesh.indexData.Length; i+=3)
+                                Vector2 result = sc.AABB.RayBoxIntersect(this.rayOrigin, this.rayVec);
+
+                                if (result.X <= result.Y)
                                 {
-                                    uint i0 = subChunk.mesh.indexData[i];
-                                    uint i1 = subChunk.mesh.indexData[i + 1];
-                                    uint i2 = subChunk.mesh.indexData[i + 2];
+                                    var subPos = new Vector3(sc.X * 32f, 0f, sc.Y * 32f) + areaPos;
 
-                                    var v0 = subChunk.mesh.vertices[i0].position + subPos;
-                                    var v1 = subChunk.mesh.vertices[i1].position + subPos;
-                                    var v2 = subChunk.mesh.vertices[i2].position + subPos;
+                                    this.terrainSubchunkHit = new Vector2i(sc.X, sc.Y);
+                                    this.areaHit = chunkItem.Key;
 
-                                    if (RayTriangleIntersect(this.rayOrigin, this.rayVec, v0, v1, v2, out var point))
+                                    for (int i = 0; i < sc.mesh.indexData.Length; i += 3)
                                     {
-                                        this.hitGizmo.visible = true;
-                                        this.renderer.brushParameters.isEnabled = true;
-                                        //var hitPoint = GetPointOnRay(this.rayVec, result.X, this.rayOrigin);
-                                        var gizmoMat = Matrix4.CreateTranslation(point);
-                                        this.hitGizmo.transform.SetMatrix(gizmoMat);
+                                        uint i0 = sc.mesh.indexData[i];
+                                        uint i1 = sc.mesh.indexData[i + 1];
+                                        uint i2 = sc.mesh.indexData[i + 2];
 
-                                        this.terrainHitPoint = point;
-
-                                        //subChunk.mesh.vertices[i0].position += Vector3.UnitY * 0.1f;
-                                        //subChunk.mesh.vertices[i1].position += Vector3.UnitY * 0.1f;
-                                        //subChunk.mesh.vertices[i2].position += Vector3.UnitY * 0.1f;
-
-                                        //subChunk.mesh.ReBuild();
-
+                                        var v0 = sc.mesh.vertices[i0].position + subPos;
+                                        var v1 = sc.mesh.vertices[i1].position + subPos;
+                                        var v2 = sc.mesh.vertices[i2].position + subPos;
+                                        
+                                        if (RayTriangleIntersect(this.rayOrigin, this.rayVec, v0, v1, v2, out var point))
+                                        {
+                                            this.hitGizmo.visible = true;
+                                            this.renderer.brushParameters.isEnabled = true;
+                                            var gizmoMat = Matrix4.CreateTranslation(point);
+                                            this.hitGizmo.transform.SetMatrix(gizmoMat);
+                                            this.terrainHitPoint = point;
+                                        }
                                     }
                                 }
                             }

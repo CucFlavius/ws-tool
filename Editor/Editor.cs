@@ -1,16 +1,13 @@
 ﻿using AvalonDock.Layout;
-using Editor;
 using OpenTK.Mathematics;
 using OpenTK.Wpf;
 using ProjectWS.Editor.Tools;
-using ProjectWS.Engine;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Xml.Linq;
 
 namespace ProjectWS.Editor
 {
@@ -33,9 +30,21 @@ namespace ProjectWS.Editor
         public Dictionary<int, ModelRendererPane> modelRendererPanes;
 
         public SkyEditorPane skyEditorPane;
-        public TerrainSculpt terrainSculpt;
+        public TerrainSculptTool terrainSculpt;
 
         FPSCounter? fps;
+
+
+        Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key> opentkKeyMap = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key>()
+        {
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.W, Engine.Input.User32Wrapper.Key.W },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.S, Engine.Input.User32Wrapper.Key.S },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.A, Engine.Input.User32Wrapper.Key.A },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.D, Engine.Input.User32Wrapper.Key.D },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.C, Engine.Input.User32Wrapper.Key.C },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space, Engine.Input.User32Wrapper.Key.Space },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.R, Engine.Input.User32Wrapper.Key.R },
+        };
 
         public Editor()
         {
@@ -89,27 +98,6 @@ namespace ProjectWS.Editor
             this.time1 = this.time2;
         }
 
-        Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Key> opentkKeyMap_old = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Key>()
-        { 
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.W, Key.W },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.S, Key.S },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.A, Key.A },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.D, Key.D },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.C, Key.C },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space, Key.Space },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.R, Key.R },
-        };
-
-        Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key> opentkKeyMap = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key>()
-        {
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.W, Engine.Input.User32Wrapper.Key.W },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.S, Engine.Input.User32Wrapper.Key.S },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.A, Engine.Input.User32Wrapper.Key.A },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.D, Engine.Input.User32Wrapper.Key.D },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.C, Engine.Input.User32Wrapper.Key.C },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space, Engine.Input.User32Wrapper.Key.Space },
-            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.R, Engine.Input.User32Wrapper.Key.R },
-        };
         void InputInitialize()
         {
             if (this.engine == null) return;
@@ -281,7 +269,7 @@ namespace ProjectWS.Editor
 
             if (type == 0)
             {
-                var rendererPane = new WorldRendererPane();
+                var rendererPane = new WorldRendererPane(this);
                 openTkControl = rendererPane.GetOpenTKControl();
                 rendererGrid = rendererPane.GetRendererGrid();
                 this.controls.Add(ID, openTkControl);
@@ -300,7 +288,7 @@ namespace ProjectWS.Editor
 
                 var worldRenderer = new WorldRenderer(this.engine, ID, this.engine.input);
                 renderer = worldRenderer;
-                this.terrainSculpt = new TerrainSculpt(this.engine, this, worldRenderer);
+                this.terrainSculpt = new TerrainSculptTool(this.engine, this, worldRenderer);
                 //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
                 this.engine.renderers.Add(renderer);
 

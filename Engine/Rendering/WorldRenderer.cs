@@ -32,8 +32,8 @@ namespace ProjectWS.Engine.Rendering
             this.tEditorParameters = new ShaderParams.TerrainEditorParameters(false, false);
             var sunVector = new Vector3(1.0f, 1.0f, 1.0f);
             sunVector.Normalize();
-            this.sunParameters = new ShaderParams.SunParameters(new Vector3(0.7f, 0.7f, 0.7f), sunVector, 1.0f);
-            this.envParameters = new ShaderParams.EnvironmentParameters(new Vector3(0.2f, 0.2f, 0.2f));
+            this.sunParameters = new ShaderParams.SunParameters(new Vector3(1.0f, 1.0f, 0.9f), sunVector, 1.0f);
+            this.envParameters = new ShaderParams.EnvironmentParameters(new Vector3(0.4f, 0.4f, 0.6f));
             this.brushParameters = new ShaderParams.BrushParameters(ShaderParams.BrushParameters.BrushMode.Gradient, Vector3.Zero, 64.0f);
         }
 
@@ -88,8 +88,8 @@ namespace ProjectWS.Engine.Rendering
                     this.tEditorParameters.SetToShader(this.terrainShader);
                     this.sunParameters.SetToShader(this.terrainShader);
                     this.envParameters.SetToShader(this.terrainShader);
-                    this.viewports[v].mainCamera.SetToShader(this.terrainShader);
                     this.brushParameters.SetToShader(this.terrainShader);
+                    this.viewports[v].mainCamera.SetToShader(this.terrainShader);
 
                     this.world.RenderTerrain(this.terrainShader);
 
