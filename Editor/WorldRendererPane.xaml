@@ -15,12 +15,16 @@
                 <TextBlock IsHitTestVisible="False" Name="txtSelectViewMode" Foreground="#d0d0d0" Text="View" TextAlignment="Center" VerticalAlignment="Center" Margin="10,0"/>
                 <ComboBox Text="ViewMode" Width="150" Height="21" SelectionChanged="viewModeComboBox_SelectionChanged" Name="viewModeComboBox" VerticalAlignment="Center" Margin="0,0,0,0" ItemsSource="{Binding viewModes}" Loaded="viewModeComboBox_Loaded" />
             </ToolBar>
-            <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center" Width="500" Margin="0,0">
+            <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center" Width="919">
                 <ToggleButton x:Name = "fogToggle" Content = "Fog" Checked = "ToggleFogOn" Unchecked = "ToggleFogOff" Width = "50"/>
                 <ToggleButton x:Name = "displayAreaToggle" Content = "Area Grid" Checked = "ToggleAreaGridOn" Unchecked = "ToggleAreaGridOff" Width = "100"/>
                 <ToggleButton x:Name = "displayChunkToggle" Content = "Chunk Grid" Checked = "ToggleChunkGridOn" Unchecked = "ToggleChunkGridOff" Width = "100"/>
-                <Button x:Name ="flattenTerrainButton" Width="50" Height="24" Click="flattenTerrainButton_Click">Flatten</Button>
-                <Button x:Name ="sculptTerrainButton" Width="50" Height="24" Click="sculptTerrainButton_Click">Sculpt</Button>
+                <Button x:Name ="flattenTerrainButton" Width="50" Click="flattenTerrainButton_Click">Flatten</Button>
+                <Button x:Name ="sculptTerrainButton" Width="50" Click="sculptTerrainButton_Click">Sculpt</Button>
+                <Button x:Name ="paint0TerrainButton" Width="80" Click="paint0TerrainButton_Click" >Paint Layer 0</Button>
+                <Button x:Name ="paint1TerrainButton" Width="80" Click="paint1TerrainButton_Click" >Paint Layer 1</Button>
+                <Button x:Name ="paint2TerrainButton" Width="80" Click="paint2TerrainButton_Click" >Paint Layer 2</Button>
+                <Button x:Name ="paint3TerrainButton" Width="80" Click="paint3TerrainButton_Click" >Paint Layer 3</Button>
             </ToolBar>
         </ToolBarTray>
         <Button Content="Button" Name="TESTPoint" HorizontalAlignment="Left" Margin="0,0,0,0" Width="10" Height="10" VerticalAlignment="Top"/>

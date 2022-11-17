@@ -35,7 +35,7 @@ namespace ProjectWS.Editor
             // Create main render/update loop renderer
             this.editor.CreateRendererPane(this, "World", 0, 0);
 
-			this.editor.CreateSkyEditorPane(this);
+			//this.editor.CreateSkyEditorPane(this);
         }
 
 		#region FocusedElement

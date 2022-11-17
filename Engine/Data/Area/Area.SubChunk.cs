@@ -1,5 +1,8 @@
 ﻿using OpenTK.Mathematics;
 using ProjectWS.Engine.Data.Extensions;
+using BCnEncoder.Encoder;
+using BCnEncoder.Shared;
+using BCnEncoder.Decoder;
 
 namespace ProjectWS.Engine.Data
 {
@@ -12,7 +15,7 @@ namespace ProjectWS.Engine.Data
             public int Y;
             public Flags flags;
             public ushort[] heightMap;
-            public uint[] textureIDs;
+            public uint[] worldLayerIDs;
             public byte[] blendMap;
             public MapMode blendMapMode;
             public byte[] colorMap;
@@ -82,12 +85,12 @@ namespace ProjectWS.Engine.Data
                 }
 
                 // Texture IDs //
-                if (this.flags.HasFlag(Flags.hasTextureIDs))
+                if (this.flags.HasFlag(Flags.hasWorldLayerIDs))
                 {
-                    this.textureIDs = new uint[4];
+                    this.worldLayerIDs = new uint[4];
                     for (int i = 0; i < 4; i++)
                     {
-                        this.textureIDs[i] = br.ReadUInt32();
+                        this.worldLayerIDs[i] = br.ReadUInt32();
                     }
                 }
 
@@ -237,8 +240,12 @@ namespace ProjectWS.Engine.Data
                 // DXT1 65x65 texture, no mips, clamp
                 if (this.flags.HasFlag(Flags.hasBlendMapDXT))
                 {
-                    this.blendMapMode = MapMode.DXT1;
-                    this.blendMap = br.ReadBytes(2312);
+                    this.blendMapMode = MapMode.Raw;
+                    var blendMapDXT = br.ReadBytes(2312);
+                    BcDecoder decoder = new BcDecoder();
+                    var tex = new BCnTextureData(CompressionFormat.Bc1, 65, 65, blendMapDXT);
+                    var decoded = decoder.Decode(tex);
+                    this.blendMap = decoded.MipLevels[0].Data;
                 }
 
                 // Unknown Map DXT1 //
@@ -409,13 +416,28 @@ namespace ProjectWS.Engine.Data
                 this.chunk = chunk;
                 this.index = index;
 
-                this.flags = Flags.hasHeightmap;// | Flags.hasZoneIDs;
+                this.flags = Flags.hasHeightmap;
+
                 this.heightMap = new ushort[19 * 19];
                 for (int i = 0; i < this.heightMap.Length; i++)
                 {
                     this.heightMap[i] = 8400;   // !tele 256 -998 256 3538
                 }
-                //this.zoneIDs = new uint[4] { 2141, 0, 0, 0 };
+                //this.flags |= Flags.hasZoneIDs;
+                //this.zoneIDs = new uint[4] { 18, 0, 0, 0 };
+
+                this.flags |= Flags.hasWorldLayerIDs;
+                this.worldLayerIDs = new uint[4] { 2, 78, 1041, 673 };
+
+                this.flags |= Flags.hasBlendMapDXT;
+                this.blendMap = new byte[65 * 65 * 4];
+                for (int i = 0; i < 65 * 65 * 4; i += 4)
+                {
+                    blendMap[i] = 255;
+                    blendMap[i + 1] = 0;
+                    blendMap[i + 2] = 0;
+                    blendMap[i + 3] = 0;
+                }
             }
 
             public void Render(Shader terrainShader)
@@ -447,6 +469,18 @@ namespace ProjectWS.Engine.Data
                         bw.Write(this.zoneIDs[i]);
                     }
                 }
+
+                // World Layer IDs
+                if (this.worldLayerIDs != null)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        bw.Write(this.worldLayerIDs[i]);
+                    }
+                }
+
+                if (this.blendMap != null)
+                    bw.Write(this.blendMap);
 
                 long subEnd = bw.BaseStream.Position;
                 uint subSize = (uint)(subEnd - subStart);

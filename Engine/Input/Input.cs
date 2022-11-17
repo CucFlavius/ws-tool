@@ -108,5 +108,10 @@ namespace ProjectWS.Engine.Input
         {
             return this.mouseDiff;
         }
+
+        public float GetMouseScroll()
+        {
+            return this.mousePosPerControl[this.engine.focusedRendererID].Z;
+        }
     }
 }

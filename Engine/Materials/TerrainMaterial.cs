@@ -59,13 +59,13 @@ namespace ProjectWS.Engine.Materials
             else if (this.subChunk.colorMapMode == Data.Area.SubChunk.MapMode.Raw)
                 BuildMap(this.subChunk.colorMap, InternalFormat.Rgba, out colorMapPtr);
 
-            if (this.subChunk.textureIDs != null)
+            if (this.subChunk.worldLayerIDs != null)
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    if (this.subChunk.textureIDs[i] != 0)
+                    if (this.subChunk.worldLayerIDs[i] != 0)
                     {
-                        var record = this.subChunk.chunk.gameData.database.worldLayer.Get(this.subChunk.textureIDs[i]);
+                        var record = this.subChunk.chunk.gameData.database.worldLayer.Get(this.subChunk.worldLayerIDs[i]);
                         if (record != null)
                         {
                             this.subChunk.chunk.gameData.resourceManager.AssignTexture(record.ColorMapPath, this, $"layer{i}");
@@ -210,12 +210,18 @@ namespace ProjectWS.Engine.Materials
             
             if (format == InternalFormat.Rgba)
             {
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 65, 65, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, data);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 65, 65, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
             }
             else
             {
                 GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, format, 65, 65, 0, data.Length, data);
             }
+        }
+
+        public void UpdateBlendMap(byte[] data)
+        {
+            GL.BindTexture(TextureTarget.Texture2D, this.blendMapPtr);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 65, 65, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
         }
     }
 }

@@ -132,12 +132,10 @@ namespace ProjectWS.Engine.World
                 type = 0,
                 screenPath = "",
                 screenModelPath = "",
-                //
                 chunkBounds00 = 0,
                 chunkBounds01 = 0,
                 chunkBounds02 = 0,
                 chunkBounds03 = 0,
-                //
                 plugAverageHeight = 0,
                 localizedTextIdName = 0,
                 minItemLevel = 0,

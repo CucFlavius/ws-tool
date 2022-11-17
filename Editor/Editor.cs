@@ -5,6 +5,9 @@ using ProjectWS.Editor.Tools;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Generic;
+using System.IO.Pipes;
+using System.IO;
+using System.Security.Principal;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,7 +22,7 @@ namespace ProjectWS.Editor
         readonly float timeScale = 1.0f;
         float deltaTime;
         float elapsedTime;
-        float mouseWheelPos;
+        public float mouseWheelPos;
         public bool keyboardFocused;
 
         public Engine.Engine? engine;
@@ -30,7 +33,7 @@ namespace ProjectWS.Editor
         public Dictionary<int, ModelRendererPane> modelRendererPanes;
 
         public SkyEditorPane skyEditorPane;
-        public TerrainSculptTool terrainSculpt;
+        public List<Tool> tools;
 
         FPSCounter? fps;
 
@@ -51,6 +54,7 @@ namespace ProjectWS.Editor
             this.controls = new Dictionary<int, GLWpfControl>();
             this.worldRendererPanes = new Dictionary<int, WorldRendererPane>();
             this.modelRendererPanes = new Dictionary<int, ModelRendererPane>();
+            this.tools = new List<Tool>();
             Start();
         }
 
@@ -74,8 +78,11 @@ namespace ProjectWS.Editor
                 InputUpdate();
                 this.engine.Update(this.deltaTime, this.timeScale);
 
-                if (this.terrainSculpt != null)
-                    this.terrainSculpt.Update(this.deltaTime);
+                for (int i = 0; i < this.tools.Count; i++)
+                {
+                    if (this.tools[i].isEnabled)
+                        this.tools[i].Update(this.deltaTime);
+                }
 
                 if (Program.app != null && this.fps != null)
                     Program.app.MainWindow.Title = this.fps.Get().ToString() + " " + WorldRenderer.drawCalls;
@@ -129,7 +136,7 @@ namespace ProjectWS.Editor
             var mousePosition = this.focusedControl.PointFromScreen(new Point(lpPoint.X, lpPoint.Y));
 
             this.engine.input.mousePosPerControl[this.engine.focusedRendererID] = new Vector3((float)mousePosition.X, (float)mousePosition.Y, this.mouseWheelPos);
-            
+            this.mouseWheelPos = 0;
             for (int r = 0; r < this.engine.renderers.Count; r++)
             {
                 var renderer = this.engine.renderers[r];
@@ -288,8 +295,11 @@ namespace ProjectWS.Editor
 
                 var worldRenderer = new WorldRenderer(this.engine, ID, this.engine.input);
                 renderer = worldRenderer;
-                this.terrainSculpt = new TerrainSculptTool(this.engine, this, worldRenderer);
-                //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
+
+                // Create tools
+                this.tools.Add(new TerrainSculptTool(this.engine, this, worldRenderer));
+                this.tools.Add(new TerrainLayerPaintTool(this.engine, this, worldRenderer));
+
                 this.engine.renderers.Add(renderer);
 
                 var gizmo = new Engine.Objects.Gizmos.BoxGizmo(Vector4.One);
@@ -400,15 +410,30 @@ namespace ProjectWS.Editor
             renderer.Resize((int)size.Width, (int)size.Height);
         }
 
+        NamedPipeClientStream pipeClient;
+
         internal void Save()
         {
             foreach (var wItem in this.engine.worlds)
             {
                 foreach (var cItem in wItem.Value.chunks)
                 {
+                    cItem.Value.area.ProcessForExport();
                     cItem.Value.area.Write();
                 }
             }
+
+            // Update sandbox
+            this.pipeClient = new NamedPipeClientStream(".", "Arctium.ChatCommand.Pipe", PipeDirection.InOut, PipeOptions.WriteThrough | PipeOptions.Asynchronous, TokenImpersonationLevel.Impersonation);
+            this.pipeClient.Connect();
+
+            using (var bw = new BinaryWriter(this.pipeClient))
+            {
+                var data = System.Text.Encoding.ASCII.GetBytes("!tele 256 -998 256 3538");
+                bw.Write(data.Length);
+                bw.Write(data);
+            }
+            //pipeClient.Close();
         }
     }
 }

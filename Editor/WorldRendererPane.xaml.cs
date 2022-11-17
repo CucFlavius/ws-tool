@@ -1,4 +1,5 @@
 ﻿using OpenTK.Wpf;
+using ProjectWS.Editor.Tools;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.ObjectModel;
@@ -99,12 +100,98 @@ namespace ProjectWS.Editor
 
         private void sculptTerrainButton_Click(object sender, RoutedEventArgs e)
         {
-            this.editor.terrainSculpt.mode = Tools.TerrainSculptTool.Mode.RaiseLower;
+            for (int i = 0; i < this.editor.tools.Count; i++)
+            {
+                if (this.editor.tools[i] is TerrainSculptTool)
+                {
+                    this.editor.tools[i].Enable();
+                    (this.editor.tools[i] as TerrainSculptTool).mode = Tools.TerrainSculptTool.Mode.RaiseLower;
+                }
+                else
+                {
+                    this.editor.tools[i].Disable();
+                }
+            }
         }
 
         private void flattenTerrainButton_Click(object sender, RoutedEventArgs e)
         {
-            this.editor.terrainSculpt.mode = Tools.TerrainSculptTool.Mode.Flatten;
+            for (int i = 0; i < this.editor.tools.Count; i++)
+            {
+                if (this.editor.tools[i] is TerrainSculptTool)
+                {
+                    this.editor.tools[i].Enable();
+                    (this.editor.tools[i] as TerrainSculptTool).mode = Tools.TerrainSculptTool.Mode.Flatten;
+                }
+                else
+                {
+                    this.editor.tools[i].Disable();
+                }
+            }
+        }
+
+        private void paint0TerrainButton_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < this.editor.tools.Count; i++)
+            {
+                if (this.editor.tools[i] is TerrainLayerPaintTool)
+                {
+                    this.editor.tools[i].Enable();
+                    (this.editor.tools[i] as TerrainLayerPaintTool).layer = 0;
+                }
+                else
+                {
+                    this.editor.tools[i].Disable();
+                }
+            }
+        }
+
+        private void paint1TerrainButton_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < this.editor.tools.Count; i++)
+            {
+                if (this.editor.tools[i] is TerrainLayerPaintTool)
+                {
+                    this.editor.tools[i].Enable();
+                    (this.editor.tools[i] as TerrainLayerPaintTool).layer = 1;
+                }
+                else
+                {
+                    this.editor.tools[i].Disable();
+                }
+            }
+        }
+
+        private void paint2TerrainButton_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < this.editor.tools.Count; i++)
+            {
+                if (this.editor.tools[i] is TerrainLayerPaintTool)
+                {
+                    this.editor.tools[i].Enable();
+                    (this.editor.tools[i] as TerrainLayerPaintTool).layer = 2;
+                }
+                else
+                {
+                    this.editor.tools[i].Disable();
+                }
+            }
+        }
+
+        private void paint3TerrainButton_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < this.editor.tools.Count; i++)
+            {
+                if (this.editor.tools[i] is TerrainLayerPaintTool)
+                {
+                    this.editor.tools[i].Enable();
+                    (this.editor.tools[i] as TerrainLayerPaintTool).layer = 3;
+                }
+                else
+                {
+                    this.editor.tools[i].Disable();
+                }
+            }
         }
     }
 }

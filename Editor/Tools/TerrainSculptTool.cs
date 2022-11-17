@@ -23,17 +23,22 @@ namespace ProjectWS.Editor.Tools
 
         public TerrainSculptTool(Engine.Engine engine, Editor editor, WorldRenderer world)
         {
+            this.hasBrush = true;
             this.editor = editor;
             this.engine = engine;
             this.worldRenderer = world;
         }
 
-        readonly Vector2i[] areaKernel = new Vector2i[]
+        public override void Enable()
         {
-            new Vector2i(-1, -1), new Vector2i(0, -1), new Vector2i(1, -1),
-            new Vector2i(-1,  0), new Vector2i(0,  0), new Vector2i(1,  0),
-            new Vector2i(-1,  1), new Vector2i(0,  1), new Vector2i(1,  1)
-        };
+            this.isEnabled = true;
+            this.worldRenderer.brushParameters.mode = Engine.Rendering.ShaderParams.BrushParameters.BrushMode.Gradient;
+        }
+
+        public override void Disable()
+        {
+            this.isEnabled = false;
+        }
 
         public override void Update(float deltaTime)
         {
@@ -41,6 +46,11 @@ namespace ProjectWS.Editor.Tools
             if (this.worldRenderer == null) return;
             if (this.worldRenderer.world == null)  return;
             if (this.worldRenderer.mousePick == null) return;
+
+            // Update brush size
+            this.worldRenderer.brushParameters.size += this.engine.input.GetMouseScroll();
+            this.worldRenderer.brushParameters.size = (float)Math.Clamp(this.worldRenderer.brushParameters.size, 1.0f, 100f);
+
 
             if (this.engine.input.LMB && this.editor.keyboardFocused && this.worldRenderer.brushParameters.isEnabled)
             {

@@ -8,7 +8,7 @@
             public enum Flags : uint
             {
                 hasHeightmap = 0x1,
-                hasTextureIDs = 0x2,
+                hasWorldLayerIDs = 0x2,
                 hasBlendMap = 0x4,
                 hasColorMap = 0x8,
                 hasUnkMap = 0x10,

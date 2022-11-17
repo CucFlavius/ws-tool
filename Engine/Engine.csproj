@@ -16,4 +16,8 @@
     <PackageReference Include="SpaceWizards.SharpFont" Version="1.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\BCnEnc.Net\BCnEncoder.csproj" />
+  </ItemGroup>
+
 </Project>

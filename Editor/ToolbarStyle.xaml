@@ -235,5 +235,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <BitmapImage x:Key="globe_icon" UriSource="/globe.png" />
 </ResourceDictionary>

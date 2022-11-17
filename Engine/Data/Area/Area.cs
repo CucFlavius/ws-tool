@@ -1,4 +1,6 @@
-﻿using OpenTK;
+﻿using BCnEncoder.Encoder;
+using BCnEncoder.Shared;
+using OpenTK;
 using OpenTK.Mathematics;
 using ProjectWS.Engine.Data.Extensions;
 using System;
@@ -58,7 +60,7 @@ namespace ProjectWS.Engine.Data
             //this.props = new Prop[0];
             //this.uuidPropMap = new Dictionary<uint, Prop>();
             //this.curts = new Curt[0];
-
+            ProcessForExport();
             Write();
         }
 
@@ -254,6 +256,25 @@ namespace ProjectWS.Engine.Data
                     default:
                         br.SkipChunk(chunkID.ToString(), chunkSize, this.GetType().ToString());
                         break;
+                }
+            }
+        }
+
+        public void ProcessForExport()
+        {
+            foreach (var sc in subChunks)
+            {
+                if (sc.blendMap != null)
+                {
+                    if (sc.blendMap.Length == 65 * 65 * 4 && sc.flags.HasFlag(SubChunk.Flags.hasBlendMapDXT))
+                    {
+                        // Convert chunk to dxt
+                        BcEncoder encoder = new BcEncoder();
+                        encoder.OutputOptions.GenerateMipMaps = false;
+                        encoder.OutputOptions.Quality = CompressionQuality.Balanced;
+                        encoder.OutputOptions.Format = CompressionFormat.Bc1;
+                        sc.blendMap = encoder.EncodeBytesToRawBytes(sc.blendMap, 65, 65, CompressionFormat.Rgba32, 0, out int _, out int _);
+                    }
                 }
             }
         }

@@ -1,6 +1,15 @@
 ﻿using OpenTK.Mathematics;
 using ProjectWS.Editor;
 using ProjectWS.Engine.Rendering;
+using System.Net.Sockets;
+using System;
+using System.IO;
+using ProjectWS.Engine.Data.Extensions;
+using SharpFont;
+using System.Linq;
+using ProjectWS.Engine.Extensions;
+using System.IO.Pipes;
+using System.Security.Principal;
 
 namespace ProjectWS.TestArea
 {
@@ -29,15 +38,12 @@ namespace ProjectWS.TestArea
             string cacheLocation = @"D:\Wildstar1.7.8.16042_Cache\";
             this.engine.LoadGameData(installLocation, OnDataLoaded);
             this.engine.SetCacheLocation(cacheLocation);
-
-            //CompareBetaAndRetailTextures();
-            //FindBoneFlags();
-            //TestSkyFile();
         }
 
         void OnDataLoaded(Engine.Data.GameData data)
         {
             // Populate world sky list in sky editor pane
+            /*
             int idx = 0;
             int defaultIdx = 0;
             foreach (var item in data.database.worldSky.records)
@@ -49,6 +55,7 @@ namespace ProjectWS.TestArea
                 idx++;
             }
             Program.editor.skyEditorPane.skyDataGrid.SelectedIndex = defaultIdx;
+            */
 
             //Program.editor.mainForm.m_gameDataWindow.PopulateTreeView(data);
             StartAfterDataLoaded();
@@ -61,21 +68,21 @@ namespace ProjectWS.TestArea
         {
             Debug.Log("Data Loaded");
 
+            //CreateNewWorld();
             LoadTestWorld();
             //LoadTestTexture();
             //PrintTestDatabase();
             //LoadAnM3ForDebug();
             //TestSkyFile();
-            //CreateNewWorld();
         }
 
         void LoadTestWorld()
         {
             var testWorld = new Engine.World.World(this.engine, 0, true);
             //testWorld.LoadMap(6, new Vector2(64, 64));   // Map\Eastern, Middle of the map
-            testWorld.TeleportToWorldLocation(114, -1); // !tele 3832.459 -1001.444 -4496.945 51
+            //testWorld.TeleportToWorldLocation(114, -1); // !tele 3832.459 -1001.444 -4496.945 51
             //testWorld.Teleport(100, -1000, 100, 51);
-            //testWorld.Teleport(256, -900, 256, 3538, 1);
+            testWorld.Teleport(256, -900, 256, 3538, 1); // !tele 256 -998 256 3538
         }
 
         void CreateNewWorld()
