@@ -31,6 +31,8 @@ namespace ProjectWS.Engine.Data
 
             public bool loadRequested;
 
+            public Prop() { }
+
             public Prop(BinaryReader br, long chunkStart)
             {
                 this.uniqueID = br.ReadUInt32();
@@ -42,7 +44,7 @@ namespace ProjectWS.Engine.Data
                 this.unkOffset = br.ReadInt32();
                 this.scale = br.ReadSingle();
                 this.rotation = br.ReadQuaternion(true);
-                this.position = br.ReadVector3();
+                this.position = br.ReadVector3(false);
                 this.placement = new Placement(br);
                 this.unk7 = br.ReadInt32();
                 this.unk8 = br.ReadInt32();
@@ -67,6 +69,55 @@ namespace ProjectWS.Engine.Data
                 {
                     this.path = null;
                 }
+            }
+
+            public void Write(BinaryWriter bw, int propsSize, ref Dictionary<string, uint> names, ref uint lastNameOffset)
+            {
+                bw.Write(this.uniqueID);
+                bw.Write(this.someID);
+                bw.Write(this.unk0);
+                bw.Write(this.unk1);
+                bw.Write((int)this.modelType);
+                // Name offset
+                if (this.path == null)
+                {
+                    bw.Write(0);
+                }
+                else
+                {
+                    if (names.ContainsKey(this.path))
+                    {
+                        bw.Write((uint)(names[this.path] + propsSize));
+                    }
+                    else
+                    {
+                        names.Add(this.path, lastNameOffset);
+                        bw.Write((uint)(lastNameOffset + propsSize));
+                        lastNameOffset += (uint)(this.path.Length * 2 + 2);
+                    }
+                }
+                bw.Write(this.unkOffset);
+                bw.Write(this.scale);
+                bw.Write(this.rotation.X);
+                bw.Write(this.rotation.Y);
+                bw.Write(this.rotation.Z);
+                bw.Write(this.rotation.W);
+                bw.Write(this.position.X);
+                bw.Write(this.position.Y);
+                bw.Write(this.position.Z);
+                bw.Write(this.placement.minX);
+                bw.Write(this.placement.minY);
+                bw.Write(this.placement.maxX);
+                bw.Write(this.placement.maxY);
+                bw.Write(this.unk7);
+                bw.Write(this.unk8);
+                bw.Write(this.unk9);
+                bw.Write(this.color0);
+                bw.Write(this.color1);
+                bw.Write(this.unk10);
+                bw.Write(this.unk11);
+                bw.Write(this.color2);
+                bw.Write(this.unk12);
             }
 
             public enum ModelType

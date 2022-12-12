@@ -28,8 +28,9 @@ namespace ProjectWS.Engine.Data
 
         public Header header;
         public List<SubChunk>? subChunks;    // Variable size, not always 16*16
-        public Prop[]? props;
-        public Dictionary<uint, Prop>? uuidPropMap;
+        public List<Prop>? props;
+        public Dictionary<uint, Prop>? propLookup;
+        public HashSet<uint> renderedProps;
         public Curt[]? curts;
 
         public Action onFinishedReading;
@@ -43,6 +44,7 @@ namespace ProjectWS.Engine.Data
             this.gameData = chunk.gameData;
             this.minHeight = float.MaxValue;
             this.maxHeight = float.MinValue;
+            renderedProps = new HashSet<uint>();
         }
 
         public void Create()
@@ -57,16 +59,15 @@ namespace ProjectWS.Engine.Data
                 idx++;
             }
 
-            //this.props = new Prop[0];
-            //this.uuidPropMap = new Dictionary<uint, Prop>();
+            this.props = new List<Prop>();
+            this.propLookup = new Dictionary<uint, Prop>();
             //this.curts = new Curt[0];
             ProcessForExport();
-            Write();
         }
 
         public void Read()
         {
-            try
+            //try
             {
                 if (this.fileEntry == null)
                 {
@@ -106,10 +107,10 @@ namespace ProjectWS.Engine.Data
                 if (this.onFinishedReading != null)
                     this.onFinishedReading.Invoke();
             }
-            catch (Exception e)
+            //catch (Exception e)
             {
-                Debug.LogError("Exception at : " + this.chunk.gameData.archives["ClientData"].fileNames[this.fileEntry.hash] + " " + this.chunk.coords);
-                Debug.LogException(e);
+                //Debug.LogError("Exception at : " + this.chunk.gameData.archives["ClientData"].fileNames[this.fileEntry.hash] + " " + this.chunk.coords);
+                //Debug.LogException(e);
             }
         }
 
@@ -231,12 +232,12 @@ namespace ProjectWS.Engine.Data
                         {
                             long chunkStart = br.BaseStream.Position;
                             int propCount = br.ReadInt32();
-                            this.props = new Prop[propCount];
-                            this.uuidPropMap = new Dictionary<uint, Prop>();
+                            this.props = new List<Prop>();
+                            this.propLookup = new Dictionary<uint, Prop>();
                             for (int i = 0; i < propCount; i++)
                             {
-                                this.props[i] = new Prop(br, chunkStart);
-                                this.uuidPropMap.Add(this.props[i].uniqueID, this.props[i]);
+                                this.props.Add(new Prop(br, chunkStart));
+                                this.propLookup.Add(this.props[i].uniqueID, this.props[i]);
                             }
                             //File.WriteAllText($"D:/Props_{this.chunk.coords}.json", JsonConvert.SerializeObject(this.props, Formatting.Indented));
                             br.BaseStream.Position = chunkStart + chunkSize;
@@ -260,6 +261,44 @@ namespace ProjectWS.Engine.Data
             }
         }
 
+        public uint AddProp(string path, Vector3 position, Quaternion rotation, float scale)
+        {
+            if (this.props == null)
+                this.props = new List<Prop>();
+
+            if (this.propLookup == null)
+                this.propLookup = new Dictionary<uint, Prop>();
+
+            Prop p = new Prop();
+            p.path = path;
+            p.position = position;
+            p.rotation = rotation;
+            p.scale = scale;
+
+            p.uniqueID = 55419076;
+
+            p.color0 = -8421505;
+            p.color1 = -1;
+            p.color2 = -1;
+
+            p.placement = new Placement(0, 0, 3000, 3000);
+
+            this.props.Add(p);
+            this.propLookup.Add(p.uniqueID, p);
+
+            // TODO : Determine which chunks it fits in
+            for (int i = 0; i < this.subChunks.Count; i++)
+            {
+                if (this.subChunks[i].propUniqueIDs == null)
+                    this.subChunks[i].propUniqueIDs = new List<uint>();
+
+                this.subChunks[i].propUniqueIDs.Add(p.uniqueID);
+            }
+
+
+            return p.uniqueID;
+        }
+
         public void ProcessForExport()
         {
             foreach (var sc in subChunks)
@@ -281,6 +320,9 @@ namespace ProjectWS.Engine.Data
 
         public void Write()
         {
+            if (File.Exists(this.filePath))
+                File.Delete(this.filePath);
+
             using(var str = File.OpenWrite(this.filePath))
             {
                 using(BinaryWriter bw = new BinaryWriter(str))
@@ -302,7 +344,38 @@ namespace ProjectWS.Engine.Data
                         bw.Write(chnkSize);         // Size calculated
                         bw.BaseStream.Position = subEnd;
                     }
-                    // TODO : write props
+
+                    if (this.props != null && this.props.Count > 0)
+                    {
+                        long chnkStart = bw.BaseStream.Position;
+                        bw.Write((uint)1347571568);     // PROp
+                        bw.Write((uint)0);              // Size pad
+                        long subStart = bw.BaseStream.Position;
+                        bw.Write(this.props.Count);    // Prop count
+                        Dictionary<string, uint> paths = new Dictionary<string, uint>();
+                        List<uint> pathStarts = new List<uint>();
+                        Dictionary<uint, string> pathLookups = new Dictionary<uint, string>();
+                        uint lastNameOffset = 0;
+                        int propsSize = this.props.Count * 104;
+                        for (int i = 0; i < this.props.Count; i++)
+                        {
+                            pathStarts.Add(lastNameOffset);
+                            this.props[i].Write(bw, propsSize + 4, ref paths, ref lastNameOffset);
+                        }
+                        foreach (var item in paths)
+                        {
+                            pathLookups.Add(item.Value, item.Key);
+                        }
+                        for (int i = 0; i < pathStarts.Count; i++)
+                        {
+                            bw.WriteWString(pathLookups[pathStarts[i]]);
+                        }
+                        long subEnd = bw.BaseStream.Position;
+                        uint chnkSize = (uint)(subEnd - subStart);
+                        bw.BaseStream.Position = chnkStart + 4;
+                        bw.Write(chnkSize);         // Size calculated
+                        bw.BaseStream.Position = subEnd;
+                    }
                     // TODO : write curts
                     // .. and other stuff
                 }

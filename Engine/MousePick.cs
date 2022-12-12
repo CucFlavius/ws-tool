@@ -1,22 +1,13 @@
 ﻿using OpenTK.Mathematics;
 using ProjectWS.Engine.Components;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Lighting;
 using ProjectWS.Engine.Objects.Gizmos;
 using ProjectWS.Engine.Rendering;
-using ProjectWS.Engine.World;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static ProjectWS.Engine.Data.Area;
-using static ProjectWS.Engine.Data.Area.SubChunk;
 
 namespace ProjectWS.Engine
 {
     public class MousePick
     {
+        public Mode mode = Mode.Disabled;
         private WorldRenderer renderer;
         public Vector3 rayOrigin;
         public Vector3 rayVec;
@@ -26,6 +17,15 @@ namespace ProjectWS.Engine
         public Vector3 terrainHitPoint;
         public Vector2i terrainSubchunkHit;
         public Vector2i areaHit;
+        public World.Prop propHit;
+        public World.Prop.Instance propInstanceHit;
+
+        public enum Mode
+        {
+            Disabled,
+            Terrain,
+            Prop,
+        }
 
         public MousePick(WorldRenderer renderer)
         {
@@ -63,7 +63,10 @@ namespace ProjectWS.Engine
                 }
             }
 
-            TerrainPick();
+            if (this.mode == Mode.Terrain)
+                TerrainPick();
+            else if (this.mode == Mode.Prop)
+                PropPick();
         }
 
         private void TerrainPick()
@@ -112,6 +115,44 @@ namespace ProjectWS.Engine
                                         }
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Iterate over all the props in the world, and all instances that are visible
+        /// and check if the mouse ray intersects with the bounding boxes, then pick the most suitable prop to be selected
+        /// </summary>
+        private void PropPick()
+        {
+            if (this.renderer.world != null)
+            {
+                this.renderer.brushParameters.isEnabled = false;
+
+                foreach (var propItem in this.renderer.world.props)
+                {
+                    var bounds = propItem.Value.boundingBox;
+
+                    foreach (var instanceItem in propItem.Value.instances)
+                    {
+                        var instance = instanceItem.Value;
+                        if (instance.visible)
+                        {
+                            // TODO : OBB intersection check insted of AABB, also use the instance scale
+                            Vector2 result = bounds.RayBoxIntersect(this.rayOrigin, this.rayVec, instance);
+
+                            if (result.X <= result.Y)
+                            {
+                                this.propHit = propItem.Value;
+                                this.propInstanceHit = instance;
+
+                                // Exiting once a prop is found
+                                // TODO : Instead of drawing all labels, check if the prop triangles were hit, and check which hit is closer to the camera
+
+                                Debug.DrawLabel(propItem.Value.data.fileName, instance.position, Vector4.One, true);
                             }
                         }
                     }

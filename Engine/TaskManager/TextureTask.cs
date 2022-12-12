@@ -24,9 +24,17 @@ namespace ProjectWS.Engine.TaskManager
             switch (this.jobType)
             {
                 case JobType.Read:
-                    this.resourceManager.textureResources[this.filePath].Read();
-                    this.jobType = JobType.Build;
-                    this.resourceManager.engine.taskManager.buildTasks.Enqueue(this);
+                    if (this.resourceManager.textureResources.TryGetValue(this.filePath, out var texResource))
+                    {
+                        texResource.Read();
+
+                        this.jobType = JobType.Build;
+                        this.resourceManager.engine.taskManager.buildTasks.Enqueue(this);
+                    }
+                    else
+                    {
+                        Debug.LogError("this.resourceManager.textureResources does not contain " + this.filePath);
+                    }
                     break;
                 case JobType.Write:
                     break;

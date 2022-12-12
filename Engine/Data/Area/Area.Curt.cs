@@ -29,7 +29,7 @@ namespace ProjectWS.Engine.Data
                 this.positions = new Vector3[this.positionCount];
                 for (int i = 0; i < this.positionCount; i++)
                 {
-                    this.positions[i] = br.ReadVector3();
+                    this.positions[i] = br.ReadVector3(false);
                 }
                 br.BaseStream.Position = save;
             }

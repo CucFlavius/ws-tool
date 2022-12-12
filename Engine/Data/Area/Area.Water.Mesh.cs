@@ -28,7 +28,7 @@ namespace ProjectWS.Engine.Data
 
                     public WaterVertex(BinaryReader br)
                     {
-                        this.position = br.ReadVector3();
+                        this.position = br.ReadVector3(false);
                         this.normal = br.ReadVector3(false);
                         this.tangent = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), 0);
                         this.bitangent = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), 0);

@@ -1,6 +1,6 @@
 namespace ProjectWS.Engine.Data
 {
-    public class TimeTrackUnkBlock : TimeTrack<UnkBlock>
+    public class TimeTrackUnkBlock : TimeTrack<SHCoefficients>
     {
         public TimeTrackUnkBlock(BinaryReader br, long startOffset)
         {
@@ -11,7 +11,7 @@ namespace ProjectWS.Engine.Data
                 // Read actual data
                 for (uint i = 0; i < this.elements; i++)
                 {
-                    this.data[i] = new UnkBlock(br);
+                    this.data[i] = new SHCoefficients(br);
                 }
             }
 

@@ -121,7 +121,6 @@ namespace ProjectWS.Engine.Data
                             }
                         }
 
-                        /*
                         // Tangents //
                         Vector3[] tan1 = new Vector3[this.vertices.Length];
                         Vector3[] tan2 = new Vector3[this.vertices.Length];
@@ -172,7 +171,6 @@ namespace ProjectWS.Engine.Data
                             Vector3 tmp = (t - n * Vector3.Dot(n, t)).Normalized();
                             this.vertices[a].tangent = new Vector4(tmp.X, tmp.Y, tmp.Z, 1.0f); // or -1.0? if uv is flipped?
                         }
-                        */
                     }
                     else
                     {

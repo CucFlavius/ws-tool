@@ -85,14 +85,14 @@ namespace ProjectWS.Editor
                 }
 
                 if (Program.app != null && this.fps != null)
-                    Program.app.MainWindow.Title = this.fps.Get().ToString() + " " + WorldRenderer.drawCalls;
+                    Program.app.MainWindow.Title = $"FPS:{this.fps.Get()} DrawCalls:{WorldRenderer.drawCalls} PropDrawCalls:{WorldRenderer.propDrawCalls}";
             }
         }
 
-        public void Render(int renderer)
+        public void Render(int renderer, int frameBuffer)
         {
             if (this.engine != null)
-                this.engine.Render(renderer);
+                this.engine.Render(renderer, frameBuffer);
 
             if (this.fps != null)
                 this.fps.Update(this.deltaTime);
@@ -299,6 +299,7 @@ namespace ProjectWS.Editor
                 // Create tools
                 this.tools.Add(new TerrainSculptTool(this.engine, this, worldRenderer));
                 this.tools.Add(new TerrainLayerPaintTool(this.engine, this, worldRenderer));
+                this.tools.Add(new PropTool(this.engine, this, worldRenderer));
 
                 this.engine.renderers.Add(renderer);
 
@@ -365,10 +366,10 @@ namespace ProjectWS.Editor
             }
 
             // Add events
-            openTkControl.Render += (delta) => OpenTkControl_OnRender(delta, ID);
+            openTkControl.Render += (delta) => OpenTkControl_OnRender(delta, ID, openTkControl.Framebuffer);
             openTkControl.Loaded += (sender, e) => OpenTkControl_OnLoaded(sender, e, renderer, rendererGrid);
             openTkControl.SizeChanged += (sender, e) => OpenTkControl_OnSizeChanged(sender, e, renderer);
-
+            
             return renderer;
         }
 
@@ -386,7 +387,7 @@ namespace ProjectWS.Editor
             window.LayoutAnchorablePaneGroup.Children.Add(layoutAnchorablePane);
         }
 
-        void OpenTkControl_OnRender(TimeSpan delta, int ID)
+        void OpenTkControl_OnRender(TimeSpan delta, int ID, int frameBuffer)
         {
             // Find which control is focused, and only update if ID matches
             // This is so that Update is only called one time, not for every render control call
@@ -395,7 +396,9 @@ namespace ProjectWS.Editor
                 Update();
             }
 
-            Render(ID);
+            
+
+            Render(ID, frameBuffer);
         }
 
         void OpenTkControl_OnLoaded(object sender, RoutedEventArgs e, Renderer renderer, Grid control)

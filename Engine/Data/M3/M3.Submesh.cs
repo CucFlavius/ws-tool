@@ -43,7 +43,9 @@ namespace ProjectWS.Engine.Data
 
         public bool isBuilt;
         public bool positionCompressed;
-        public int vao;
+        public int _vertexArrayObject;
+
+        int buffer;
 
         #endregion
 
@@ -100,12 +102,12 @@ namespace ProjectWS.Engine.Data
 
             this.positionCompressed = vertexFieldTypes[0] == Geometry.VertexFieldType.Vector3_16bit;
 
-            GL.GenVertexArrays(1, out vao);
+            GL.GenVertexArrays(1, out _vertexArrayObject);
             int vbo = GL.GenBuffer();
             int ebo = GL.GenBuffer();
 
             // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-            GL.BindVertexArray(vao);
+            GL.BindVertexArray(_vertexArrayObject);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
 
@@ -174,6 +176,10 @@ namespace ProjectWS.Engine.Data
             // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
+            //buffer = GL.GenBuffer();
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, buffer);
+
+
             // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
             //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -186,9 +192,24 @@ namespace ProjectWS.Engine.Data
 
         public void Draw()
         {
-            GL.BindVertexArray(vao); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+            if (!this.isBuilt) return;
+
+            GL.BindVertexArray(this._vertexArrayObject);
             GL.DrawElements(BeginMode.Triangles, this.indexData.Length, DrawElementsType.UnsignedInt, 0);
-            //GL.BindVertexArray(0); // no need to unbind it every time 
+        }
+
+        public void DrawInstanced(Matrix4[] instances)
+        {
+            if (!this.isBuilt) return;
+
+            // configure instanced array
+            // -------------------------
+            //int buffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, this.buffer);
+            GL.BufferData( BufferTarget.ArrayBuffer, instances.Length * 64, instances, BufferUsageHint.StaticDraw);
+
+            GL.BindVertexArray(this._vertexArrayObject);
+            GL.DrawElementsInstanced(PrimitiveType.Triangles, this.indexData.Length, DrawElementsType.UnsignedInt, instances, instances.Length);
         }
     }
 }

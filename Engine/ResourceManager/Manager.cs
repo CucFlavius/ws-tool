@@ -26,7 +26,6 @@ namespace ProjectWS.Engine.Data.ResourceManager
             this.textureResources[filePath].AssignTexture(material, samplerName);
         }
 
-        /*
         public void LoadM3Model(string path)
         {
             if (this.modelResources.ContainsKey(path)) return;
@@ -35,7 +34,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
 
             this.engine.taskManager.modelThread.Enqueue(new TaskManager.ModelTask(path, TaskManager.Task.JobType.Read, this));
         }
-        */
+
         /*
         public TextureResource GetTextureResource(string filePath)
         {

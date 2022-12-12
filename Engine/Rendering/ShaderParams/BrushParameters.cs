@@ -23,7 +23,7 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
             this.position = position;
             this.size = size;
 
-            this.isEnabled = true;
+            this.isEnabled = false;
         }
 
         public void SetToShader(Shader shader)

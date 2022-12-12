@@ -1,13 +1,9 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Database.Definitions;
-using ProjectWS.Engine.Database;
-using ProjectWS.Engine.Objects.Gizmos;
-using ProjectWS.Engine.Rendering;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using ProjectWS.Engine.Data;
+using ProjectWS.Engine.Data.Extensions;
+using ProjectWS.Engine.Objects.Gizmos;
+using static ProjectWS.Engine.Data.Area;
 
 namespace ProjectWS.Engine.World
 {
@@ -44,8 +40,8 @@ namespace ProjectWS.Engine.World
 
         // Prop
         List<string> loadedProps;
-        //Dictionary<string, Prop> props;
-        HashSet<uint> culledUUIDs;
+        public Dictionary<string, Prop> props;
+        //HashSet<uint> culledUUIDs;
 
         // Controller
         public Controller controller;
@@ -70,13 +66,14 @@ namespace ProjectWS.Engine.World
             this.areaIDtoChunk = new Dictionary<int, Chunk>();
             this.distanceSortedSubchunksBuffer = new List<Data.Submesh>();
             this.chunkComparer = new ChunkDistanceComparer();
-            //this.loadedProps = new Dictionary<string, Prop>();
+            this.loadedProps = new List<string>();
+            this.props = new Dictionary<string, Prop>();
             this.controller = new Controller(this);
             this.controller.onChunkPositionChange = OnChunkPositionChange;
             this.controller.onSubchunkPositionChange = OnSubchunkPositionChange;
             this.controller.onWorldPositionChange = OnWorldPositionChange;
             this.cullingStopwatch = new System.Diagnostics.Stopwatch();
-            this.culledUUIDs = new HashSet<uint>();
+            //this.culledUUIDs = new HashSet<uint>();
             this.environment = new Environment(this);
 
             this.engine = engine;
@@ -166,6 +163,8 @@ namespace ProjectWS.Engine.World
             chunk.areaFilePath = $"{mapDir}\\{worldName}.{y}{x}.area";
             var area = new Area(chunk, 0);
             area.Create();
+            area.AddProp("Art\\Dev\\gray_sphere.m3", new Vector3(256, -995, 254), Quaternion.Identity, 5.0f);
+            area.Write();
         }
 
         public void TeleportToWorldLocation(uint ID, int projectID)
@@ -237,7 +236,6 @@ namespace ProjectWS.Engine.World
 
         public void LoadProp(Data.M3 data, uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
         {
-            /*
             if (this.props.ContainsKey(data.filePath))
             {
                 this.props[data.filePath].AddInstance(uuid, position, rotation, scale);
@@ -245,9 +243,8 @@ namespace ProjectWS.Engine.World
             else
             {
                 this.loadedProps.Add(data.filePath);
-                this.props.Add(data.filePath, new Prop(uuid, data, position, rotation, scale)); NYI
+                this.props.Add(data.filePath, new Prop(uuid, data, position, rotation, scale));
             }
-            */
         }
 
         public void Update(float deltaTime)
@@ -289,6 +286,23 @@ namespace ProjectWS.Engine.World
             foreach (KeyValuePair<Vector2i, Chunk> chunk in this.activeChunks)
             {
                 chunk.Value.RenderWater(shader);
+            }
+        }
+
+        public void RenderProps(Shader shader)
+        {
+            if (this.activeChunks == null) return;
+
+            GL.Disable(EnableCap.Blend);
+            GL.Enable(EnableCap.DepthTest);
+
+            foreach (var item in this.props)
+            {
+                for (int k = 0; k < item.Value.renderableInstances.Count; k++)
+                {
+                    Matrix4 model = item.Value.renderableInstances[k];
+                    item.Value.Render(shader, model);
+                }
             }
         }
 
@@ -399,10 +413,7 @@ namespace ProjectWS.Engine.World
             {
                 this.cullTaskUpdate = false;
 
-                int visibleProps = 0;
                 // Update prop culling
-                culledUUIDs.Clear();
-                /*
                 for (int i = 0; i < this.loadedProps.Count; i++)
                 {
                     if (this.props.TryGetValue(this.loadedProps[i], out Prop prop))
@@ -412,74 +423,19 @@ namespace ProjectWS.Engine.World
                         for (int k = 0; k < prop.uniqueInstanceIDs.Count; k++)
                         {
                             uint uuid = prop.uniqueInstanceIDs[k];
+                            prop.instances[uuid].visible = false;
                             if (prop.cullingResults[prop.instances[uuid].uuid])
                             {
                                 prop.renderableUUIDs.Add(prop.instances[uuid].uuid);
                                 prop.renderableInstances.Add(prop.instances[uuid].transform);
-                                visibleProps++;
-
-                                //if (Settings.data.debug.toggleDoodadBoundingBoxGizmos || Settings.data.debug.toggleDoodadScreenSpaceBoundsGizmos)
-                                {
-                                    // Get Vector (Distance essentially to use in Dot Product).
-                                //    Vector3 heading = prop.instances[j].transform.ExtractPosition() - this.activeCamera.position;
-                                    // Check is object is behind camera.
-                                //    bool behindCamera = (Vector3.Dot(this.activeCamera.viewVector, heading) > 0) ? true : false;
-
-                                    //if (!behindCamera)
-                                //    if (prop.batches != null && !prop.culled)
-                                //    {
-                                        //if (Settings.data.debug.toggleDoodadBoundingBoxGizmos)
-                                //            prop.boundingBox.RenderBounds(prop.instances[j].transform, new Color(0.8f, 0.8f, 1, 0.5f));
-                                        //if (Settings.data.debug.toggleDoodadScreenSpaceBoundsGizmos)
-                                //            prop.boundingBox.RenderScreenBounds(prop.instances[j].transform, new Color(0.6f, 0.6f, 1, 0.1f), this.activeCamera.viewMatrix, this.activeCamera.projectionMatrix);
-                                //    }
-                                //}
-
-                                if (prop.boundingBox.RayBoxIntersect(this.mouseRay, prop.instances[uuid].transform) > 0)
-                                {
-                                    prop.boundingBox.RenderBounds(prop.instances[uuid].transform, new Color(0.8f, 0.8f, 1, 0.5f));
-                                    Vector3 pos = prop.instances[uuid].transform.ExtractPosition();
-                                    Vector3 rot = prop.instances[uuid].transform.ExtractRotation().eulerAngles;
-                                    Vector3 sc = prop.instances[uuid].transform.ExtractScale();
-                                    //string label = $"{prop.data.filePath}\nInstance {j} / {prop.instances.Count}\nP:{pos}\nR:{rot}\nS:{sc}";
-
-                                    foreach (var item in this.activeChunks)
-                                    {
-                                        if (item.Value.area != null)
-                                        {
-                                            if (item.Value.area.uuidPropMap != null)
-                                            {
-                                                if (item.Value.area.uuidPropMap.TryGetValue(uuid, out Data.Area.Prop propData))
-                                                {
-                                                    string label = $"{prop.data.filePath}\nUUID {uuid}\nBatches {prop.batches.Length}";
-                                                    IMDraw.LabelShadowed(prop.instances[uuid].transform.ExtractPosition(), Color.white, LabelPivot.MIDDLE_CENTER, LabelAlignment.CENTER, label);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
+                                prop.instances[uuid].visible = true;
                             }
-                        }
 
-                        prop.culled = prop.renderableInstances.Count == 0;
-
-                        prop.block.Clear();
-
-                        if (!prop.culled)
-                        {
-                            //prop.block.SetVectorArray("ambientColorB", prop.renderableLightingAmbientColors);
-                            //prop.block.SetVectorArray("sunColorB", prop.renderableLightingSunColors);
-                            //prop.block.SetVectorArray("sunVectorB", prop.renderableLightingSunVectors);
-                        }
-                        else
-                        {
-                            // TODO : if it's culled (aka all instances in the world are invisible) then submit a pause in animation thread
+                            prop.culled = prop.renderableInstances.Count == 0;
                         }
                     }
                 }
-                */
-                // Cycle
+
                 this.cullTaskProcess = true;
             }
         }
@@ -504,7 +460,7 @@ namespace ProjectWS.Engine.World
                         ChunksCulling();
 
                         // Props //
-                        //PropCulling();
+                        PropCulling();
                     }
                     catch (System.Exception e)
                     {
@@ -618,7 +574,6 @@ namespace ProjectWS.Engine.World
 
         public void PropCulling()
         {
-            /*
             for (int i = 0; i < this.loadedProps.Count; i++)
             {
                 if (this.props.TryGetValue(this.loadedProps[i], out Prop prop))
@@ -641,30 +596,33 @@ namespace ProjectWS.Engine.World
                             if (item.Value.area.subChunks[i].isVisible)
                             {
                                 if (item.Value.area.subChunks[i].propUniqueIDs == null) continue;
-                                for (int j = 0; j < item.Value.area.subChunks[i].propUniqueIDs.Length; j++)
+                                for (int j = 0; j < item.Value.area.subChunks[i].propUniqueIDs.Count; j++)
                                 {
                                     var uuid = item.Value.area.subChunks[i].propUniqueIDs[j];
-                                    var areaprop = item.Value.area.uuidPropMap[uuid];
+                                    var areaprop = item.Value.area.propLookup[uuid];
                                     var size = areaprop.placement.sizef;
                                     if (areaprop.path == null) continue;
 
-                                    if (item.Value.area.subChunks[i].distanceToCam / size * areaprop.scale < 100f)
+                                    if (item.Value.area.subChunks[i].distanceToCam / (size * areaprop.scale) < 200f)
                                     {
                                         if (areaprop.loadRequested)
                                         {
-                                            if (this.props.TryGetValue(areaprop.path, out Prop prop))
+                                            if (this.props.TryGetValue(areaprop.path, out Prop? prop))
                                             {
+                                                prop.cullingResults[uuid] = true;
+                                                /*
                                                 if (prop.boundingBox != null)
                                                 {
-                                                    if (prop.instances.TryGetValue(uuid, out Prop.Instance instance))
+                                                    if (prop.instances.TryGetValue(uuid, out Prop.Instance? instance))
                                                     {
-                                                        if (prop.boundingBox.GetScreenSpaceRect(instance.transform, out Rect rect, this.activeCamera.viewMatrix, this.activeCamera.projectionMatrix))
+                                                        if (prop.boundingBox.GetScreenSpaceRect(instance.transform, out Rect rect, this.renderer.viewports[0]))
                                                         {
                                                             if (rect.height > 10f)
                                                                 prop.cullingResults[uuid] = true;
                                                         }
                                                     }
                                                 }
+                                                */
                                             }
                                         }
 
@@ -675,7 +633,7 @@ namespace ProjectWS.Engine.World
                                             {
                                                 // Load M3 Model //
                                                 this.gameData.resourceManager.LoadM3Model(areaprop.path);
-                                                this.gameData.resourceManager.modelResources[areaprop.path].TryBuildObject(areaprop.uniqueID, areaprop.position, areaprop.rotation, areaprop.scale * Vector3.one);
+                                                this.gameData.resourceManager.modelResources[areaprop.path].TryBuildObject(areaprop.uniqueID, areaprop.position, areaprop.rotation, areaprop.scale * Vector3.One);
                                             }
                                             else if (areaprop.modelType == Data.Area.Prop.ModelType.I3)
                                             {
@@ -693,7 +651,6 @@ namespace ProjectWS.Engine.World
                     }
                 }
             }
-            */
         }
 
         List<Vector2>? CreateChunks(string assetPath, int projectID)

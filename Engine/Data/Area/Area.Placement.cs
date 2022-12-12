@@ -13,6 +13,7 @@ namespace ProjectWS.Engine.Data
         {
             public ushort minX;
             public ushort minY;
+
             public ushort maxX;
             public ushort maxY;
 
@@ -20,10 +21,24 @@ namespace ProjectWS.Engine.Data
             public float sizef;
             public int[] subChunkIndices;
 
+            public Placement(ushort minX, ushort minY, ushort maxX, ushort maxY)
+            {
+                this.minX = minX;
+                this.minY = minY;
+
+                this.maxX = maxX;
+                this.maxY = maxY;
+
+                this.size = (ushort)((this.maxX - this.minX) * (this.maxY - this.minY));
+                this.sizef = (float)this.size;
+                this.subChunkIndices = new int[this.size];
+            }
+
             public Placement(BinaryReader br)
             {
                 this.minX = br.ReadUInt16();
                 this.minY = br.ReadUInt16();
+
                 this.maxX = br.ReadUInt16();
                 this.maxY = br.ReadUInt16();
 

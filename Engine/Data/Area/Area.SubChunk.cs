@@ -28,7 +28,7 @@ namespace ProjectWS.Engine.Data
             public byte[] unknownMap2;  // Seems to be a layer blend adjust map (gets added to blendMap in shader)
             public uint[] zoneIDs;
 
-            public uint[] propUniqueIDs;
+            public List<uint> propUniqueIDs;
             public Curd curd;                   // https://cdn.discordapp.com/attachments/487618232279105540/924871987392823327/unknown.png
             public bool hasWater;
             public Water[] waters;
@@ -84,7 +84,7 @@ namespace ProjectWS.Engine.Data
                     }
                 }
 
-                // Texture IDs //
+                // World Layer IDs //
                 if (this.flags.HasFlag(Flags.hasWorldLayerIDs))
                 {
                     this.worldLayerIDs = new uint[4];
@@ -349,10 +349,10 @@ namespace ProjectWS.Engine.Data
                     {
                         case ChunkID.PROP:
                             {
-                                this.propUniqueIDs = new uint[chunkSize / 4];
-                                for (int i = 0; i < this.propUniqueIDs.Length; i++)
+                                this.propUniqueIDs = new List<uint>();
+                                for (int i = 0; i < chunkSize / 4; i++)
                                 {
-                                    this.propUniqueIDs[i] = br.ReadUInt32();
+                                    this.propUniqueIDs.Add(br.ReadUInt32());
                                 }
                             }
                             break;
@@ -425,7 +425,7 @@ namespace ProjectWS.Engine.Data
                 }
                 //this.flags |= Flags.hasZoneIDs;
                 //this.zoneIDs = new uint[4] { 18, 0, 0, 0 };
-
+                /*
                 this.flags |= Flags.hasWorldLayerIDs;
                 this.worldLayerIDs = new uint[4] { 2, 78, 1041, 673 };
 
@@ -433,10 +433,20 @@ namespace ProjectWS.Engine.Data
                 this.blendMap = new byte[65 * 65 * 4];
                 for (int i = 0; i < 65 * 65 * 4; i += 4)
                 {
-                    blendMap[i] = 255;
-                    blendMap[i + 1] = 0;
-                    blendMap[i + 2] = 0;
-                    blendMap[i + 3] = 0;
+                    this.blendMap[i] = 255;
+                    this.blendMap[i + 1] = 0;
+                    this.blendMap[i + 2] = 0;
+                    this.blendMap[i + 3] = 0;
+                }
+                */
+                this.flags |= Flags.hasSkyIDs;
+                this.flags |= Flags.hasSkyWeights;
+                this.skyCorners = new SkyCorner[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    var ids = new uint[] { 0, 0, 0, 255 };   // 255 = Adventure_Galeras3.sky
+                    var weights = new byte[] { 0, 0, 0, 255 };
+                    this.skyCorners[i] = new SkyCorner(ids, weights);
                 }
             }
 
@@ -461,15 +471,6 @@ namespace ProjectWS.Engine.Data
                     }
                 }
 
-                // Zone IDs
-                if (this.zoneIDs != null)
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        bw.Write(this.zoneIDs[i]);
-                    }
-                }
-
                 // World Layer IDs
                 if (this.worldLayerIDs != null)
                 {
@@ -479,8 +480,82 @@ namespace ProjectWS.Engine.Data
                     }
                 }
 
+                // Blend Map
+                // Color Map
+                // UnkMap
+                // Unk0x20
+
+                // Sky IDs
+                if (this.skyCorners != null)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        bw.Write(this.skyCorners[i].worldSkyIDs[0]);
+                        bw.Write(this.skyCorners[i].worldSkyIDs[1]);
+                        bw.Write(this.skyCorners[i].worldSkyIDs[2]);
+                        bw.Write(this.skyCorners[i].worldSkyIDs[3]);
+                    }
+                }
+
+                // Sky Weights
+                if (this.skyCorners != null)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        bw.Write(this.skyCorners[i].worldSkyWeights[0]);
+                        bw.Write(this.skyCorners[i].worldSkyWeights[1]);
+                        bw.Write(this.skyCorners[i].worldSkyWeights[2]);
+                        bw.Write(this.skyCorners[i].worldSkyWeights[3]);
+                    }
+                }
+
+                // Shadow Map
+                // LoD Height Map
+                // LoD Height Range
+                // Unk0x800
+                // Unk0x1000
+                // Color Map DXT
+                // Unk Map 0 DXT
+                // UnkData 0x8000
+                // Zone Bounds
+
+                // Blend Map DXT
                 if (this.blendMap != null)
                     bw.Write(this.blendMap);
+
+                // Unk Map 1 DXT
+                // Unk Map 2 DXT
+                // Unk Map 3 DXT
+                // Unk Flags
+                // Unk Data 0x400000
+                // Unk Data 0x800000
+                // Unk Data 0x1000000
+                // Unk Data 0x2000000
+                // Unk Data 0x4000000
+                // Unk Data 0x8000000
+
+                // Zone IDs
+                if (this.zoneIDs != null)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        bw.Write(this.zoneIDs[i]);
+                    }
+                }
+
+                // Unk Data 0x20000000
+                // Unk Data 0x400000000
+                // UnkMap4 DXT
+
+                if (this.propUniqueIDs != null && this.propUniqueIDs.Count > 0)
+                {
+                    bw.Write(1347571536);                       // PROP
+                    bw.Write(this.propUniqueIDs.Count * 4);     // Size
+                    for (int i = 0; i < this.propUniqueIDs.Count; i++)
+                    {
+                        bw.Write(this.propUniqueIDs[i]);
+                    }
+                }
 
                 long subEnd = bw.BaseStream.Position;
                 uint subSize = (uint)(subEnd - subStart);

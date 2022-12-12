@@ -130,6 +130,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
                     GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, (int)0);
                     GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, (int)0);
                     GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, (int)this.tex.header.mipCount);
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureLodBias, -1);
 
                     int dataCount = this.tex.mipData.Count;
                     if (this.tex.header.mipCount == 1)
@@ -143,7 +144,8 @@ namespace ProjectWS.Engine.Data.ResourceManager
                             int dataIdx = Math.Min(dataCount - 1, (int)(this.tex.header.imageSizesCount - i) - 1);
                             int w = Math.Max(1, (int)(this.width / Math.Pow(2, i)));
                             int h = Math.Max(1, (int)(this.height / Math.Pow(2, i)));
-                            GL.TexImage2D(TextureTarget.Texture2D, i, PixelInternalFormat.Rgba, w, h, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, this.tex.mipData[dataIdx]);
+                            if (dataIdx >= 0)
+                                GL.TexImage2D(TextureTarget.Texture2D, i, PixelInternalFormat.Rgba, w, h, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, this.tex.mipData[dataIdx]);
                         }
                     }
                 }

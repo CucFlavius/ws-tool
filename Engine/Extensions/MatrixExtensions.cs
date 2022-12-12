@@ -51,8 +51,9 @@ namespace ProjectWS.Engine.Data.Extensions
             return res;
         }
 
-    public static Vector3 ExtractPosition(this Matrix4 matrix)
+        public static Vector3 ExtractPosition(this Matrix4 matrix)
         {
+            /// !!!! TODO !!!! this bight be broken because OpenTK is column/row swapped
             Vector3 position;
             position.X = matrix.M14;
             position.Y = matrix.M24;

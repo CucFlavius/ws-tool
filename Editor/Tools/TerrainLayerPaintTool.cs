@@ -10,7 +10,7 @@ namespace ProjectWS.Editor.Tools
     public class TerrainLayerPaintTool : Tool
     {
         readonly Engine.Engine engine;
-        readonly WorldRenderer worldRenderer;
+        public readonly WorldRenderer worldRenderer;
         readonly Editor editor;
 
         public int layer = 1;

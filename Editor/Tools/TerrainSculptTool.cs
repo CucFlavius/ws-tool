@@ -10,7 +10,7 @@ namespace ProjectWS.Editor.Tools
     public class TerrainSculptTool : Tool
     {
         readonly Engine.Engine engine;
-        readonly WorldRenderer worldRenderer;
+        public readonly WorldRenderer worldRenderer;
         readonly Editor editor;
 
         public Mode mode = Mode.RaiseLower;
@@ -27,6 +27,7 @@ namespace ProjectWS.Editor.Tools
             this.editor = editor;
             this.engine = engine;
             this.worldRenderer = world;
+            this.isEnabled = false;
         }
 
         public override void Enable()

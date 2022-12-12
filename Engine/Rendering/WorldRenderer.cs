@@ -15,8 +15,10 @@ namespace ProjectWS.Engine.Rendering
         public ShaderParams.BrushParameters brushParameters;
 
         public static int drawCalls;
+        public static int propDrawCalls;
 
         Color4 envColor = new Color4(0.1f, 0.1f, 0.1f, 1.0f);
+        public static Matrix4 decompressMat = Matrix4.CreateScale(1.0f / 1024.0f);
 
         public WorldRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
@@ -45,26 +47,34 @@ namespace ProjectWS.Engine.Rendering
             this.shader = this.modelShader;
             this.wireframeShader = new Shader("shaders/wireframe_vert.glsl", "shaders/wireframe_frag.glsl");
             this.normalShader = new Shader("shaders/normal_vert.glsl", "shaders/normal_frag.glsl");
-            this.terrainShader = new Shader("shaders/terrain_vert.glsl", "shaders/terrain_frag.glsl");
+            this.terrainShader = new Shader("shaders/terrain_deferred_vert.glsl", "shaders/terrain_deferred_frag.glsl");
             this.waterShader = new Shader("shaders/water_vert.glsl", "shaders/water_frag.glsl");
             this.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
             this.infiniteGridShader = new Shader("shaders/infinite_grid_vert.glsl", "shaders/infinite_grid_frag.glsl");
             this.fontShader = new Shader("shaders/font_vert.glsl", "shaders/font_frag.glsl");
+            this.lightPassShader = new Shader("shaders/light_pass_vert.glsl", "shaders/light_pass_frag.glsl");
 
             this.mousePick = new MousePick(this);
 
             FreeType.Init();
+            BuildGBufferQuad();
         }
 
-        public override void Render()
+        public override void Render(int frameBuffer)
         {
             if (this.viewports == null) return;
 
             drawCalls = 0;
+            propDrawCalls = 0;
 
             GL.ClearColor(this.envColor);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+
+            // 1. geometry pass: render scene's geometry/color data into gbuffer
+            // -----------------------------------------------------------------
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, this.gBuffer);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             for (int v = 0; v < this.viewports.Count; v++)
             {
@@ -84,10 +94,10 @@ namespace ProjectWS.Engine.Rendering
                     // Terrain
                     this.terrainShader.Use();
 
-                    this.fogParameters.SetToShader(this.terrainShader);
                     this.tEditorParameters.SetToShader(this.terrainShader);
-                    this.sunParameters.SetToShader(this.terrainShader);
-                    this.envParameters.SetToShader(this.terrainShader);
+                    //this.fogParameters.SetToShader(this.terrainShader);
+                    //this.sunParameters.SetToShader(this.terrainShader);
+                    //this.envParameters.SetToShader(this.terrainShader);
                     this.brushParameters.SetToShader(this.terrainShader);
                     this.viewports[v].mainCamera.SetToShader(this.terrainShader);
 
@@ -95,11 +105,18 @@ namespace ProjectWS.Engine.Rendering
 
                     // Water
                     this.waterShader.Use();
-
                     this.viewports[v].mainCamera.SetToShader(this.waterShader);
                     this.waterShader.SetMat4("model", Matrix4.Identity);    // Water vertices are in world space
-
                     this.world.RenderWater(this.waterShader);
+
+                    // Props
+                    this.modelShader.Use();
+                    this.viewports[v].mainCamera.SetToShader(this.modelShader);
+                    this.envParameters.SetToShader(this.modelShader);
+                    this.world.RenderProps(this.modelShader);
+
+                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+                    GL.Disable(EnableCap.Blend);
                 }
 
                 // Render Text
@@ -136,8 +153,45 @@ namespace ProjectWS.Engine.Rendering
                         }
                     }
                 }
-
             }
+
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBuffer);
+
+            GL.Viewport(this.x, this.y, this.width, this.height);
+
+            // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
+            // -----------------------------------------------------------------------------------------------------------------------
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            this.lightPassShader.Use();
+
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, this.gDiffuse);
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.Texture2D, this.gSpecular);
+            GL.ActiveTexture(TextureUnit.Texture2);
+            GL.BindTexture(TextureTarget.Texture2D, this.gNormal);
+            GL.ActiveTexture(TextureUnit.Texture3);
+            GL.BindTexture(TextureTarget.Texture2D, this.gMisc);
+
+            // send light relevant uniforms
+            this.viewports[0].mainCamera.SetToShader(this.lightPassShader);
+            this.fogParameters.SetToShader(this.lightPassShader);
+            this.sunParameters.SetToShader(this.lightPassShader);
+            this.envParameters.SetToShader(this.lightPassShader);
+
+            //shaderLightingPass.setVec3("viewPos", camera.Position);
+            // finally render quad
+            RenderQuad();
+
+            // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
+            // ----------------------------------------------------------------------------------
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, this.gBuffer);
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);   // write to default framebuffer
+                                                                        // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+                                                                        // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
+                                                                        // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+            GL.BlitFramebuffer(0, 0, this.width, this.height, 0, 0, this.width, this.height, ClearBufferMask.DepthBufferBit, BlitFramebufferFilter.Nearest);
+            //GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
         public override void Update(float deltaTime)
@@ -157,7 +211,7 @@ namespace ProjectWS.Engine.Rendering
             // Temp : Updating topdown camera manually
             if (this.viewports.Count == 2)
             {
-                var p = this.viewports[0].mainCamera.transform.GetPosition() + new Vector3(0, 1000, 0);
+                var p = this.viewports[0].mainCamera.transform.GetPosition() + new Vector3(0, 200, 0);
                 this.viewports[1].mainCamera.view = Matrix4.LookAt(p, p - Vector3.UnitY, Vector3.UnitZ);
                 this.viewports[1].mainCamera.transform.SetPosition(p);
             }
@@ -165,7 +219,7 @@ namespace ProjectWS.Engine.Rendering
             if (this.world != null)
                 this.world.Update(deltaTime);
 
-            if (this.mousePick != null)
+            if (this.mousePick != null && this.mousePick.mode != MousePick.Mode.Disabled)
                 this.mousePick.Update();
 
             this.brushParameters.position = this.mousePick.terrainHitPoint;

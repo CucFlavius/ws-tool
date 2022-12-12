@@ -50,6 +50,9 @@ namespace ProjectWS.Engine.Rendering
             this.waterShader = new Shader("shaders/water_vert.glsl", "shaders/water_frag.glsl");
             this.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
             this.infiniteGridShader = new Shader("shaders/infinite_grid_vert.glsl", "shaders/infinite_grid_frag.glsl");
+            this.lightPassShader = new Shader("shaders/light_pass_vert.glsl", "shaders/light_pass_frag.glsl");
+
+            BuildGBufferQuad();
         }
 
         public override void Update(float deltaTime)
@@ -69,11 +72,17 @@ namespace ProjectWS.Engine.Rendering
             //this.cameras[1].transform.SetPosition(p);
         }
 
-        public override void Render()
+        public override void Render(int frameBuffer)
         {
             if (!this.rendering) return;
 
             GL.ClearColor(new Color4(0.1f, 0.1f, 0.15f, 1.0f));
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+
+            // 1. geometry pass: render scene's geometry/color data into gbuffer
+            // -----------------------------------------------------------------
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, this.gBuffer);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             if (this.shadingOverride == ShadingOverride.ShadedAndWireframe)
@@ -98,7 +107,42 @@ namespace ProjectWS.Engine.Rendering
                 RenderNormals();
             }
 
-            GL.Viewport(0, 0, this.width, this.height); //restore default
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBuffer);
+
+            GL.Viewport(this.x, this.y, this.width, this.height);
+
+
+            // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
+            // -----------------------------------------------------------------------------------------------------------------------
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            this.lightPassShader.Use();
+
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, this.gDiffuse);
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.Texture2D, this.gSpecular);
+            GL.ActiveTexture(TextureUnit.Texture2);
+            GL.BindTexture(TextureTarget.Texture2D, this.gNormal);
+            GL.ActiveTexture(TextureUnit.Texture3);
+            GL.BindTexture(TextureTarget.Texture2D, this.gMisc);
+
+            // send light relevant uniforms
+            this.viewports?[0].mainCamera.SetToShader(this.lightPassShader);
+
+            //shaderLightingPass.setVec3("viewPos", camera.Position);
+            // finally render quad
+            RenderQuad();
+
+            // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
+            // ----------------------------------------------------------------------------------
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, this.gBuffer);
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);   // write to default framebuffer
+                                                                        // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+                                                                        // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
+                                                                        // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+            GL.BlitFramebuffer(0, 0, this.width, this.height, 0, 0, this.width, this.height, ClearBufferMask.DepthBufferBit, BlitFramebufferFilter.Nearest);
+            //GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
         void RenderWireframe(bool smooth)

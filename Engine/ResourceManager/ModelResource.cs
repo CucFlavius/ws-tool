@@ -12,6 +12,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
 
         // Reference //
         GameData gameData;
+        World.World world;
 
         // Data //
         public Data.M3 m3;
@@ -23,8 +24,9 @@ namespace ProjectWS.Engine.Data.ResourceManager
         // Usage //
         public List<ModelReference> modelReferences;
 
-        public ModelResource(string filePath, GameData gameData)
+        public ModelResource(string filePath, GameData gameData, World.World world)
         {
+            this.world = world;
             this.filePath = filePath;
             this.gameData = gameData;
             this.state = Manager.ResourceState.IsLoading;
@@ -42,7 +44,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
             for (int i = 0; i < modelReferences.Count; i++)
             {
                 var item = this.modelReferences[i];
-                //this.world.LoadProp(this.m3, item.uuid, item.position, item.rotation, item.scale);
+                this.world.LoadProp(this.m3, item.uuid, item.position, item.rotation, item.scale);
             }
         }
 
@@ -56,7 +58,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
             }
             else
             {
-                //this.world.LoadProp(m3, uuid, position, rotation, scale);
+                this.world.LoadProp(m3, uuid, position, rotation, scale);
             }
         }
 

@@ -27,7 +27,7 @@ namespace ProjectWS.Engine.TaskManager
                     this.resourceManager.modelResources[this.filePath].m3.Read();
                     this.resourceManager.modelResources[this.filePath].SetFileState(Data.ResourceManager.Manager.ResourceState.IsLoaded);
                     this.jobType = JobType.Build;
-                    //this.resourceManager.engine.taskManager.buildTasks.Enqueue(this);
+                    this.resourceManager.engine.taskManager.buildTasks.Enqueue(this);
                     break;
                 case JobType.Write:
                     break;

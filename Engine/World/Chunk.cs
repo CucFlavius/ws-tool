@@ -1,5 +1,6 @@
 ﻿using OpenTK.Mathematics;
 using ProjectWS.Engine.Data.Extensions;
+using ProjectWS.Engine.Rendering;
 using SharpFont;
 using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
@@ -235,6 +236,9 @@ namespace ProjectWS.Engine.World
 
             for (int i = 0; i < this.area.subChunks.Count; i++)
             {
+                if (this.area.subChunks[i] == null)
+                    continue;
+
                 if (!this.area.subChunks[i].isVisible)
                     continue;
 

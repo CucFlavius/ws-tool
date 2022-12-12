@@ -81,6 +81,7 @@ namespace ProjectWS.Engine
                     this.renderers[i].infiniteGridShader.Load();
                     this.renderers[i].waterShader.Load();
                     this.renderers[i].fontShader.Load();
+                    this.renderers[i].lightPassShader.Load();
                 }
             }
 
@@ -94,10 +95,10 @@ namespace ProjectWS.Engine
             this.frameTime += ((deltaTime / timeScale) - this.frameTime) * 0.03f;
         }
 
-        public void Render(int renderer)
+        public void Render(int renderer, int frameBuffer)
         {
             this.contextAvailable = true;
-            this.renderers[renderer].Render();
+            this.renderers[renderer].Render(frameBuffer);
 
             GL.Flush();
         }

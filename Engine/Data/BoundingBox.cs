@@ -1,12 +1,30 @@
 using OpenTK;
 using OpenTK.Mathematics;
 using ProjectWS.Engine.Data.Extensions;
+using ProjectWS.Engine.Rendering;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace ProjectWS.Engine.Data
 {
+    public class Rect
+    {
+        public float x;
+        public float y;
+        public float width;
+        public float height;
+
+        public Rect(float x, float y, float w, float h)
+        {
+            this.x = x;
+            this.y = y;
+            this.width = w;
+            this.height = h;
+        }
+    }
+
     public class BoundingBox
     {
         public Vector3 min;
@@ -14,6 +32,8 @@ namespace ProjectWS.Engine.Data
         public Vector3 center;
         public Vector3 extents;
         public Vector3 size;
+
+        public BoundingBox Bounds { get; }
 
         public BoundingBox(Vector3 center, Vector3 extents)
         {
@@ -31,6 +51,15 @@ namespace ProjectWS.Engine.Data
             this.center = (this.min + this.max) / 2;
             this.extents = (this.max - this.min) / 2;
             this.size = this.max - this.min;
+        }
+
+        public BoundingBox(BoundingBox bounds)
+        {
+            this.min = bounds.min;
+            this.max = bounds.max;
+            this.center = bounds.center;
+            this.extents = bounds.extents;
+            this.size = bounds.size;
         }
 
         public Vector3[] GetCorners()
@@ -100,83 +129,84 @@ namespace ProjectWS.Engine.Data
             return new Vector3[] { topRight, topLeft, bottomRight, bottomLeft };
         }
         */
-        /*
-        public bool GetScreenSpaceRect(Matrix4x4 transform, out Rect result, Matrix4x4 V, Matrix4x4 P)
+
+        public bool GetScreenSpaceRect(Matrix4 transform, out Rect result, Viewport vp)
         {
             // Transform bounds to world space //
             Vector3 scale = transform.ExtractScale();
             Vector3 size = this.size;
             Vector3 center = this.center;
-            center.Scale(scale);
-            size.Scale(scale);
+            center *= scale;
+            size *= scale;
 
             Vector3 cen = center + transform.ExtractPosition();
             Vector3 ext = extents;
-            ext.Scale(transform.ExtractScale());
+            ext *= transform.ExtractScale();
 
             // Likely need to rotate each ext around cen based on transform.GetRotation()
 
             //Camera cam = Camera.main;
-            Matrix4x4 VP = P * V;
+            Matrix4 V = vp.mainCamera.view;
+            Matrix4 P = vp.mainCamera.projection;
+            Matrix4 VP = P * V;
 
-            Vector2 min = WorldToScreenPoint(new Vector3(cen.X - ext.X, cen.Y - ext.Y, cen.Z - ext.Z), VP);
+            Vector2 min = WorldToScreenPoint(new Vector3(cen.X - ext.X, cen.Y - ext.Y, cen.Z - ext.Z), VP, vp).Xy;
             Vector2 max = min;
-            result = Rect.zero;
+            result = new Rect(0, 0, 0, 0);
 
             //0
-            Vector3 point = min;
-            get_minMax(point, ref min, ref max);
+            Vector3 point = new Vector3(min.X, min.Y, 0);
+            get_minMax(point.Xy, ref min, ref max);
 
             //1
-            point = WorldToScreenPoint(new Vector3(cen.X + ext.X, cen.Y - ext.Y, cen.Z - ext.Z), VP);
-            if (point.Z > 1) return false;
-            get_minMax(point, ref min, ref max);
+            point = WorldToScreenPoint(new Vector3(cen.X + ext.X, cen.Y - ext.Y, cen.Z - ext.Z), VP, vp);
+            //if (point.Z > 1) return false;
+            get_minMax(point.Xy, ref min, ref max);
 
 
             //2
-            point = WorldToScreenPoint(new Vector3(cen.X - ext.X, cen.Y - ext.Y, cen.Z + ext.Z), VP);
-            if (point.Z > 1) return false;
-            get_minMax(point, ref min, ref max);
+            point = WorldToScreenPoint(new Vector3(cen.X - ext.X, cen.Y - ext.Y, cen.Z + ext.Z), VP, vp);
+            //if (point.Z > 1) return false;
+            get_minMax(point.Xy, ref min, ref max);
 
             //3
-            point = WorldToScreenPoint(new Vector3(cen.X + ext.X, cen.Y - ext.Y, cen.Z + ext.Z), VP);
-            if (point.Z > 1) return false;
-            get_minMax(point, ref min, ref max);
+            point = WorldToScreenPoint(new Vector3(cen.X + ext.X, cen.Y - ext.Y, cen.Z + ext.Z), VP, vp);
+            //if (point.Z > 1) return false;
+            get_minMax(point.Xy, ref min, ref max);
 
             //4
-            point = WorldToScreenPoint(new Vector3(cen.X - ext.X, cen.Y + ext.Y, cen.Z - ext.Z), VP);
-            if (point.Z > 1) return false;
-            get_minMax(point, ref min, ref max);
+            point = WorldToScreenPoint(new Vector3(cen.X - ext.X, cen.Y + ext.Y, cen.Z - ext.Z), VP, vp);
+            //if (point.Z > 1) return false;
+            get_minMax(point.Xy, ref min, ref max);
 
             //5
-            point = WorldToScreenPoint(new Vector3(cen.X + ext.X, cen.Y + ext.Y, cen.Z - ext.Z), VP);
-            if (point.Z > 1) return false;
-            get_minMax(point, ref min, ref max);
+            point = WorldToScreenPoint(new Vector3(cen.X + ext.X, cen.Y + ext.Y, cen.Z - ext.Z), VP, vp);
+            //if (point.Z > 1) return false;
+            get_minMax(point.Xy, ref min, ref max);
 
             //6
-            point = WorldToScreenPoint(new Vector3(cen.X - ext.X, cen.Y + ext.Y, cen.Z + ext.Z), VP);
-            if (point.Z > 1) return false;
-            get_minMax(point, ref min, ref max);
+            point = WorldToScreenPoint(new Vector3(cen.X - ext.X, cen.Y + ext.Y, cen.Z + ext.Z), VP, vp);
+            //if (point.Z > 1) return false;
+            get_minMax(point.Xy, ref min, ref max);
 
             //7
-            point = WorldToScreenPoint(new Vector3(cen.X + ext.X, cen.Y + ext.Y, cen.Z + ext.Z), VP);
-            if (point.Z > 1) return false;
-            get_minMax(point, ref min, ref max);
+            point = WorldToScreenPoint(new Vector3(cen.X + ext.X, cen.Y + ext.Y, cen.Z + ext.Z), VP, vp);
+            //if (point.Z > 1) return false;
+            get_minMax(point.Xy, ref min, ref max);
 
-            result = new Rect(min.X, min.Y, max.X - min.X, max.Y - min.y);
+            result = new Rect(min.X, min.Y, max.X - min.X, max.Y - min.Y);
 
             return true;
         }
-        */
-        /*
-        Vector3 WorldToScreenPoint(Vector3 point, Matrix4x4 VP)
+
+        Vector3 WorldToScreenPoint(Vector3 point, Matrix4 VP, Viewport vp)
         {
             // Main thread, just use this
             //return Camera.main.WorldToScreenPoint(point);
 
             // Secondary thread, use this
-            Vector4 v = VP * new Vector4(point.X, point.Y, point.z, 1);
-            Vector3 viewportPoint = v / -v.w;
+            Vector4 v = VP * new Vector4(point.X, point.Y, point.Z, 1);
+            Vector3 viewportPoint = v.Xyz / -v.W;
 
             // Will keep _ViewPort Under 1 for multiplication.
             Vector3 normalizedViewportPoint = new Vector3(viewportPoint.X + 1, viewportPoint.Y + 1, viewportPoint.Z + 1);
@@ -185,13 +215,13 @@ namespace ProjectWS.Engine.Data
             normalizedViewportPoint = Vector3.One - normalizedViewportPoint;
 
             Vector3 screenPoint;
-            screenPoint.X = normalizedViewportPoint.X * Screen.width;
-            screenPoint.Y = normalizedViewportPoint.Y * Screen.height;
-            screenPoint.Z = normalizedViewportPoint.z;
+            screenPoint.X = normalizedViewportPoint.X * vp.width;
+            screenPoint.Y = normalizedViewportPoint.Y * vp.height;
+            screenPoint.Z = normalizedViewportPoint.Z;
 
             return screenPoint;
         }
-        */
+
         /*
         public void RenderBounds(Matrix4x4 transform, Color color)
         {
@@ -219,6 +249,23 @@ namespace ProjectWS.Engine.Data
             return new Vector2(tNear, tFar);
         }
 
+        public Vector2 RayBoxIntersect(Vector3 rayOrigin, Vector3 rayDir, World.Prop.Instance instance)
+        {
+            Vector3 tMin = this.min;
+            Vector3 tMax = this.max;
+
+            tMin += instance.position;
+            tMax += instance.position;
+
+            tMin = (tMin - rayOrigin) / rayDir;
+            tMax = (tMax - rayOrigin) / rayDir;
+            Vector3 t1 = new Vector3(MathF.Min(tMin.X, tMax.X), MathF.Min(tMin.Y, tMax.Y), MathF.Min(tMin.Z, tMax.Z));
+            Vector3 t2 = new Vector3(MathF.Max(tMin.X, tMax.X), MathF.Max(tMin.Y, tMax.Y), MathF.Max(tMin.Z, tMax.Z));
+            float tNear = MathF.Max(MathF.Max(t1.X, t1.Y), t1.Z);
+            float tFar = MathF.Min(MathF.Min(t2.X, t2.Y), t2.Z);
+            return new Vector2(tNear, tFar);
+        }
+
         /// <summary>
         /// Check if ray intersects bounds
         /// This is faster than unity *.bounds.IntersectRay(ray)
@@ -226,11 +273,8 @@ namespace ProjectWS.Engine.Data
         /// </summary>
         /// <param name="ray">Ray to check</param>
         /// <returns>Intersection distance, if > 0 it intersects</returns>
-        public float RayBoxIntersect(Vector3 origin, Vector3 direction, Matrix4 transform)
+        public Vector2 RayBoxIntersect(Vector3 rayOrigin, Vector3 rayDir, Matrix4 transform)
         {
-            Vector3 tMin = this.min;
-            Vector3 tMax = this.max;
-            /*
             Vector3 scale = transform.ExtractScale();
             Vector3 tMin = this.min;
             Vector3 tMax = this.max;
@@ -238,9 +282,18 @@ namespace ProjectWS.Engine.Data
             tMax *= scale;
             tMin += transform.ExtractPosition();
             tMax += transform.ExtractPosition();
-            */
-            Vector3 rpos = origin;
-            Vector3 rdir = direction;
+
+            tMin = (tMin - rayOrigin) / rayDir;
+            tMax = (tMin - rayOrigin) / rayDir;
+            Vector3 t1 = new Vector3(MathF.Min(tMin.X, tMax.X), MathF.Min(tMin.Y, tMax.Y), MathF.Min(tMin.Z, tMax.Z));
+            Vector3 t2 = new Vector3(MathF.Max(tMin.X, tMax.X), MathF.Max(tMin.Y, tMax.Y), MathF.Max(tMin.Z, tMax.Z));
+            float tNear = MathF.Max(MathF.Max(t1.X, t1.Y), t1.Z);
+            float tFar = MathF.Min(MathF.Min(t2.X, t2.Y), t2.Z);
+            return new Vector2(tNear, tFar);
+
+            /*
+            Vector3 rpos = rayOrigin;
+            Vector3 rdir = rayDir;
 
             float t1 = (tMin.X - rpos.X) / rdir.X;
             float t2 = (tMax.X - rpos.X) / rdir.X;
@@ -266,6 +319,7 @@ namespace ProjectWS.Engine.Data
             float t9 = (t8 < 0 || t7 > t8) ? -1 : t7;
 
             return t9;
+            */
         }
 
         /*
@@ -278,17 +332,17 @@ namespace ProjectWS.Engine.Data
             }
         }
         */
-        /*
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void get_minMax(Vector2 point, ref Vector2 min, ref Vector2 max)
         {
-            min = new Vector2(min.X >= point.X ? point.X : min.X, min.Y >= point.Y ? point.Y : min.y);
-            max = new Vector2(max.X <= point.X ? point.X : max.X, max.Y <= point.Y ? point.Y : max.y);
+            min = new Vector2(min.X >= point.X ? point.X : min.X, min.Y >= point.Y ? point.Y : min.Y);
+            max = new Vector2(max.X <= point.X ? point.X : max.X, max.Y <= point.Y ? point.Y : max.Y);
         }
-
+        /*
         Vector3 WorldToScreenPoint(Vector3 point, Matrix4x4 V, Matrix4x4 P, Vector3 offset)
         {
-            Matrix4x4 MVP = P * V;
+            Matrix4 MVP = P * V;
             Vector3 screenPos = MVP.MultiplyPoint(point + offset);
             return new Vector3(screenPos.X + 1f, screenPos.Y + 1f, screenPos.Z + 1f) / 2f;
         }

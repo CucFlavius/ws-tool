@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ProjectWS.Engine.Data.M3;
 
 namespace ProjectWS.Engine.Materials
 {
@@ -40,6 +41,7 @@ namespace ProjectWS.Engine.Materials
                     else if (texture.textureType == M3.Texture.TextureType.Normal)
                         rm.AssignTexture(texture.texturePath, this, $"normalMap{i}");
                 }
+
                 short textureB = this.matData.materialDescriptions[i].textureSelectorB;
                 if (textureB != -1)
                 {

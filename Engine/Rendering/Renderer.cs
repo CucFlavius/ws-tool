@@ -1,6 +1,7 @@
 ﻿using ProjectWS.Engine.Input;
 using OpenTK.Mathematics;
 using ProjectWS.Engine.Components;
+using OpenTK.Graphics.OpenGL4;
 
 namespace ProjectWS.Engine.Rendering
 {
@@ -24,11 +25,20 @@ namespace ProjectWS.Engine.Rendering
         public Shader lineShader;
         public Shader infiniteGridShader;
         public Shader fontShader;
+        public Shader lightPassShader;
 
         public List<Viewport>? viewports;
         public List<Objects.GameObject>? gizmos;
         public ShadingOverride shadingOverride;
         public ViewMode viewportMode;
+
+        public int quadVAO = 0;
+        public int quadVBO;
+
+        // Frame buffers
+        public int gBuffer;
+        public int gDiffuse, gSpecular, gNormal, gMisc;
+        public int rboDepth;
 
         public Renderer(Engine engine)
         {
@@ -39,7 +49,7 @@ namespace ProjectWS.Engine.Rendering
 
         public abstract void Load();
         public abstract void Update(float deltaTime);
-        public abstract void Render();
+        public abstract void Render(int frameBuffer);
 
         public void SetDimensions(int x, int y, int width, int height)
         {
@@ -60,6 +70,93 @@ namespace ProjectWS.Engine.Rendering
             this.height = height;
 
             RecalculateViewports();
+            ConfigureGBuffer(width, height);
+        }
+
+        void ConfigureGBuffer(int width, int height)
+        {
+            // Configure G-buffer
+            if (this.gBuffer == 0)
+                this.gBuffer = GL.GenFramebuffer();
+
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, this.gBuffer);
+
+            // Diffuse //
+            if (this.gDiffuse == 0)
+                this.gDiffuse = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, gDiffuse);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, gDiffuse, 0);
+
+            // Specular //
+            if (this.gSpecular == 0)
+                this.gSpecular = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, gSpecular);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment1, TextureTarget.Texture2D, gSpecular, 0);
+
+            // Normal //
+            if (this.gNormal == 0)
+                this.gNormal = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, this.gNormal);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment2, TextureTarget.Texture2D, this.gNormal, 0);
+
+            // Unknown //
+            if (this.gMisc == 0)
+                this.gMisc = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, gMisc);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment3, TextureTarget.Texture2D, gMisc, 0);
+
+            // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+            DrawBuffersEnum[] attachments = new DrawBuffersEnum[] { DrawBuffersEnum.ColorAttachment0, DrawBuffersEnum.ColorAttachment1, DrawBuffersEnum.ColorAttachment2, DrawBuffersEnum.ColorAttachment3 };
+            GL.DrawBuffers(4, attachments);
+
+            // create and attach depth buffer (renderbuffer)
+            if (this.rboDepth == 0)
+                this.rboDepth = GL.GenRenderbuffer();
+            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, rboDepth);
+            GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferStorage.DepthComponent, width, height);
+            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, rboDepth);
+
+            // finally check if framebuffer is complete
+            if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete)
+                Debug.LogWarning("Framebuffer not complete!");
+
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        }
+
+        public void BuildGBufferQuad()
+        {
+            if (this.quadVAO == 0)
+            {
+                float[] quadVertices = new float[]{
+                    // positions        // texture Coords
+                    -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+                    -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+                     1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+                     1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+                };
+                // setup plane VAO
+                this.quadVAO = GL.GenVertexArray();
+                this.quadVBO = GL.GenBuffer();
+                GL.BindVertexArray(this.quadVAO);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, this.quadVBO);
+                GL.BufferData(BufferTarget.ArrayBuffer, 4 * quadVertices.Length, quadVertices, BufferUsageHint.StaticDraw);
+                GL.EnableVertexAttribArray(0);
+                GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+                GL.EnableVertexAttribArray(1);
+                GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * 4);
+            }
         }
 
         public void SetShadingOverride(int type) => SetShadingOverride((ShadingOverride)type);
@@ -185,6 +282,15 @@ namespace ProjectWS.Engine.Rendering
             }
 
             this.viewports.Clear();
+        }
+
+        // renderQuad() renders a 1x1 XY quad in NDC
+        // -----------------------------------------
+        public void RenderQuad()
+        {
+            GL.BindVertexArray(this.quadVAO);
+            GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
+            GL.BindVertexArray(0);
         }
 
         public void RecalculateViewports()

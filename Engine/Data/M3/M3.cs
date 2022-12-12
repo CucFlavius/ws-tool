@@ -8,6 +8,7 @@ namespace ProjectWS.Engine.Data
     public partial class M3
     {
         public string filePath;
+        public string fileName;
         public GameData gameData;
         public bool failedReading;
         public DataSource source;
@@ -51,6 +52,7 @@ namespace ProjectWS.Engine.Data
         public M3(string filePath, Data.GameData gameData)
         {
             this.filePath = filePath;
+            this.fileName = Path.GetFileNameWithoutExtension(filePath);
             this.gameData = gameData;
             this.failedReading = false;
             this.source = DataSource.GameData;
@@ -59,6 +61,7 @@ namespace ProjectWS.Engine.Data
         public M3(string filePath)
         {
             this.filePath = filePath;
+            this.fileName = Path.GetFileNameWithoutExtension(filePath);
             this.failedReading = false;
             this.source = DataSource.Extracted;
         }

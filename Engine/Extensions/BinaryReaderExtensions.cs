@@ -60,6 +60,8 @@ namespace ProjectWS.Engine.Data.Extensions
             for (byte b = br.ReadByte(); b != 0; b = br.ReadByte())
             {
                 br.BaseStream.Position -= 1L;
+                if (br.BaseStream.Position + 2 >= br.BaseStream.Length)
+                    break;
                 array = array.Combine(br.ReadBytes(2));
             }
             return Encoding.Unicode.GetString(array);

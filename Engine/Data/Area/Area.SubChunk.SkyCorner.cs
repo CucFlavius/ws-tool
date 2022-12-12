@@ -6,8 +6,14 @@
         {
             public class SkyCorner
             {
-                public uint[] worldSkyIDs;
-                public byte[] worldSkyWeights;
+                public uint[]? worldSkyIDs;
+                public byte[]? worldSkyWeights;
+
+                public SkyCorner(uint[] skyIDs, byte[] skyWeights)
+                {
+                    this.worldSkyIDs = skyIDs;
+                    this.worldSkyWeights = skyWeights;
+                }
 
                 public SkyCorner(BinaryReader br)
                 {

@@ -404,15 +404,15 @@ namespace ProjectWS.Editor
             }
 
             // UnkColorBlock7
-            if (data.unk7 != null)
+            if (data.shCoefficients != null)
             {
-                for (int i = 0; i < data.unk7.Length; i++)
+                for (int i = 0; i < data.shCoefficients.Length; i++)
                 {
                     var idx = i;
-                    var name = $"Unk7 {i} [{data.unk7[idx].timestamps.Length}]";
+                    var name = $"Unk7 {i} [{data.shCoefficients[idx].timestamps.Length}]";
                     TreeViewItem treeItem = new TreeViewItem();
                     treeItem.Header = name;
-                    treeItem.MouseLeftButtonUp += (sender, e) => { OpenUnkBlockWindow(name, time, data.unk7[idx]); };
+                    treeItem.MouseLeftButtonUp += (sender, e) => { OpenUnkBlockWindow(name, time, data.shCoefficients[idx]); };
                     pane.skyTreeView.Items.Add(treeItem);
                 }
             }
@@ -530,7 +530,7 @@ namespace ProjectWS.Editor
             // TODO : Add angle A and B
         }
 
-        void OpenUnkBlockWindow(string text, int time, TimeTrack<UnkBlock> timeTrack)
+        void OpenUnkBlockWindow(string text, int time, TimeTrack<SHCoefficients> timeTrack)
         {
             int timeIdx = FindClosestTimeIndex(time, timeTrack.timestamps);
             OpenSubwindow($"{text} {TimeStampToTimeString(timeTrack.timestamps[timeIdx])}");
@@ -538,8 +538,8 @@ namespace ProjectWS.Editor
             // Populate with values //
             this.subWindow.listBox.Items.Clear();
 
-            var pickerA = CreateColorPicker(timeTrack.data[timeIdx].unk2);
-            this.subWindow.listBox.Items.Add(pickerA);
+            //var pickerA = CreateColorPicker(timeTrack.data[timeIdx].unk2);
+            //this.subWindow.listBox.Items.Add(pickerA);
 
             // TODO : This has a lot of shit, maybe not colors
         }

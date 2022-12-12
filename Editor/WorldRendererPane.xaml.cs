@@ -106,6 +106,7 @@ namespace ProjectWS.Editor
                 {
                     this.editor.tools[i].Enable();
                     (this.editor.tools[i] as TerrainSculptTool).mode = Tools.TerrainSculptTool.Mode.RaiseLower;
+                    (this.editor.tools[i] as TerrainSculptTool).worldRenderer.mousePick.mode = Engine.MousePick.Mode.Terrain;
                 }
                 else
                 {
@@ -122,6 +123,7 @@ namespace ProjectWS.Editor
                 {
                     this.editor.tools[i].Enable();
                     (this.editor.tools[i] as TerrainSculptTool).mode = Tools.TerrainSculptTool.Mode.Flatten;
+                    (this.editor.tools[i] as TerrainSculptTool).worldRenderer.mousePick.mode = Engine.MousePick.Mode.Terrain;
                 }
                 else
                 {
@@ -138,6 +140,7 @@ namespace ProjectWS.Editor
                 {
                     this.editor.tools[i].Enable();
                     (this.editor.tools[i] as TerrainLayerPaintTool).layer = 0;
+                    (this.editor.tools[i] as TerrainLayerPaintTool).worldRenderer.mousePick.mode = Engine.MousePick.Mode.Terrain;
                 }
                 else
                 {
@@ -154,6 +157,7 @@ namespace ProjectWS.Editor
                 {
                     this.editor.tools[i].Enable();
                     (this.editor.tools[i] as TerrainLayerPaintTool).layer = 1;
+                    (this.editor.tools[i] as TerrainLayerPaintTool).worldRenderer.mousePick.mode = Engine.MousePick.Mode.Terrain;
                 }
                 else
                 {
@@ -170,6 +174,7 @@ namespace ProjectWS.Editor
                 {
                     this.editor.tools[i].Enable();
                     (this.editor.tools[i] as TerrainLayerPaintTool).layer = 2;
+                    (this.editor.tools[i] as TerrainLayerPaintTool).worldRenderer.mousePick.mode = Engine.MousePick.Mode.Terrain;
                 }
                 else
                 {
@@ -186,6 +191,23 @@ namespace ProjectWS.Editor
                 {
                     this.editor.tools[i].Enable();
                     (this.editor.tools[i] as TerrainLayerPaintTool).layer = 3;
+                    (this.editor.tools[i] as TerrainLayerPaintTool).worldRenderer.mousePick.mode = Engine.MousePick.Mode.Terrain;
+                }
+                else
+                {
+                    this.editor.tools[i].Disable();
+                }
+            }
+        }
+
+        private void propPickerButton_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < this.editor.tools.Count; i++)
+            {
+                if (this.editor.tools[i] is PropTool)
+                {
+                    this.editor.tools[i].Enable();
+                    (this.editor.tools[i] as PropTool).worldRenderer.mousePick.mode = Engine.MousePick.Mode.Prop;
                 }
                 else
                 {
