@@ -103,7 +103,7 @@ namespace ProjectWS.TestArea
             //string path1 = @"Art\Prop\Natural\Tree\Deciduous_RootyMangrove\PRP_Tree_Deciduous_RootyMangrove_Blue_000.m3";
             //string path1 = @"Art\Creature\Asura\Asura.m3";
 
-            string path0 = @"Art\Prop\Constructed\Crate\PRP_Crate_SmugglerWeapon_Brown_000.m3";
+            string path0 = @"Art\Prop\Natural\Rock\SandStonePlatedRust\PRP_Rock_SandStonePlatedSmall_Rust_006.m3";
 
             var modelRenderer = renderer as Engine.Rendering.ModelRenderer;
             modelRenderer.objects.Add(new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine));

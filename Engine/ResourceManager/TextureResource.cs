@@ -60,7 +60,10 @@ namespace ProjectWS.Engine.Data.ResourceManager
                 // Load straight from game data, and cache
                 this.tex = new Tex(this.filePath, this.gameData);
                 this.tex.Read();
-                this.tex.Write(this.manager.engine.cacheLocation + this.filePath);
+
+                // Only cache jpeg
+                if (this.tex.header?.format == 0 && this.tex.header?.isCompressed == 1)
+                    this.tex.Write(this.manager.engine.cacheLocation + this.filePath);
             }
 
             if (this.tex.failedReading) return;
@@ -135,17 +138,38 @@ namespace ProjectWS.Engine.Data.ResourceManager
                     int dataCount = this.tex.mipData.Count;
                     if (this.tex.header.mipCount == 1)
                     {
-                        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, this.width, this.height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, this.tex.mipData[0]);
+                        if (this.tex.header.format == 0 || this.tex.header.format == 1)
+                            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, this.width, this.height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, this.tex.mipData[0]);
+                        else if (this.tex.header.format == 13)
+                            GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, InternalFormat.CompressedRgbaS3tcDxt1Ext, this.width, this.height, 0, this.tex.mipData[0].Length, this.tex.mipData[0]);
+                        else if (this.tex.header.format == 14)
+                            GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, InternalFormat.CompressedRgbaS3tcDxt3Ext, this.width, this.height, 0, this.tex.mipData[0].Length, this.tex.mipData[0]);
+                        else if (this.tex.header.format == 15)
+                            GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, InternalFormat.CompressedRgbaS3tcDxt5Ext, this.width, this.height, 0, this.tex.mipData[0].Length, this.tex.mipData[0]);
+                        // TODO : Missing Rgb and Grayscale
                     }
                     else
                     {
                         for (int i = 0; i < this.tex.header.mipCount; i++)
                         {
-                            int dataIdx = Math.Min(dataCount - 1, (int)(this.tex.header.imageSizesCount - i) - 1);
+                            int dataIdx = this.tex.mipData.Count - i - 1;
+                            if (this.tex.header.format == 0)
+                                dataIdx = Math.Min(dataCount - 1, (int)(this.tex.header.imageSizesCount - i) - 1);
+
                             int w = Math.Max(1, (int)(this.width / Math.Pow(2, i)));
                             int h = Math.Max(1, (int)(this.height / Math.Pow(2, i)));
                             if (dataIdx >= 0)
-                                GL.TexImage2D(TextureTarget.Texture2D, i, PixelInternalFormat.Rgba, w, h, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, this.tex.mipData[dataIdx]);
+                            {
+                                if (this.tex.header.format == 0 || this.tex.header.format == 1)
+                                    GL.TexImage2D(TextureTarget.Texture2D, i, PixelInternalFormat.Rgba, w, h, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, this.tex.mipData[dataIdx]);
+                                else if (this.tex.header.format == 13)
+                                    GL.CompressedTexImage2D(TextureTarget.Texture2D, i, InternalFormat.CompressedRgbaS3tcDxt1Ext, w, h, 0, this.tex.mipData[dataIdx].Length, this.tex.mipData[dataIdx]);
+                                else if (this.tex.header.format == 14)
+                                    GL.CompressedTexImage2D(TextureTarget.Texture2D, i, InternalFormat.CompressedRgbaS3tcDxt3Ext, w, h, 0, this.tex.mipData[dataIdx].Length, this.tex.mipData[dataIdx]);
+                                else if (this.tex.header.format == 15)
+                                    GL.CompressedTexImage2D(TextureTarget.Texture2D, i, InternalFormat.CompressedRgbaS3tcDxt5Ext, w, h, 0, this.tex.mipData[dataIdx].Length, this.tex.mipData[dataIdx]);
+                                // TODO : Missing Rgb and Grayscale
+                            }
                         }
                     }
                 }

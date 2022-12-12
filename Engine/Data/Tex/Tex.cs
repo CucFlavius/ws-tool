@@ -63,6 +63,8 @@ namespace ProjectWS.Engine.Data
             }
             else if (this.source == DataSource.EngineResource)
             {
+                if (!File.Exists(this.filePath)) return;
+
                 Image<Rgba32> image = Image.Load<Rgba32>(this.filePath);
 
                 //ImageSharp loads from the top-left pixel, whereas OpenGL loads from the bottom-left, causing the texture to be flipped vertically.
@@ -95,7 +97,7 @@ namespace ProjectWS.Engine.Data
 
         public void Read(Stream str)
         {
-            try
+            //try
             {
                 if (str == null)
                 {
@@ -189,9 +191,9 @@ namespace ProjectWS.Engine.Data
                     }
                 }
             }
-            catch(Exception e)
+            //catch(Exception e)
             {
-                Debug.LogException(e);
+                //Debug.LogException(e);
             }
         }
 

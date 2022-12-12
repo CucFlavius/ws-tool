@@ -18,6 +18,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
 
         public void AssignTexture(string filePath, Materials.Material material, string samplerName)
         {
+            //Debug.Log(filePath + " " + samplerName);
             if (!this.textureResources.ContainsKey(filePath))
             {
                 this.textureResources.Add(filePath, new TextureResource(filePath, this.engine.resourceManager, this.engine.data));
