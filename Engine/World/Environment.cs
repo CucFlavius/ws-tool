@@ -48,9 +48,9 @@ namespace ProjectWS.Engine.World
                 if (chunk.area.subChunks.Count > this.world.controller.subchunkIndex)
                 {
                     var subchunk = chunk.area.subChunks[this.world.controller.subchunkIndex];
-                    var pos = subchunk.centerPosition;
-                    this.world.subchunkGizmo.transform.SetPosition(new Vector3(pos));
-                    this.world.subchunkGizmo.transform.SetScale(Vector3.One * 32.0f);
+                    //var pos = subchunk.centerPosition;
+                    //this.world.subchunkGizmo.transform.SetPosition(new Vector3(pos));
+                    //this.world.subchunkGizmo.transform.SetScale(Vector3.One * 32.0f);
 
                     if (subchunk.skyCorners != null)
                     {

@@ -248,6 +248,7 @@ namespace ProjectWS.Engine.World
 
                     if (this.area.subChunks[i].distanceToCam < LABEL_DISTANCE)
                     {
+                        /*
                         if (this.world.controller.subchunkIndex == i)
                         {
                             float fade = MathF.Max(MathF.Min(1.0f - (this.area.subChunks[i].distanceToCam / LABEL_DISTANCE), 1.0f), 0.0f);
@@ -256,6 +257,7 @@ namespace ProjectWS.Engine.World
                             else if (this.areaFilePath != null)
                                 Debug.DrawLabel($"{this.areaFilePath} | {i}", pos, new Vector4(1.0f, 0.5f, 1.0f, fade), true);
                         }
+                        */
                         /*
                         for (int j = 0; j < 4; j++)
                         {

@@ -60,7 +60,7 @@ namespace ProjectWS.Engine.Materials
         public override void SetToShader(Shader shader)
         {
             if (!this.isBuilt) return;
-
+            /*
             for (int j = 0; j < this.matData.materialDescriptions.Length; j++)
             {
                 if (this.texturePtrs.TryGetValue($"diffuseMap{j}", out uint texDiffusePtr))
@@ -86,6 +86,48 @@ namespace ProjectWS.Engine.Materials
                     else if (j == 3)
                         GL.ActiveTexture(TextureUnit.Texture7);
                     GL.BindTexture(TextureTarget.Texture2D, texNormalPtr);
+                }
+            }
+            */
+
+            for (int j = 0; j < 4; j++)
+            {
+                // Diffuse Maps //
+                if (j == 0)
+                    GL.ActiveTexture(TextureUnit.Texture0);
+                else if (j == 1)
+                    GL.ActiveTexture(TextureUnit.Texture2);
+                else if (j == 2)
+                    GL.ActiveTexture(TextureUnit.Texture4);
+                else if (j == 3)
+                    GL.ActiveTexture(TextureUnit.Texture6);
+
+                if (this.texturePtrs.TryGetValue($"diffuseMap{j}", out uint texDiffusePtr))
+                {
+                    GL.BindTexture(TextureTarget.Texture2D, texDiffusePtr);
+                }
+                else
+                {
+                    GL.BindTexture(TextureTarget.Texture2D, -1);
+                }
+
+                // Normal Maps //
+                if (j == 0)
+                    GL.ActiveTexture(TextureUnit.Texture1);
+                else if (j == 1)
+                    GL.ActiveTexture(TextureUnit.Texture3);
+                else if (j == 2)
+                    GL.ActiveTexture(TextureUnit.Texture5);
+                else if (j == 3)
+                    GL.ActiveTexture(TextureUnit.Texture7);
+
+                if (this.texturePtrs.TryGetValue($"normalMap{j}", out uint texNormalPtr))
+                {
+                    GL.BindTexture(TextureTarget.Texture2D, texNormalPtr);
+                }
+                else
+                {
+                    GL.BindTexture(TextureTarget.Texture2D, -1);
                 }
             }
         }

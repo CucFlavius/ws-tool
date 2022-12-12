@@ -72,10 +72,10 @@ namespace ProjectWS.TestArea
             Debug.Log("Data Loaded");
 
             //CreateNewWorld();
-            //LoadTestWorld();
+            LoadTestWorld();
             //LoadTestTexture();
             //PrintTestDatabase();
-            LoadAnM3ForDebug();
+            //LoadAnM3ForDebug();
             //TestSkyFile();
         }
 

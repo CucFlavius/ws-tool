@@ -120,57 +120,77 @@ namespace ProjectWS.Engine.Data
 
             if (hasPositions)
             {
-                GL.VertexAttribPointer(0, 3, positionCompressed ? VertexAttribPointerType.Short : VertexAttribPointerType.Float, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(0, 3, positionCompressed ? VertexAttribPointerType.Short : VertexAttribPointerType.Float, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(0);
             }
+            idx++;
+
             if (hasTangents)
             {
-                GL.VertexAttribPointer(1, 2, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(1, 2, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(1);
             }
+            idx++;
+
             if (hasNormals)
             {
-                GL.VertexAttribPointer(2, 2, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(2, 2, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(2);
             }
+            idx++;
+
             if (hasBiTangents)
             {
-                GL.VertexAttribPointer(3, 2, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(3, 2, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(3);
             }
+            idx++;
+
             if (hasBoneIndices)
             {
-                GL.VertexAttribPointer(4, 4, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(4, 4, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(4);
             }
+            idx++;
+
             if (hasBoneWeights)
             {
-                GL.VertexAttribPointer(5, 4, VertexAttribPointerType.UnsignedByte, true, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(5, 4, VertexAttribPointerType.UnsignedByte, true, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(5);
             }
+            idx++;
+
             if (hasColors0)
             {
-                GL.VertexAttribPointer(6, 4, VertexAttribPointerType.UnsignedByte, true, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(6, 4, VertexAttribPointerType.UnsignedByte, true, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(6);
             }
+            idx++;
+
             if (hasColors1)
             {
-                GL.VertexAttribPointer(7, 4, VertexAttribPointerType.UnsignedByte, true, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(7, 4, VertexAttribPointerType.UnsignedByte, true, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(7);
             }
+            idx++;
+
             if (hasUV0)
             {
-                GL.VertexAttribPointer(8, 2, VertexAttribPointerType.HalfFloat, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(8, 2, VertexAttribPointerType.HalfFloat, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(8);
             }
-            if (hasUV0)
+            idx++;
+
+            if (hasUV1)
             {
-                GL.VertexAttribPointer(9, 2, VertexAttribPointerType.HalfFloat, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(9, 2, VertexAttribPointerType.HalfFloat, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(9);
             }
+            idx++;
+
             if (hasUnknown)
             {
-                GL.VertexAttribPointer(10, 1, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx++]);
+                GL.VertexAttribPointer(10, 1, VertexAttribPointerType.UnsignedByte, false, vertexBlockSizeInBytes, vertexBlockFieldPositions[idx]);
                 GL.EnableVertexAttribArray(10);
             }
             // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind

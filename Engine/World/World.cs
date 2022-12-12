@@ -55,7 +55,7 @@ namespace ProjectWS.Engine.World
         volatile bool cullTaskUpdate;
 
         // Tests
-        public BoxGizmo subchunkGizmo;
+        //public BoxGizmo subchunkGizmo;
 
         #endregion
 
@@ -99,14 +99,14 @@ namespace ProjectWS.Engine.World
                 }
             }
 
-            this.subchunkGizmo = new BoxGizmo(new Vector4(1, 1, 0, 1));
-            if (this.renderer != null)
-            {
-                if (this.renderer.gizmos != null)
-                    this.renderer.gizmos.Add(this.subchunkGizmo);
-                if (this.renderer.engine != null)
-                    this.renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.subchunkGizmo));
-            }
+            //this.subchunkGizmo = new BoxGizmo(new Vector4(1, 1, 0, 1));
+            //if (this.renderer != null)
+            //{
+                //if (this.renderer.gizmos != null)
+                //    this.renderer.gizmos.Add(this.subchunkGizmo);
+                //if (this.renderer.engine != null)
+                //    this.renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.subchunkGizmo));
+            //}
         }
 
         public void CreateNew(string worldName)

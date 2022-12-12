@@ -160,8 +160,8 @@ namespace ProjectWS.Engine.Components
             else if (this.cameraMode == Camera.CameraMode.Orbit)
             {
                 this.distanceToOrigin -= scroll * 0.5f;
-                if (this.distanceToOrigin <= 0.01f)
-                    this.distanceToOrigin = 0.01f;
+                if (this.distanceToOrigin <= 0.001f)
+                    this.distanceToOrigin = 0.001f;
 
                 UpdateCameraVectors();
             }
@@ -222,7 +222,7 @@ namespace ProjectWS.Engine.Components
                     {
                         ProcessMousePan(mouseDiff.X, mouseDiff.Y);
                     }
-                    ProcessMouseScroll(mouseDiff.Z);
+                    ProcessMouseScroll(this.input.GetMouseScroll());
                 }
             }
 

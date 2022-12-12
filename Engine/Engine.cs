@@ -74,14 +74,14 @@ namespace ProjectWS.Engine
                 for (int i = 0; i < this.renderers.Count; i++)
                 {
                     Debug.Log($"Reload Shaders: Renderer[{i}]");
-                    this.renderers[i].normalShader.Load();
-                    this.renderers[i].modelShader.Load();
-                    this.renderers[i].wireframeShader.Load();
-                    this.renderers[i].terrainShader.Load();
-                    this.renderers[i].infiniteGridShader.Load();
-                    this.renderers[i].waterShader.Load();
-                    this.renderers[i].fontShader.Load();
-                    this.renderers[i].lightPassShader.Load();
+                    this.renderers[i].normalShader?.Load();
+                    this.renderers[i].modelShader?.Load();
+                    this.renderers[i].wireframeShader?.Load();
+                    this.renderers[i].terrainShader?.Load();
+                    this.renderers[i].infiniteGridShader?.Load();
+                    this.renderers[i].waterShader?.Load();
+                    this.renderers[i].fontShader?.Load();
+                    this.renderers[i].lightPassShader?.Load();
                 }
             }
 
