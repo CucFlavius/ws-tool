@@ -6,13 +6,14 @@ namespace ProjectWS.Engine.Rendering
 {
     public class WorldRenderer : Renderer
     {
-        public MousePick mousePick;
+        public MousePick? mousePick;
         public World.World? world;
-        public ShaderParams.FogParameters fogParameters;
-        public ShaderParams.TerrainEditorParameters tEditorParameters;
-        public ShaderParams.SunParameters sunParameters;
-        public ShaderParams.EnvironmentParameters envParameters;
-        public ShaderParams.BrushParameters brushParameters;
+        public ShaderParams.FogParameters? fogParameters;
+        public ShaderParams.TerrainEditorParameters? tEditorParameters;
+        public ShaderParams.SunParameters? sunParameters;
+        public ShaderParams.EnvironmentParameters? envParameters;
+        public ShaderParams.BrushParameters? brushParameters;
+        public TextRenderer? textRenderer;
 
         public static int drawCalls;
         public static int propDrawCalls;
@@ -37,6 +38,8 @@ namespace ProjectWS.Engine.Rendering
             this.sunParameters = new ShaderParams.SunParameters(new Vector3(1.0f, 1.0f, 0.9f), sunVector, 1.0f);
             this.envParameters = new ShaderParams.EnvironmentParameters(new Vector3(0.4f, 0.4f, 0.6f));
             this.brushParameters = new ShaderParams.BrushParameters(ShaderParams.BrushParameters.BrushMode.Gradient, Vector3.Zero, 64.0f);
+            this.textRenderer = new TextRenderer();
+            Debug.textRenderer = this.textRenderer;
         }
 
         public void SetWorld(World.World world) => this.world = world;
@@ -56,7 +59,7 @@ namespace ProjectWS.Engine.Rendering
 
             this.mousePick = new MousePick(this);
 
-            FreeType.Init();
+            this.textRenderer?.Initialize();
             BuildGBufferQuad();
         }
 
@@ -83,22 +86,25 @@ namespace ProjectWS.Engine.Rendering
                 // Set global shader parameters
                 if (Engine.settings != null && Engine.settings.wRenderer != null && Engine.settings.wRenderer.toggles != null)
                 {
-                    this.fogParameters.Toggle(Engine.settings.wRenderer.toggles.fog);
-                    this.tEditorParameters.enableAreaGrid = Engine.settings.wRenderer.toggles.displayAreaGrid;
-                    this.tEditorParameters.enableChunkGrid = Engine.settings.wRenderer.toggles.displayChunkGrid;
+                    this.fogParameters?.Toggle(Engine.settings.wRenderer.toggles.fog);
+                    if (this.tEditorParameters != null)
+                    {
+                        this.tEditorParameters.enableAreaGrid = Engine.settings.wRenderer.toggles.displayAreaGrid;
+                        this.tEditorParameters.enableChunkGrid = Engine.settings.wRenderer.toggles.displayChunkGrid;
+                    }
                 }
 
                 // Render World
-                if (world != null)
+                if (this.world != null)
                 {
                     // Terrain
                     this.terrainShader.Use();
 
-                    this.tEditorParameters.SetToShader(this.terrainShader);
+                    this.tEditorParameters?.SetToShader(this.terrainShader);
                     //this.fogParameters.SetToShader(this.terrainShader);
                     //this.sunParameters.SetToShader(this.terrainShader);
                     //this.envParameters.SetToShader(this.terrainShader);
-                    this.brushParameters.SetToShader(this.terrainShader);
+                    this.brushParameters?.SetToShader(this.terrainShader);
                     this.viewports[v].mainCamera.SetToShader(this.terrainShader);
 
                     this.world.RenderTerrain(this.terrainShader);
@@ -112,7 +118,7 @@ namespace ProjectWS.Engine.Rendering
                     // Props
                     this.modelShader.Use();
                     this.viewports[v].mainCamera.SetToShader(this.modelShader);
-                    this.envParameters.SetToShader(this.modelShader);
+                    this.envParameters?.SetToShader(this.modelShader);
                     this.world.RenderProps(this.modelShader);
 
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
@@ -120,37 +126,34 @@ namespace ProjectWS.Engine.Rendering
                 }
 
                 // Render Text
-                Debug.RenderLabels(this, this.viewports[v]);
+                this.textRenderer?.Render(this, this.viewports[v]);
 
                 // Render Gizmos
-                if (this.gizmos != null)
+                for (int i = 0; i < this.gizmos?.Count; i++)
                 {
-                    for (int i = 0; i < this.gizmos.Count; i++)
+                    if (this.gizmos[i] == null) continue;
+
+                    if (this.gizmos[i].visible == false) continue;
+
+                    if (this.gizmos[i] is Objects.Gizmos.CameraGizmo)
                     {
-                        if (this.gizmos[i] == null) continue;
+                        var camGizmo = this.gizmos[i] as Objects.Gizmos.CameraGizmo;
+                        if (camGizmo != null)
+                            if (camGizmo.camera == this.viewports[v].mainCamera)
+                                continue;
+                    }
 
-                        if (this.gizmos[i].visible == false) continue;
-
-                        if (this.gizmos[i] is Objects.Gizmos.CameraGizmo)
-                        {
-                            var camGizmo = this.gizmos[i] as Objects.Gizmos.CameraGizmo;
-                            if (camGizmo != null)
-                                if (camGizmo.camera == this.viewports[v].mainCamera)
-                                    continue;
-                        }
-
-                        if (this.gizmos[i] is InfiniteGridGizmo)
-                        {
-                            this.infiniteGridShader.Use();
-                            this.viewports[v].mainCamera.SetToShader(this.infiniteGridShader);
-                            this.gizmos[i].Render(Matrix4.Identity, this.infiniteGridShader);
-                        }
-                        else
-                        {
-                            this.lineShader.Use();
-                            this.viewports[v].mainCamera.SetToShader(this.lineShader);
-                            this.gizmos[i].Render(Matrix4.Identity, this.lineShader);
-                        }
+                    if (this.gizmos[i] is InfiniteGridGizmo)
+                    {
+                        this.infiniteGridShader.Use();
+                        this.viewports[v].mainCamera.SetToShader(this.infiniteGridShader);
+                        this.gizmos[i].Render(Matrix4.Identity, this.infiniteGridShader);
+                    }
+                    else
+                    {
+                        this.lineShader.Use();
+                        this.viewports[v].mainCamera.SetToShader(this.lineShader);
+                        this.gizmos[i].Render(Matrix4.Identity, this.lineShader);
                     }
                 }
             }
@@ -175,9 +178,9 @@ namespace ProjectWS.Engine.Rendering
 
             // send light relevant uniforms
             this.viewports[0].mainCamera.SetToShader(this.lightPassShader);
-            this.fogParameters.SetToShader(this.lightPassShader);
-            this.sunParameters.SetToShader(this.lightPassShader);
-            this.envParameters.SetToShader(this.lightPassShader);
+            this.fogParameters?.SetToShader(this.lightPassShader);
+            this.sunParameters?.SetToShader(this.lightPassShader);
+            this.envParameters?.SetToShader(this.lightPassShader);
 
             //shaderLightingPass.setVec3("viewPos", camera.Position);
             // finally render quad
@@ -216,13 +219,13 @@ namespace ProjectWS.Engine.Rendering
                 this.viewports[1].mainCamera.transform.SetPosition(p);
             }
 
-            if (this.world != null)
-                this.world.Update(deltaTime);
+            this.world?.Update(deltaTime);
 
             if (this.mousePick != null && this.mousePick.mode != MousePick.Mode.Disabled)
                 this.mousePick.Update();
 
-            this.brushParameters.position = this.mousePick.terrainHitPoint;
+            if (this.brushParameters != null && this.mousePick != null)
+                this.brushParameters.position = this.mousePick.terrainHitPoint;
         }
     }
 }

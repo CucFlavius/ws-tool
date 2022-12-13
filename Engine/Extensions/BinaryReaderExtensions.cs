@@ -28,7 +28,7 @@ namespace ProjectWS.Engine.Data.Extensions
 
         public static Quaternion ReadQuaternion(this BinaryReader br, bool normalize = false)
         {
-            Quaternion q = new Quaternion(br.ReadSingle(), br.ReadSingle(), -br.ReadSingle(), -br.ReadSingle());
+            Quaternion q = new Quaternion(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             if (normalize)
             {
                 float f = 1f / (float)Math.Sqrt(q.X * q.X + q.Y * q.Y + q.Z * q.Z + q.W * q.W);

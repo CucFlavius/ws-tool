@@ -61,6 +61,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorPicker", "Libs\ColorPi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BCnEncoder", "Libs\BCnEnc.Net\BCnEncoder.csproj", "{1D4F688C-F944-43F3-991D-991CCE4313F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontGenerator", "FontGenerator\FontGenerator.csproj", "{1EC3237B-B51B-4285-8B57-6C002BE90012}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +117,10 @@ Global
 		{1D4F688C-F944-43F3-991D-991CCE4313F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D4F688C-F944-43F3-991D-991CCE4313F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D4F688C-F944-43F3-991D-991CCE4313F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EC3237B-B51B-4285-8B57-6C002BE90012}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EC3237B-B51B-4285-8B57-6C002BE90012}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EC3237B-B51B-4285-8B57-6C002BE90012}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EC3237B-B51B-4285-8B57-6C002BE90012}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

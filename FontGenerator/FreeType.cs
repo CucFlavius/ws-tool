@@ -1,15 +1,12 @@
-﻿//using FreeTypeSharp;
-//using FreeTypeSharp.Native;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-//using static FreeTypeSharp.Native.FT;
 using SharpFont;
 
-namespace ProjectWS.Engine
+namespace FontGenerator
 {
     public class FreeType
     {
-        public static Dictionary<uint, Character> _characters = new Dictionary<uint, Character>();
+        public Dictionary<uint, Character> _characters = new Dictionary<uint, Character>();
         static int _vbo;
         static int _vao;
         static bool init = false;
@@ -22,7 +19,7 @@ namespace ProjectWS.Engine
             public int Advance { get; set; }
         }
 
-        public static void Init()
+        public void Init()
         {
             if (init) return;
 
@@ -104,7 +101,7 @@ namespace ProjectWS.Engine
             init = true;
         }
 
-        public static void RenderText(string text, float x, float y, float scale, Vector2 dir)
+        public void RenderText(string text, float x, float y, float scale, Vector2 dir)
         {
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindVertexArray(_vao);
