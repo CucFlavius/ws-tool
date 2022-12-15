@@ -33,6 +33,7 @@ namespace ProjectWS.Editor
         public Dictionary<int, ModelRendererPane> modelRendererPanes;
 
         public SkyEditorPane skyEditorPane;
+        public UI.Toolbox.ToolboxPane toolboxPane;
         public List<Tool> tools;
 
         FPSCounter? fps;
@@ -384,6 +385,19 @@ namespace ProjectWS.Editor
 
             LayoutAnchorablePane layoutAnchorablePane = new LayoutAnchorablePane(layoutAnchorable);
 
+            window.LayoutAnchorablePaneGroup.Children.Add(layoutAnchorablePane);
+        }
+
+        public void CreateToolboxPane(MainWindow window)
+        {
+            this.toolboxPane = new UI.Toolbox.ToolboxPane();
+
+            var layoutAnchorable = new LayoutAnchorable();
+            layoutAnchorable.Title = "Toolbox";
+            layoutAnchorable.ContentId = "ToolboxPane";
+            layoutAnchorable.Content = this.toolboxPane;
+
+            LayoutAnchorablePane layoutAnchorablePane = new LayoutAnchorablePane(layoutAnchorable);
             window.LayoutAnchorablePaneGroup.Children.Add(layoutAnchorablePane);
         }
 

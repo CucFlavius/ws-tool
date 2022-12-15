@@ -2,7 +2,7 @@
 
 namespace ProjectWS.Engine.Data
 {
-    public class SkyDataBlock
+    public class SHGroup
     {
         public long unk;
         public TimeTrack<Vector4>[]? colorUnk0;
@@ -12,7 +12,7 @@ namespace ProjectWS.Engine.Data
         public TimeTrack<SHCoefficients>[]? shCoefficients; // UnkColorBlock7
         public TimeTrack<Gradient16>? skySphereGradient;    // Gradient16Block 
 
-        public SkyDataBlock(BinaryReader br, long startOffs)
+        public SHGroup(BinaryReader br, long startOffs)
         {
             this.unk = br.ReadInt64();
             this.colorUnk0 = ReadTimeTrackColorArray(br, startOffs);                    // 8 + 16 = 24

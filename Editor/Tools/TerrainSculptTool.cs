@@ -33,7 +33,8 @@ namespace ProjectWS.Editor.Tools
         public override void Enable()
         {
             this.isEnabled = true;
-            this.worldRenderer.brushParameters.mode = Engine.Rendering.ShaderParams.BrushParameters.BrushMode.Gradient;
+            if (this.worldRenderer.brushParameters != null)
+                this.worldRenderer.brushParameters.mode = Engine.Rendering.ShaderParams.BrushParameters.BrushMode.Gradient;
         }
 
         public override void Disable()
@@ -49,13 +50,18 @@ namespace ProjectWS.Editor.Tools
             if (this.worldRenderer.mousePick == null) return;
 
             // Update brush size
-            this.worldRenderer.brushParameters.size += this.engine.input.GetMouseScroll();
-            this.worldRenderer.brushParameters.size = (float)Math.Clamp(this.worldRenderer.brushParameters.size, 1.0f, 100f);
-
-
-            if (this.engine.input.LMB && this.editor.keyboardFocused && this.worldRenderer.brushParameters.isEnabled)
+            bool brushEnabled = false;
+            float brushSize = 0.0f;
+            if (this.worldRenderer.brushParameters != null)
             {
-                var brushSize = this.worldRenderer.brushParameters.size;
+                brushEnabled = this.worldRenderer.brushParameters.isEnabled;
+                brushSize = this.worldRenderer.brushParameters.size;
+                this.worldRenderer.brushParameters.size += this.engine.input.GetMouseScroll();
+                this.worldRenderer.brushParameters.size = (float)Math.Clamp(this.worldRenderer.brushParameters.size, 1.0f, 100f);
+            }
+
+            if (this.engine.input.LMB && this.editor.keyboardFocused && brushEnabled)
+            {
                 var hitPoint = this.worldRenderer.mousePick.terrainHitPoint;
                 var terrainAreaHit = this.worldRenderer.mousePick.areaHit;
 
@@ -71,7 +77,7 @@ namespace ProjectWS.Editor.Tools
 
                         var areaPos = chunk.worldCoords.Xz;
 
-                        for (int s = 0; s < chunk.area.subChunks.Count; s++)
+                        for (int s = 0; s < chunk.area?.subChunks?.Count; s++)
                         {
                             var scDist = Vector2.Distance(chunk.area.subChunks[s].centerPosition.Xz, hitPoint.Xz);
                             // TODO: need to check better if the brush overlaps the subchunks, otherwise might run into gaps again

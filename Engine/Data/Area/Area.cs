@@ -15,10 +15,10 @@ namespace ProjectWS.Engine.Data
 {
     public partial class Area
     {
-        Block.FileEntry fileEntry;
-        string filePath;
-        GameData gameData;
-        World.Chunk chunk;
+        Block.FileEntry? fileEntry;
+        string? filePath;
+        GameData? gameData;
+        World.Chunk? chunk;
         int lod;
 
         public float minHeight;
@@ -30,10 +30,10 @@ namespace ProjectWS.Engine.Data
         public List<SubChunk>? subChunks;    // Variable size, not always 16*16
         public List<Prop>? props;
         public Dictionary<uint, Prop>? propLookup;
-        public HashSet<uint> renderedProps;
+        public HashSet<uint>? renderedProps;
         public Curt[]? curts;
 
-        public Action onFinishedReading;
+        public Action? onFinishedReading;
 
         public Area(World.Chunk chunk, int lod)
         {
@@ -45,6 +45,13 @@ namespace ProjectWS.Engine.Data
             this.minHeight = float.MaxValue;
             this.maxHeight = float.MinValue;
             renderedProps = new HashSet<uint>();
+        }
+
+        public Area(string filePath)
+        {
+            this.minHeight = float.MaxValue;
+            this.maxHeight = float.MinValue;
+            this.filePath = filePath;
         }
 
         public void Create()

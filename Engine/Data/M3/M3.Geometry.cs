@@ -20,15 +20,15 @@ namespace ProjectWS.Engine.Data
         public byte indexSize;
         public byte unk1;
 
-        public uint[] indexData;
-        public byte[] vertexData;
+        public uint[]? indexData;
+        public byte[]? vertexData;
 
-        public Submesh[] submeshes;
+        public Submesh[]? submeshes;
 
         public uint nVertexBlocks;
-        public int[] vertexBlockRange;
-        public short[] unk0A8;
-        public int[] unk0B8;
+        public int[]? vertexBlockRange;
+        public short[]? unk0A8;
+        public int[]? unk0B8;
 
         private static unsafe byte[] ConvertStruct<T>(ref T str) where T : struct
         {

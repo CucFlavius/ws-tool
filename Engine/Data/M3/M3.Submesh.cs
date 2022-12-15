@@ -1,5 +1,6 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using ProjectWS.Engine.Data.Extensions;
 
 namespace ProjectWS.Engine.Data
 {
@@ -28,10 +29,13 @@ namespace ProjectWS.Engine.Data
         public short unk11;
         public short unk12;
         public short unk13;
-        public short unk14;
-        public short unk15;
+        public Color4 color0;
+        public Color4 color1;
         public byte unk16;
         public byte unk17;
+
+        public byte[] pad;
+
         public Vector3 boundsMin;
         public Vector3 boundsMax;
         public Vector3 size;
@@ -43,6 +47,7 @@ namespace ProjectWS.Engine.Data
 
         public bool isBuilt;
         public bool positionCompressed;
+        public bool renderable;
         public int _vertexArrayObject;
 
         int buffer;
@@ -65,16 +70,15 @@ namespace ProjectWS.Engine.Data
             this.meshGroupID = br.ReadSByte();
             this.unk6 = br.ReadByte();
             this.unk7 = br.ReadInt16();
-            this.meshAnatomyID = (BodyPart)br.ReadByte();
-            br.BaseStream.Position += 5;        // Padding
+            this.meshAnatomyID = (BodyPart)br.ReadInt16();
             this.unk8 = br.ReadInt16();
             this.unk9 = br.ReadInt16();
             this.unk10 = br.ReadInt16();
             this.unk11 = br.ReadInt16();
             this.unk12 = br.ReadInt16();
             this.unk13 = br.ReadInt16();
-            this.unk14 = br.ReadInt16();
-            this.unk15 = br.ReadInt16();
+            this.color0 = br.ReadColor32();
+            this.color1 = br.ReadColor32();
             this.unk16 = br.ReadByte();
             this.unk17 = br.ReadByte();
             br.BaseStream.Position += 6;        // Padding
@@ -82,8 +86,9 @@ namespace ProjectWS.Engine.Data
             this.boundsMax = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()); br.ReadSingle(); // skip W
             this.unk18 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()); br.ReadSingle(); // skip W
             this.size = Vector3.One * (this.boundsMax.Y - this.boundsMin.Y);//new Vector3(Mathf.Abs(this.boundsMax.x - this.boundsMin.x), Mathf.Abs(this.boundsMax.y - this.boundsMin.y), Mathf.Abs(this.boundsMax.z - this.boundsMin.z));
-            //Debug.Log(this.scale.ToString());
-            //this.offset = new Vector3(0, this.boundsMin.y, 0);
+            this.renderable = true;
+            if (this.unk16 == 10)
+                this.renderable = false;
         }
 
         public void Build(int vertexBlockSizeInBytes, byte[] vertexBlockFieldPositions, Geometry.VertexBlockFlags vertexBlockFlags, Geometry.VertexFieldType[] vertexFieldTypes)
@@ -212,7 +217,7 @@ namespace ProjectWS.Engine.Data
 
         public void Draw()
         {
-            if (!this.isBuilt) return;
+            if (!this.isBuilt || !this.renderable) return;
 
             GL.BindVertexArray(this._vertexArrayObject);
             GL.DrawElements(BeginMode.Triangles, this.indexData.Length, DrawElementsType.UnsignedInt, 0);
@@ -220,7 +225,7 @@ namespace ProjectWS.Engine.Data
 
         public void DrawInstanced(Matrix4[] instances)
         {
-            if (!this.isBuilt) return;
+            if (!this.isBuilt || !this.renderable) return;
 
             // configure instanced array
             // -------------------------

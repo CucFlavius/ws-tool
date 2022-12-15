@@ -94,6 +94,12 @@ namespace ProjectWS.Engine.Data
                     return;
                 }
 
+                if (str.Length <= 0)
+                {
+                    this.failedReading = true;
+                    return;
+                }
+
                 using (BinaryReader br = new BinaryReader(str))
                 {
                     int magic = br.ReadInt32();

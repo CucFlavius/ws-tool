@@ -38,9 +38,9 @@ namespace ProjectWS.Engine.Data.Extensions
             return q;
         }
 
-        public static Vector4 ReadColor32(this BinaryReader br)
+        public static Color4 ReadColor32(this BinaryReader br)
         {
-            return new Vector4(br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f);
+            return new Color4(br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f);
         }
 
         public static Vector4 ReadColor(this BinaryReader br)

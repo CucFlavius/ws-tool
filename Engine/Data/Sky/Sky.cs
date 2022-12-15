@@ -20,7 +20,10 @@ namespace ProjectWS.Engine.Data
         public int unk1;            // 0,1
         public float unk2;
         public string sourceFilePath;
-        public SkyDataBlock[] skyDataBlocks;
+        public SHGroup skyDataBlock0;
+        public SHGroup skyDataBlock1;
+        public SHGroup skyDataBlock2;
+        public SHGroup skyDataBlock3;
         public TimeTrack<Vector4> sunLightColor;
         public TimeTrack<AngleAndColor> specularColor;
         public TimeTrack<Vector4> unkColorData;
@@ -107,13 +110,10 @@ namespace ProjectWS.Engine.Data
                     this.unk2 = br.ReadSingle();
                     br.BaseStream.Position += 4;    // Padding
                     this.sourceFilePath = new string(new ArrayWChar(br, headerSize).data);
-                    this.skyDataBlocks = new SkyDataBlock[]
-                    {
-                        new SkyDataBlock(br, headerSize),
-                        new SkyDataBlock(br, headerSize),
-                        new SkyDataBlock(br, headerSize),
-                        new SkyDataBlock(br, headerSize)
-                    };
+                    this.skyDataBlock0 = new SHGroup(br, headerSize);
+                    this.skyDataBlock1 = new SHGroup(br, headerSize);
+                    this.skyDataBlock2 = new SHGroup(br, headerSize);
+                    this.skyDataBlock3 = new SHGroup(br, headerSize);
                     this.sunLightColor = new TimeTrackVector4(br, headerSize);
                     this.specularColor = new TimeTrackAngleAndColor(br, headerSize);
                     this.unkColorData = new TimeTrackVector4(br, headerSize);

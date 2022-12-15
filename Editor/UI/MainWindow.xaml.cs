@@ -36,6 +36,7 @@ namespace ProjectWS.Editor
             this.editor.CreateRendererPane(this, "World", 0, 0);
 
 			//this.editor.CreateSkyEditorPane(this);
+			this.editor.CreateToolboxPane(this);
         }
 
 		#region FocusedElement

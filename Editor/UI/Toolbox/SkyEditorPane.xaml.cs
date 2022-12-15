@@ -330,7 +330,7 @@ namespace ProjectWS.Editor
 
         void PopulateSkyDataBlock(SkyEditorPane pane, Sky sky, int time, int index)
         {
-            var data = sky.skyDataBlocks[index];
+            var data = sky.skyDataBlock0;
 
             /*
             TreeViewItem block = new TreeViewItem();

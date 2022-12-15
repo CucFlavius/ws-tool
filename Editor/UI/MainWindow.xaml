@@ -43,13 +43,8 @@
             </DockingManager.DocumentHeaderTemplate>
             <LayoutRoot PropertyChanged="OnLayoutRootPropertyChanged" x:Name="LayoutRoot">
                 <LayoutPanel Orientation="Horizontal">
-                    <LayoutDocumentPaneGroup x:Name="LayoutDocumentPaneGroup">
-                        <LayoutDocumentPane x:Name="LayoutDocumentPane">
-                        </LayoutDocumentPane>
-                    </LayoutDocumentPaneGroup>
-                    <LayoutAnchorablePaneGroup DockWidth="400" x:Name="LayoutAnchorablePaneGroup">
-
-                    </LayoutAnchorablePaneGroup>
+                    <LayoutAnchorablePaneGroup Orientation="Vertical" DockWidth="400" FloatingWidth="400" DockMinWidth="200" x:Name="LayoutAnchorablePaneGroup"/>
+                    <LayoutDocumentPaneGroup x:Name="LayoutDocumentPaneGroup"/>
                 </LayoutPanel>
             </LayoutRoot>
         </DockingManager>

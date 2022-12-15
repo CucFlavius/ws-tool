@@ -37,7 +37,7 @@ namespace ProjectWS.TestArea
             // but for debugging purposes I need it to load directly at runtime in editor so I don't waste time
             string installLocation = @"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\";
             string cacheLocation = @"D:\Wildstar1.7.8.16042_Cache\";
-            this.engine.LoadGameData(installLocation, OnDataLoaded);
+            //this.engine.LoadGameData(installLocation, OnDataLoaded);
             this.engine.SetCacheLocation(cacheLocation);
 
             //CalculateSkyCoeffs(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\Data\Sky\Adventure_Galeras3.sky");
@@ -72,10 +72,10 @@ namespace ProjectWS.TestArea
             Debug.Log("Data Loaded");
 
             //CreateNewWorld();
-            //LoadTestWorld();
+            LoadTestWorld();
             //LoadTestTexture();
             //PrintTestDatabase();
-            LoadAnM3ForDebug();
+            //LoadAnM3ForDebug();
             //TestSkyFile();
         }
 
@@ -133,9 +133,9 @@ namespace ProjectWS.TestArea
             Sky sky = new Sky(path);
             sky.Read();
 
-            for (int i = 0; i < sky.skyDataBlocks[0].colorAndAngleUnk0.Length; i++)
+            for (int i = 0; i < sky.skyDataBlock0.colorAndAngleUnk0.Length; i++)
             {
-                var aandc = sky.skyDataBlocks[0].colorAndAngleUnk0[i];
+                var aandc = sky.skyDataBlock0.colorAndAngleUnk0[i];
                 var data = aandc.data[0];
                 float mult = 1.0f;
                 float[] hdr = new float[] { data.color.X * mult, data.color.Y * mult, data.color.Z * mult };

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
+    <PackageReference Include="FontAwesome.Sharp" Version="6.1.1" />
     <PackageReference Include="OpenTK" Version="4.7.5" />
   </ItemGroup>
 
@@ -31,16 +32,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="SkyEditorPane.xaml.cs">
+    <Compile Update="UI\Toolbox\TerrainColorPaintPane.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="WorldRendererPane.xaml.cs">
+    <Compile Update="UI\Toolbox\TerrainLayerPaintPane.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Toolbox\TerrainPropPlacePane.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Toolbox\TerrainSkyPaintPane.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Toolbox\ToolboxPane.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Toolbox\SkyEditorPane.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="UI\Renderers\WorldRendererPane.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="WorldRendererPane.xaml">
+    <Page Update="UI\Renderers\WorldRendererPane.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>
