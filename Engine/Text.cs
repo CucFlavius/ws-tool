@@ -57,13 +57,13 @@ namespace ProjectWS.Engine
 
                     var shadowPos = pos - new Vector2(1.0f, 1.0f);
                     renderer.fontShader.SetColor4("textColor", label.color);
-                    this.freeType.RenderText(label.text, shadowPos.X, shadowPos.Y, 0.5f, new Vector2(1f, 0f));
+                    this.freeType.RenderText(label.text, shadowPos.X, shadowPos.Y, 0.5f, new Vector2(1f, 0f), true);
 
                     if (label.shadow)
                     {
                         this.drawCalls++;
                         renderer.fontShader.SetColor4("textColor", new Vector4(0.0f, 0.0f, 0.0f, 0.5f * label.color.W));
-                        this.freeType.RenderText(label.text, pos.X, pos.Y, 0.5f, new Vector2(1f, 0f));
+                        this.freeType.RenderText(label.text, pos.X, pos.Y, 0.5f, new Vector2(1f, 0f), true);
                     }
                 }
             }

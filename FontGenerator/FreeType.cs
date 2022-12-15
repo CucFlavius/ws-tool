@@ -101,7 +101,7 @@ namespace FontGenerator
             init = true;
         }
 
-        public void RenderText(string text, float x, float y, float scale, Vector2 dir)
+        public void RenderText(string text, float x, float y, float scale, Vector2 dir, bool centered)
         {
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindVertexArray(_vao);
@@ -110,7 +110,21 @@ namespace FontGenerator
             Matrix4 rotateM = Matrix4.CreateRotationZ(angle_rad);
             Matrix4 transOriginM = Matrix4.CreateTranslation(new Vector3(x, y, 0f));
 
-            // Iterate through all characters
+            // Calculate size
+            float textLength = 0;
+            if (centered)
+            {
+                foreach (var c in text)
+                {
+                    if (_characters.ContainsKey(c) == false)
+                        continue;
+                    Character ch = _characters[c];
+
+                    textLength += (ch.Size.X + ch.Bearing.X) * scale;
+                }
+            }
+
+            // Iterate through all characters and render
             float char_x = 0.0f;
             foreach (var c in text)
             {
@@ -122,6 +136,9 @@ namespace FontGenerator
                 float h = ch.Size.Y * scale;//-
                 float xrel = char_x + ch.Bearing.X * scale;
                 float yrel = (ch.Size.Y - ch.Bearing.Y) * scale;//-
+
+                if (centered)
+                    xrel -= textLength / 2.0f;
 
                 // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
                 char_x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
