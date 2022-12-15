@@ -35,6 +35,9 @@ namespace ProjectWS.Editor
         public UI.Toolbox.ToolboxPane? toolboxPane;
         public List<Tool>? tools;
 
+        public LayoutAnchorablePane layoutAnchorablePane;
+        public LayoutAnchorable toolboxLayoutAnchorable;
+
         FPSCounter? fps;
         NamedPipeClientStream? pipeClient;
 
@@ -279,12 +282,13 @@ namespace ProjectWS.Editor
                 var rendererPane = new WorldRendererPane(this);
                 openTkControl = rendererPane.GetOpenTKControl();
                 rendererGrid = rendererPane.GetRendererGrid();
-                this.controls.Add(ID, openTkControl);
+                this.controls?.Add(ID, openTkControl);
 
                 var layoutDoc = new LayoutDocument();
                 layoutDoc.Title = name;
                 layoutDoc.ContentId = "Renderer_" + ID + "_" + name;
                 layoutDoc.Content = rendererPane;
+                layoutDoc.CanClose = false;
 
                 var testRenderPane = new LayoutDocumentPane(layoutDoc);
 
@@ -297,9 +301,9 @@ namespace ProjectWS.Editor
                 renderer = worldRenderer;
 
                 // Create tools
-                this.tools.Add(new TerrainSculptTool(this.engine, this, worldRenderer));
-                this.tools.Add(new TerrainLayerPaintTool(this.engine, this, worldRenderer));
-                this.tools.Add(new PropTool(this.engine, this, worldRenderer));
+                this.tools?.Add(new TerrainSculptTool(this.engine, this, worldRenderer));
+                this.tools?.Add(new TerrainLayerPaintTool(this.engine, this, worldRenderer));
+                this.tools?.Add(new PropTool(this.engine, this, worldRenderer));
 
                 this.engine.renderers.Add(renderer);
 
@@ -372,7 +376,7 @@ namespace ProjectWS.Editor
             
             return renderer;
         }
-
+        /*
         public void CreateSkyEditorPane(MainWindow window)
         {
             this.skyEditorPane = new SkyEditorPane();
@@ -386,20 +390,29 @@ namespace ProjectWS.Editor
 
             window.LayoutAnchorablePaneGroup.Children.Add(layoutAnchorablePane);
         }
-
+        */
         public void CreateToolboxPane(MainWindow window)
         {
-            this.toolboxPane = new UI.Toolbox.ToolboxPane();
-            this.toolboxPane.engine = this.engine;
-            this.toolboxPane.editor = this;
+            if (this.toolboxPane == null)
+            {
+                this.toolboxPane = new UI.Toolbox.ToolboxPane();
+                this.toolboxPane.engine = this.engine;
+                this.toolboxPane.editor = this;
+            }
 
-            var layoutAnchorable = new LayoutAnchorable();
-            layoutAnchorable.Title = "Toolbox";
-            layoutAnchorable.ContentId = "ToolboxPane";
-            layoutAnchorable.Content = this.toolboxPane;
+            if (this.toolboxLayoutAnchorable == null)
+            {
+                this.toolboxLayoutAnchorable = new LayoutAnchorable();
+                this.toolboxLayoutAnchorable.Title = "Toolbox";
+                this.toolboxLayoutAnchorable.ContentId = "ToolboxPane";
+                this.toolboxLayoutAnchorable.Content = this.toolboxPane;
+            }
 
-            LayoutAnchorablePane layoutAnchorablePane = new LayoutAnchorablePane(layoutAnchorable);
-            window.LayoutAnchorablePaneGroup.Children.Add(layoutAnchorablePane);
+            if (this.layoutAnchorablePane == null)
+            {
+                this.layoutAnchorablePane = new LayoutAnchorablePane(this.toolboxLayoutAnchorable);
+                window.LayoutAnchorablePaneGroup.Children.Add(this.layoutAnchorablePane);
+            }
         }
 
         void OpenTkControl_OnRender(TimeSpan delta, int ID, int frameBuffer)

@@ -22,6 +22,9 @@
                 <MenuItem Command="Copy" />
                 <MenuItem Command="Paste" />
             </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Name="Toolbox" Header="Toolbox" Click="Toolbox_Click" IsEnabled="True"/>
+            </MenuItem>
         </Menu>
         <DockingManager x:Name="dockManager"
             Grid.Row="1"

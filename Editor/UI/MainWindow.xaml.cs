@@ -134,5 +134,11 @@ namespace ProjectWS.Editor
 		{
 			this.editor.Save();
 		}
+
+		private void Toolbox_Click(object sender, RoutedEventArgs e)
+		{
+			if (!this.editor.layoutAnchorablePane.Children.Contains(this.editor.toolboxLayoutAnchorable))
+				this.editor.layoutAnchorablePane.Children.Add(this.editor.toolboxLayoutAnchorable);
+		}
 	}
 }
