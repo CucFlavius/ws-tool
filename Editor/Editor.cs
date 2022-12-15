@@ -14,7 +14,6 @@ using System.Windows.Input;
 
 namespace ProjectWS.Editor
 {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
     public class Editor
     {
         DateTime time1 = DateTime.Now;
@@ -28,16 +27,16 @@ namespace ProjectWS.Editor
         public Engine.Engine? engine;
         private TestArea.Tests? tests;
         public GLWpfControl? focusedControl;
-        public Dictionary<int, GLWpfControl> controls;
-        public Dictionary<int, WorldRendererPane> worldRendererPanes;
-        public Dictionary<int, ModelRendererPane> modelRendererPanes;
+        public Dictionary<int, GLWpfControl>? controls;
+        public Dictionary<int, WorldRendererPane>? worldRendererPanes;
+        public Dictionary<int, ModelRendererPane>? modelRendererPanes;
 
-        public SkyEditorPane skyEditorPane;
-        public UI.Toolbox.ToolboxPane toolboxPane;
-        public List<Tool> tools;
+        public SkyEditorPane? skyEditorPane;
+        public UI.Toolbox.ToolboxPane? toolboxPane;
+        public List<Tool>? tools;
 
         FPSCounter? fps;
-
+        NamedPipeClientStream? pipeClient;
 
         Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key> opentkKeyMap = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key>()
         {
@@ -368,7 +367,7 @@ namespace ProjectWS.Editor
 
             // Add events
             openTkControl.Render += (delta) => OpenTkControl_OnRender(delta, ID, openTkControl.Framebuffer);
-            openTkControl.Loaded += (sender, e) => OpenTkControl_OnLoaded(sender, e, renderer, rendererGrid);
+            openTkControl.Loaded += (sender, e) => OpenTkControl_OnLoaded(sender, e, renderer, rendererGrid, openTkControl);
             openTkControl.SizeChanged += (sender, e) => OpenTkControl_OnSizeChanged(sender, e, renderer);
             
             return renderer;
@@ -417,9 +416,9 @@ namespace ProjectWS.Editor
             Render(ID, frameBuffer);
         }
 
-        void OpenTkControl_OnLoaded(object sender, RoutedEventArgs e, Renderer renderer, Grid control)
+        void OpenTkControl_OnLoaded(object sender, RoutedEventArgs e, Renderer renderer, Grid control, GLWpfControl openTkControl)
         {
-            renderer.SetDimensions(0, 0, (int)control.ActualWidth, (int)control.ActualHeight);
+            renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
             renderer.Load();
         }
 
@@ -428,8 +427,6 @@ namespace ProjectWS.Editor
             var size = e.NewSize;
             renderer.Resize((int)size.Width, (int)size.Height);
         }
-
-        NamedPipeClientStream pipeClient;
 
         internal void Save()
         {

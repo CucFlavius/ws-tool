@@ -44,7 +44,8 @@ namespace ProjectWS.Editor.Tools
                 var propInstanceHit = this.worldRenderer.mousePick.propInstanceHit;
 
                 // TODO : Do stuff on mouse click etc
-                Debug.DrawLabel(propHit.data.fileName, propInstanceHit.position, Vector4.One, true);
+                if (propHit != null)
+                    Debug.DrawLabel(propHit.data.fileName, propInstanceHit.position, Vector4.One, true);
             }
         }
     }

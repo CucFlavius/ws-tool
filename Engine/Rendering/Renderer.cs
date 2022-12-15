@@ -58,12 +58,14 @@ namespace ProjectWS.Engine.Rendering
             this.y = y;
             this.width = width;
             this.height = height;
-
             SetViewportMode(this.viewportMode);
         }
 
         public void Resize(int width, int height)
         {
+            if (width == 0 || height == 0)
+                return;
+
             Debug.Log("Resize " + width + " " + height);
 
             this.width = width;

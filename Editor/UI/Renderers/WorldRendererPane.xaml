@@ -7,9 +7,10 @@
              xmlns:glControl="clr-namespace:OpenTK.Wpf;assembly=GLWpfControl"
              xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              mc:Ignorable="d"
-             d:DesignHeight="720" d:DesignWidth="1280">
+             d:DesignHeight="720" d:DesignWidth="1280"
+             >
     <Grid Name="RendererGrid">
-        <glControl:GLWpfControl Name="GLWpfControl" Margin="0,24,0,0"  Focusable="True"/>
+        <glControl:GLWpfControl Name="GLWpfControl" Margin="0,24,0,0" Focusable="True"/>
         <Rectangle Name="ViewportRect0" HorizontalAlignment="Left" Height="100" Margin="0,24,0,0" Stroke="White" VerticalAlignment="Bottom" Width="100" IsHitTestVisible="False"/>
         <ToolBarTray Height="24" VerticalAlignment="Top" Margin="0,2">
             <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center" Width="300">
