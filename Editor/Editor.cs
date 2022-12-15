@@ -391,6 +391,8 @@ namespace ProjectWS.Editor
         public void CreateToolboxPane(MainWindow window)
         {
             this.toolboxPane = new UI.Toolbox.ToolboxPane();
+            this.toolboxPane.engine = this.engine;
+            this.toolboxPane.editor = this;
 
             var layoutAnchorable = new LayoutAnchorable();
             layoutAnchorable.Title = "Toolbox";

@@ -10,7 +10,7 @@ namespace ProjectWS.Editor.Tools
     public class TerrainSculptTool : Tool
     {
         readonly Engine.Engine engine;
-        public readonly WorldRenderer worldRenderer;
+        public readonly WorldRenderer? worldRenderer;
         readonly Editor editor;
 
         public Mode mode = Mode.RaiseLower;
@@ -33,13 +33,22 @@ namespace ProjectWS.Editor.Tools
         public override void Enable()
         {
             this.isEnabled = true;
-            if (this.worldRenderer.brushParameters != null)
-                this.worldRenderer.brushParameters.mode = Engine.Rendering.ShaderParams.BrushParameters.BrushMode.Gradient;
+            if (this.worldRenderer != null)
+            {
+                if (this.worldRenderer.brushParameters != null)
+                    this.worldRenderer.brushParameters.mode = Engine.Rendering.ShaderParams.BrushParameters.BrushMode.Gradient;
+                if (this.worldRenderer.mousePick != null)
+                    this.worldRenderer.mousePick.mode = Engine.MousePick.Mode.Terrain;
+            }
+
+            this.mode = Tools.TerrainSculptTool.Mode.RaiseLower;
         }
 
         public override void Disable()
         {
             this.isEnabled = false;
+            if (this.worldRenderer != null && this.worldRenderer.mousePick != null)
+                this.worldRenderer.mousePick.mode = Engine.MousePick.Mode.Disabled;
         }
 
         public override void Update(float deltaTime)

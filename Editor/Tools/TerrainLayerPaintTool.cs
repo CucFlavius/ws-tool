@@ -10,7 +10,7 @@ namespace ProjectWS.Editor.Tools
     public class TerrainLayerPaintTool : Tool
     {
         readonly Engine.Engine engine;
-        public readonly WorldRenderer worldRenderer;
+        public readonly WorldRenderer? worldRenderer;
         readonly Editor editor;
 
         public int layer = 1;
@@ -26,12 +26,20 @@ namespace ProjectWS.Editor.Tools
         public override void Enable()
         {
             this.isEnabled = true;
-            this.worldRenderer.brushParameters.mode = Engine.Rendering.ShaderParams.BrushParameters.BrushMode.Circle;
+            if (this.worldRenderer != null)
+            {
+                if (this.worldRenderer.brushParameters != null)
+                    this.worldRenderer.brushParameters.mode = Engine.Rendering.ShaderParams.BrushParameters.BrushMode.Circle;
+                if (this.worldRenderer.mousePick != null)
+                    this.worldRenderer.mousePick.mode = Engine.MousePick.Mode.Terrain;
+            }
         }
 
         public override void Disable()
         {
             this.isEnabled = false;
+            if (this.worldRenderer != null && this.worldRenderer.mousePick != null)
+                this.worldRenderer.mousePick.mode = Engine.MousePick.Mode.Disabled;
         }
 
         public override void Update(float deltaTime)
@@ -41,12 +49,15 @@ namespace ProjectWS.Editor.Tools
             if (this.worldRenderer.mousePick == null) return;
 
             // Update brush size
-            this.worldRenderer.brushParameters.size += this.engine.input.GetMouseScroll();
-            this.worldRenderer.brushParameters.size = (float)Math.Clamp(this.worldRenderer.brushParameters.size, 1.0f, 100f);
+            if (this.worldRenderer.brushParameters != null)
+            {
+                this.worldRenderer.brushParameters.size += this.engine.input.GetMouseScroll();
+                this.worldRenderer.brushParameters.size = (float)Math.Clamp(this.worldRenderer.brushParameters.size, 1.0f, 100f);
+            }
 
             float[] perc = new float[4];
 
-            if (this.engine.input.LMB && this.editor.keyboardFocused && this.worldRenderer.brushParameters.isEnabled)
+            if (this.engine.input.LMB && this.editor.keyboardFocused && this.worldRenderer.brushParameters != null && this.worldRenderer.brushParameters.isEnabled)
             {
                 var brushSize = this.worldRenderer.brushParameters.size;
                 var hitPoint = this.worldRenderer.mousePick.terrainHitPoint;
@@ -64,7 +75,7 @@ namespace ProjectWS.Editor.Tools
 
                         var areaPos = chunk.worldCoords.Xz;
 
-                        for (int s = 0; s < chunk.area.subChunks.Count; s++)
+                        for (int s = 0; s < chunk?.area?.subChunks?.Count; s++)
                         {
                             var scDist = Vector2.Distance(chunk.area.subChunks[s].centerPosition.Xz, hitPoint.Xz);
                             // TODO: need to check better if the brush overlaps the subchunks, otherwise might run into gaps again

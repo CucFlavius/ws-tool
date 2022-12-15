@@ -26,13 +26,6 @@
                 <ToggleButton x:Name = "displayChunkToggle" Checked = "ToggleChunkGridOn" Unchecked = "ToggleChunkGridOff"  Width="20" Height="20" Padding="0,0,0,0">
                     <fa:IconBlock Icon="Square" Foreground="White" FontSize="17" Width="15" Height="16"/>
                 </ToggleButton>
-                <Button x:Name ="propPickerButton" Width="80" Click="propPickerButton_Click">Prop Picker</Button>
-                <Button x:Name ="flattenTerrainButton" Width="50" Click="flattenTerrainButton_Click">Flatten</Button>
-                <Button x:Name ="sculptTerrainButton" Width="50" Click="sculptTerrainButton_Click">Sculpt</Button>
-                <Button x:Name ="paint0TerrainButton" Width="80" Click="paint0TerrainButton_Click" >Paint Layer 0</Button>
-                <Button x:Name ="paint1TerrainButton" Width="80" Click="paint1TerrainButton_Click" >Paint Layer 1</Button>
-                <Button x:Name ="paint2TerrainButton" Width="80" Click="paint2TerrainButton_Click" >Paint Layer 2</Button>
-                <Button x:Name ="paint3TerrainButton" Width="80" Click="paint3TerrainButton_Click" >Paint Layer 3</Button>
             </ToolBar>
         </ToolBarTray>
     </Grid>
