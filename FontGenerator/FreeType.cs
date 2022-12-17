@@ -110,15 +110,27 @@ namespace FontGenerator
             Matrix4 rotateM = Matrix4.CreateRotationZ(angle_rad);
             Matrix4 transOriginM = Matrix4.CreateTranslation(new Vector3(x, y, 0f));
 
+            Character ch = _characters['A'];
+            Character templateChar = _characters['A'];
+
             // Calculate size
             float textLength = 0;
             if (centered)
             {
-                foreach (var c in text)
+                for (int i = 0; i < text.Length; i++)
                 {
+                    var c = text[i];
+
+                    if (c == '\n')
+                    {
+                        // New row
+                        textLength = 0;
+                        continue;
+                    }
+
                     if (_characters.ContainsKey(c) == false)
                         continue;
-                    Character ch = _characters[c];
+                    ch = _characters[c];
 
                     textLength += (ch.Size.X + ch.Bearing.X) * scale;
                 }
@@ -126,16 +138,28 @@ namespace FontGenerator
 
             // Iterate through all characters and render
             float char_x = 0.0f;
-            foreach (var c in text)
+            float char_y = 0.0f;
+
+            for (int i = 0; i < text.Length; i++)
             {
+                var c = text[i];
+
+                if (c == '\n')
+                {
+                    // New row
+                    char_x = 0;
+                    char_y += (templateChar.Size.Y) * scale * 1.5f;
+                    continue;
+                }
+
                 if (_characters.ContainsKey(c) == false)
                     continue;
-                Character ch = _characters[c];
+                ch = _characters[c];
 
                 float w = ch.Size.X * scale;
                 float h = ch.Size.Y * scale;//-
                 float xrel = char_x + ch.Bearing.X * scale;
-                float yrel = (ch.Size.Y - ch.Bearing.Y) * scale;//-
+                float yrel = char_y + (ch.Size.Y - ch.Bearing.Y) * scale;//-
 
                 if (centered)
                     xrel -= textLength / 2.0f;

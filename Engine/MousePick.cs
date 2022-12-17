@@ -117,6 +117,7 @@ namespace ProjectWS.Engine
                 {
                     var bounds = propItem.Value.boundingBox;
 
+                    int instanceIndex = 0;
                     foreach (var instanceItem in propItem.Value.instances)
                     {
                         var instance = instanceItem.Value;
@@ -133,7 +134,10 @@ namespace ProjectWS.Engine
                                 // Exiting once a prop is found
                                 // TODO : Instead of drawing all labels, check if the prop triangles were hit, and check which hit is closer to the camera
 
-                                Debug.DrawLabel3D(propItem.Value.data.fileName, instance.position, Vector4.One, true);
+                                var labelText = $"{propItem.Value.data.fileName}\n" +
+                                    $"UUID:{instance.uuid} Instance:{instanceIndex}\n" +
+                                    $"P:{instance.position}\nR:{instance.rotationEuler}\nS:{instance.scale}";
+                                Debug.DrawLabel3D(labelText, instance.position, Vector4.One, true);
 
                                 for (int i = 0; i < propItem.Value.data.bounds?.Length; i++)
                                 {
@@ -145,7 +149,7 @@ namespace ProjectWS.Engine
                                         var boundsMat = scaleMat * positionOffsetMat * instance.transform;
                                         Debug.DrawWireBox3D(boundsMat, new Vector4(1, 1, 0, 1));
                                     }
-
+                                    /*
                                     var bbB = propItem.Value.data.bounds[i].bbB;
                                     if (bbB != null)
                                     {
@@ -154,9 +158,12 @@ namespace ProjectWS.Engine
                                         var boundsMat = scaleMat * positionOffsetMat * instance.transform;
                                         Debug.DrawWireBox3D(boundsMat, new Vector4(0, 1, 1, 1));
                                     }
+                                    */
                                 }
                             }
                         }
+
+                        instanceIndex++;
                     }
                 }
             }

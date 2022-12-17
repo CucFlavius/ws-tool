@@ -115,6 +115,7 @@ namespace ProjectWS.Engine.World
             public Matrix4 transform;
             public Vector3 position;
             public Quaternion rotation;
+            public Vector3 rotationEuler;
             public Vector3 scale;
             public Type type;
             public uint uuid;
@@ -128,7 +129,8 @@ namespace ProjectWS.Engine.World
                 this.position = transform.ExtractPosition();
                 this.uuid = uuid;
                 this.type = Type.WorldProp;
-                //this.screenSpace = Rect.zero;
+                
+                // TODO : Fix TRS extracting and assign pos/rot/scale
             }
 
             public Instance(Vector3 position, Quaternion rotation, Vector3 scale, uint uuid)
@@ -141,6 +143,9 @@ namespace ProjectWS.Engine.World
                 this.position = position;
                 this.rotation = rotation;
                 this.scale = scale;
+                rotation.ToEulerAngles(out this.rotationEuler);
+                // Convert to Degree
+                this.rotationEuler *= (float)(180f / Math.PI);
             }
 
             public enum Type
