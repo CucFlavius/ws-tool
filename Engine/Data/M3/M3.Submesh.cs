@@ -34,7 +34,7 @@ namespace ProjectWS.Engine.Data
         public byte unk16;
         public byte unk17;
 
-        public byte[] pad;
+        public byte[]? pad;
 
         public Vector3 boundsMin;
         public Vector3 boundsMax;
@@ -42,8 +42,8 @@ namespace ProjectWS.Engine.Data
         public Vector3 offset;
         public Vector3 unk18;
 
-        public uint[] indexData;
-        public byte[] vertexData;
+        public uint[]? indexData;
+        public byte[]? vertexData;
 
         public bool isBuilt;
         public bool positionCompressed;
@@ -235,6 +235,11 @@ namespace ProjectWS.Engine.Data
 
             GL.BindVertexArray(this._vertexArrayObject);
             GL.DrawElementsInstanced(PrimitiveType.Triangles, this.indexData.Length, DrawElementsType.UnsignedInt, instances, instances.Length);
+        }
+
+        public override int GetSize()
+        {
+            return 112;
         }
     }
 }

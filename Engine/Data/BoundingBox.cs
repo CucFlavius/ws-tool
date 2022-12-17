@@ -25,7 +25,7 @@ namespace ProjectWS.Engine.Data
         }
     }
 
-    public class BoundingBox
+    public class AABB
     {
         public Vector3 min;
         public Vector3 max;
@@ -33,9 +33,7 @@ namespace ProjectWS.Engine.Data
         public Vector3 extents;
         public Vector3 size;
 
-        public BoundingBox Bounds { get; }
-
-        public BoundingBox(Vector3 center, Vector3 extents)
+        public AABB(Vector3 center, Vector3 extents)
         {
             this.center = center;
             this.extents = extents;
@@ -44,16 +42,16 @@ namespace ProjectWS.Engine.Data
             this.max = center + extents;
         }
 
-        public BoundingBox(BinaryReader br)
+        public AABB(BinaryReader br)
         {
-            this.min = br.ReadVector3();
-            this.max = br.ReadVector3();
+            this.min = br.ReadVector3(); br.ReadSingle(); // skip W
+            this.max = br.ReadVector3(); br.ReadSingle(); // skip W
             this.center = (this.min + this.max) / 2;
             this.extents = (this.max - this.min) / 2;
             this.size = this.max - this.min;
         }
 
-        public BoundingBox(BoundingBox bounds)
+        public AABB(AABB bounds)
         {
             this.min = bounds.min;
             this.max = bounds.max;

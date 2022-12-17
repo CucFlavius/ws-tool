@@ -6,7 +6,12 @@ namespace ProjectWS.Engine.Data
     {
         public class Unk0F0 : ArrayData
         {
-            public short[] unks;
+            public short[]? unks;
+
+            public override int GetSize()
+            {
+                return 92 * 2;
+            }
 
             public override void Read(BinaryReader br, long startOffset)
             {

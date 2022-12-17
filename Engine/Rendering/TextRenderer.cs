@@ -4,12 +4,12 @@ using System.Collections.Concurrent;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
 
-namespace ProjectWS.Engine
+namespace ProjectWS.Engine.Rendering
 {
     public class TextRenderer
     {
-        FontGenerator.FreeType freeType;
-        ConcurrentQueue<Label3D> labelRenderQueue;
+        readonly FontGenerator.FreeType? freeType;
+        readonly ConcurrentQueue<Label3D>? labelRenderQueue;
         int drawCalls;
 
         public struct Label3D
@@ -24,22 +24,23 @@ namespace ProjectWS.Engine
         {
             this.freeType = new FontGenerator.FreeType();
             this.labelRenderQueue = new ConcurrentQueue<Label3D>();
+            this.drawCalls = 0;
         }
 
         public void Initialize()
         {
-            this.freeType.Init();
+            this.freeType?.Init();
         }
 
-        public void Render(Rendering.Renderer renderer, Rendering.Viewport viewport)
+        public void Render(Renderer renderer, Viewport viewport)
         {
             this.drawCalls = 0;
             RenderLabels(renderer, viewport);
         }
 
-        public void RenderLabels(Rendering.Renderer renderer, Rendering.Viewport vp)
+        public void RenderLabels(Renderer renderer, Viewport vp)
         {
-            for (int i = 0; i < this.labelRenderQueue.Count; i++)
+            for (int i = 0; i < this.labelRenderQueue?.Count; i++)
             {
                 if (this.labelRenderQueue.TryDequeue(out Label3D label))
                 {
@@ -57,21 +58,28 @@ namespace ProjectWS.Engine
 
                     var shadowPos = pos - new Vector2(1.0f, 1.0f);
                     renderer.fontShader.SetColor4("textColor", label.color);
-                    this.freeType.RenderText(label.text, shadowPos.X, shadowPos.Y, 0.5f, new Vector2(1f, 0f), true);
+                    this.freeType?.RenderText(label.text, shadowPos.X, shadowPos.Y, 0.5f, new Vector2(1f, 0f), true);
 
                     if (label.shadow)
                     {
                         this.drawCalls++;
                         renderer.fontShader.SetColor4("textColor", new Vector4(0.0f, 0.0f, 0.0f, 0.5f * label.color.W));
-                        this.freeType.RenderText(label.text, pos.X, pos.Y, 0.5f, new Vector2(1f, 0f), true);
+                        this.freeType?.RenderText(label.text, pos.X, pos.Y, 0.5f, new Vector2(1f, 0f), true);
                     }
                 }
             }
         }
 
-        public void DrawLabel(string text, Vector3 position, Vector4 color, bool shadow)
+        /// <summary>
+        /// Renderd a label in 3D space using immediate mode
+        /// </summary>
+        /// <param name="text">The label text</param>
+        /// <param name="position">World space position</param>
+        /// <param name="color">Text color</param>
+        /// <param name="shadow">Enable text shadow effect</param>
+        public void DrawLabel3D(string text, Vector3 position, Vector4 color, bool shadow)
         {
-            this.labelRenderQueue.Enqueue(new Label3D { text = text, position = position, color = color, shadow = shadow });
+            this.labelRenderQueue?.Enqueue(new Label3D { text = text, position = position, color = color, shadow = shadow });
         }
     }
 }

@@ -12,8 +12,6 @@ namespace ProjectWS.Engine
         public Vector3 rayOrigin;
         public Vector3 rayVec;
 
-        //public RayGizmo rayGizmo;
-        public BoxGizmo hitGizmo;
         public Vector3 terrainHitPoint;
         public Vector2i terrainSubchunkHit;
         public Vector2i areaHit;
@@ -30,19 +28,6 @@ namespace ProjectWS.Engine
         public MousePick(WorldRenderer renderer)
         {
             this.renderer = renderer;
-            //this.rayGizmo = new Objects.Gizmos.RayGizmo(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-            this.hitGizmo = new Objects.Gizmos.BoxGizmo(new Vector4(1.0f, 1.0f, 0.0f, 1.0f));
-
-            if (renderer.gizmos != null)
-            {
-                //renderer.gizmos.Add(this.rayGizmo);
-                renderer.gizmos.Add(this.hitGizmo);
-            }
-            if (renderer.engine != null)
-            {
-                //renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.rayGizmo));
-                renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.hitGizmo));
-            }
         }
 
         public void Update()
@@ -74,7 +59,6 @@ namespace ProjectWS.Engine
             // Terrain Pick //
             if (this.renderer.world != null)
             {
-                this.hitGizmo.visible = false;
                 this.renderer.brushParameters.isEnabled = false;
                 foreach (var chunkItem in this.renderer.world.chunks)
                 {
@@ -107,10 +91,7 @@ namespace ProjectWS.Engine
                                         
                                         if (RayTriangleIntersect(this.rayOrigin, this.rayVec, v0, v1, v2, out var point))
                                         {
-                                            this.hitGizmo.visible = true;
                                             this.renderer.brushParameters.isEnabled = true;
-                                            var gizmoMat = Matrix4.CreateTranslation(point);
-                                            this.hitGizmo.transform.SetMatrix(gizmoMat);
                                             this.terrainHitPoint = point;
                                         }
                                     }
@@ -152,7 +133,28 @@ namespace ProjectWS.Engine
                                 // Exiting once a prop is found
                                 // TODO : Instead of drawing all labels, check if the prop triangles were hit, and check which hit is closer to the camera
 
-                                Debug.DrawLabel(propItem.Value.data.fileName, instance.position, Vector4.One, true);
+                                Debug.DrawLabel3D(propItem.Value.data.fileName, instance.position, Vector4.One, true);
+
+                                for (int i = 0; i < propItem.Value.data.bounds?.Length; i++)
+                                {
+                                    var bbA = propItem.Value.data.bounds[i].bbA;
+                                    if (bbA != null)
+                                    {
+                                        var positionOffsetMat = Matrix4.CreateTranslation(new Vector3(0, bbA.center.Y, 0));
+                                        var scaleMat = Matrix4.CreateScale(bbA.size);
+                                        var boundsMat = scaleMat * positionOffsetMat * instance.transform;
+                                        Debug.DrawWireBox3D(boundsMat, new Vector4(1, 1, 0, 1));
+                                    }
+
+                                    var bbB = propItem.Value.data.bounds[i].bbB;
+                                    if (bbB != null)
+                                    {
+                                        var positionOffsetMat = Matrix4.CreateTranslation(new Vector3(0, bbB.center.Y, 0));
+                                        var scaleMat = Matrix4.CreateScale(bbB.size);
+                                        var boundsMat = scaleMat * positionOffsetMat * instance.transform;
+                                        Debug.DrawWireBox3D(boundsMat, new Vector4(0, 1, 1, 1));
+                                    }
+                                }
                             }
                         }
                     }

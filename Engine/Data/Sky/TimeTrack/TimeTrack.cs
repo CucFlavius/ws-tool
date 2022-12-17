@@ -37,5 +37,15 @@ namespace ProjectWS.Engine.Data
             br.Align(16);
             return save;
         }
+
+        public override void Read(BinaryReader br, long endOffset = 0)
+        {
+            return;
+        }
+
+        public override int GetSize()
+        {
+            return 0;
+        }
     }
 }

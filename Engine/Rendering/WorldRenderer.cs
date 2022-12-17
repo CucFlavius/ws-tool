@@ -14,6 +14,7 @@ namespace ProjectWS.Engine.Rendering
         public ShaderParams.EnvironmentParameters? envParameters;
         public ShaderParams.BrushParameters? brushParameters;
         public TextRenderer? textRenderer;
+        public ImmediateRenderer? immRenderer;
 
         public static int drawCalls;
         public static int propDrawCalls;
@@ -38,8 +39,12 @@ namespace ProjectWS.Engine.Rendering
             this.sunParameters = new ShaderParams.SunParameters(new Vector3(1.0f, 1.0f, 0.9f), sunVector, 1.0f);
             this.envParameters = new ShaderParams.EnvironmentParameters(new Vector3(0.4f, 0.4f, 0.6f));
             this.brushParameters = new ShaderParams.BrushParameters(ShaderParams.BrushParameters.BrushMode.Gradient, Vector3.Zero, 64.0f);
+
+            // Initialize immediate mode debug renderers
             this.textRenderer = new TextRenderer();
+            this.immRenderer = new ImmediateRenderer();
             Debug.textRenderer = this.textRenderer;
+            Debug.immRenderer = this.immRenderer;
         }
 
         public void SetWorld(World.World world) => this.world = world;
@@ -53,13 +58,13 @@ namespace ProjectWS.Engine.Rendering
             this.terrainShader = new Shader("shaders/terrain_deferred_vert.glsl", "shaders/terrain_deferred_frag.glsl");
             this.waterShader = new Shader("shaders/water_vert.glsl", "shaders/water_frag.glsl");
             this.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
-            this.infiniteGridShader = new Shader("shaders/infinite_grid_vert.glsl", "shaders/infinite_grid_frag.glsl");
             this.fontShader = new Shader("shaders/font_vert.glsl", "shaders/font_frag.glsl");
             this.lightPassShader = new Shader("shaders/light_pass_vert.glsl", "shaders/light_pass_frag.glsl");
 
             this.mousePick = new MousePick(this);
 
             this.textRenderer?.Initialize();
+            this.immRenderer?.Initialize(this.lineShader);
             BuildGBufferQuad();
         }
 
@@ -128,6 +133,9 @@ namespace ProjectWS.Engine.Rendering
                 // Render Text
                 this.textRenderer?.Render(this, this.viewports[v]);
 
+                // Render immediate mode
+                this.immRenderer?.Render(this, this.viewports[v]);
+
                 // Render Gizmos
                 for (int i = 0; i < this.gizmos?.Count; i++)
                 {
@@ -143,18 +151,9 @@ namespace ProjectWS.Engine.Rendering
                                 continue;
                     }
 
-                    if (this.gizmos[i] is InfiniteGridGizmo)
-                    {
-                        this.infiniteGridShader.Use();
-                        this.viewports[v].mainCamera.SetToShader(this.infiniteGridShader);
-                        this.gizmos[i].Render(Matrix4.Identity, this.infiniteGridShader);
-                    }
-                    else
-                    {
-                        this.lineShader.Use();
-                        this.viewports[v].mainCamera.SetToShader(this.lineShader);
-                        this.gizmos[i].Render(Matrix4.Identity, this.lineShader);
-                    }
+                    this.lineShader.Use();
+                    this.viewports[v].mainCamera.SetToShader(this.lineShader);
+                    this.gizmos[i].Render(Matrix4.Identity, this.lineShader);
                 }
             }
 

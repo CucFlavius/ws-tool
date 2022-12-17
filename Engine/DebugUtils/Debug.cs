@@ -1,7 +1,7 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using ProjectWS.Engine;
+using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,6 +18,7 @@ namespace ProjectWS
         const ConsoleColor EXCEPTION_COLOR = ConsoleColor.Red;
 
         public static TextRenderer? textRenderer;
+        public static ImmediateRenderer? immRenderer;
 
         public static void Log(string text, ConsoleColor color = LOG_COLOR)
         {
@@ -102,10 +103,32 @@ namespace ProjectWS
             Console.WriteLine();
         }
 
-        public static void DrawLabel(string text, Vector3 position,  Vector4 color, bool shadow)
+        /// <summary>
+        /// Renderd a label in 3D space using immediate mode
+        /// </summary>
+        /// <param name="text">The label text</param>
+        /// <param name="position">World space position</param>
+        /// <param name="color">Text color</param>
+        /// <param name="shadow">Enable text shadow effect</param>
+        public static void DrawLabel3D(string text, Vector3 position,  Vector4 color, bool shadow)
         {
-            textRenderer?.DrawLabel(text, position, color, shadow);
+            textRenderer?.DrawLabel3D(text, position, color, shadow);
         }
    
+        /// <summary>
+        /// Render a wireframe box using immediate mode
+        /// </summary>
+        /// <param name="position">World space position</param>
+        /// <param name="rotation">Rotation</param>
+        /// <param name="size">Size</param>
+        public static void DrawWireBox3D(Vector3 position, Quaternion rotation, Vector3 size, Vector4 color)
+        {
+            immRenderer?.DrawWireBox3D(position, rotation, size, color);
+        }
+
+        public static void DrawWireBox3D(Matrix4 matrix, Vector4 color)
+        {
+            immRenderer?.DrawWireBox3D(matrix, color);
+        }
     }
 }

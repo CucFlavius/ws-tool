@@ -8,9 +8,9 @@ namespace ProjectWS.Engine.Data.Extensions
 {
     public static class BinaryReaderExtensions
     {
-        public static Vector3 ReadVector3(this BinaryReader br, bool flipZ = true)
+        public static Vector3 ReadVector3(this BinaryReader br)
         {
-            return new Vector3(br.ReadSingle(), br.ReadSingle(), flipZ ? -br.ReadSingle() : br.ReadSingle());
+            return new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
         }
 
         public static Vector3 ReadVector3_16Bit(this BinaryReader br)

@@ -7,6 +7,11 @@ namespace ProjectWS.Engine.Data
         public ushort modelMeshID;
         public ushort default2Render;
 
+        public override int GetSize()
+        {
+            return 4;
+        }
+
         public override void Read(BinaryReader br, long startOffset)
         {
             this.modelMeshID = br.ReadUInt16();

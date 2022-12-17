@@ -410,7 +410,7 @@ namespace ProjectWS.Engine.Data
                 float hMax = this.maxHeight;
                 float dist = Math.Abs(hMax - hMin);
                 Vector3 center = this.chunk.worldCoords + new Vector3(0, (dist / 2f) + hMin, 0);
-                this.chunk.AABB = new BoundingBox(center + new Vector3(256f, 0, -256f), new Vector3(512f, dist, 512f));
+                this.chunk.AABB = new AABB(center + new Vector3(256f, 0, -256f), new Vector3(512f, dist, 512f));
             }
             else if (this.lod == 1)
             {

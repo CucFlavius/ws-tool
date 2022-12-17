@@ -44,7 +44,7 @@ namespace ProjectWS.Engine.Data
                 this.unkOffset = br.ReadInt32();
                 this.scale = br.ReadSingle();
                 this.rotation = br.ReadQuaternion(true);
-                this.position = br.ReadVector3(false);
+                this.position = br.ReadVector3();
                 this.placement = new Placement(br);
                 this.unk7 = br.ReadInt32();
                 this.unk8 = br.ReadInt32();

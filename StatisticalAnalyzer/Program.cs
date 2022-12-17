@@ -189,15 +189,17 @@ namespace StatisticalAnalyzer
                 if (m3.failedReading)
                     continue;
 
-                for (int g = 0; g < m3.materials.Length; g++)
+                for (int g = 0; g < m3.bounds.Length; g++)
                 {
-                    var val = m3.materials[g].unk7;
+                    /*
+                    var val = m3.bounds[g].bbA;
 
                     if (!collected.Contains(val))
                     {
                         collected.Add(val);
                         //Console.WriteLine(filePath);
                     }
+                    */
                 }
 
                 //if (!collected.Contains(m3.unk1a))

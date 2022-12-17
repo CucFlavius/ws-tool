@@ -8,7 +8,7 @@ namespace ProjectWS.Engine.Data
     public abstract class ArrayData
     {
 
-        public virtual void Read(BinaryReader br, long endOffset = 0) { }
-        public virtual int GetSize() { return 0; }
+        public abstract void Read(BinaryReader br, long endOffset = 0);
+        public abstract int GetSize();
     }
 }

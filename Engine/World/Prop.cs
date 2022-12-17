@@ -21,7 +21,7 @@ namespace ProjectWS.Engine.World
         public List<uint> uniqueInstanceIDs;
 
         public Data.M3 data;
-        public Data.BoundingBox boundingBox;
+        public Data.AABB boundingBox;
         //Mesh[] meshes;
         List<uint> textureResources;
         public bool culled;                             // Determined if renderableInstances.Count == 0
@@ -30,9 +30,14 @@ namespace ProjectWS.Engine.World
         {
             this.data = data;
             if (data.bounds != null)
+            {
                 this.boundingBox = data.bounds[0].bbA;
+            }
             else
-                this.boundingBox = new Data.BoundingBox(Vector3.Zero, Vector3.One);
+            {
+                this.boundingBox = new Data.AABB(Vector3.Zero, Vector3.One);
+            }
+
             this.cullingResults = new Dictionary<uint, bool>();
             this.renderableInstances = new List<Matrix4>();
             this.renderableUUIDs = new HashSet<uint>();
@@ -109,6 +114,8 @@ namespace ProjectWS.Engine.World
         {
             public Matrix4 transform;
             public Vector3 position;
+            public Quaternion rotation;
+            public Vector3 scale;
             public Type type;
             public uint uuid;
             internal bool visible;
@@ -132,6 +139,8 @@ namespace ProjectWS.Engine.World
                 this.uuid = uuid;
                 this.type = Type.WorldProp;
                 this.position = position;
+                this.rotation = rotation;
+                this.scale = scale;
             }
 
             public enum Type

@@ -45,7 +45,7 @@ namespace ProjectWS.Editor.Tools
 
                 // TODO : Do stuff on mouse click etc
                 if (propHit != null)
-                    Debug.DrawLabel(propHit.data.fileName, propInstanceHit.position, Vector4.One, true);
+                    Debug.DrawLabel3D(propHit.data.fileName, propInstanceHit.position, Vector4.One, true);
             }
         }
     }

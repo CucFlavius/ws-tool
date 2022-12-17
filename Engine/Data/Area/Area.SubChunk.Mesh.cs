@@ -256,8 +256,8 @@ namespace ProjectWS.Engine.Data
                     // Update bounds
                     Vector3 subchunkRelativePosition = new Vector3(this.subChunk.X * 32f, 0, this.subChunk.Y * 32f);
                     this.subChunk.centerPosition = this.subChunk.chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((this.maxHeight - this.minHeight) / 2f) + this.minHeight, 16f);
-                    this.subChunk.AABB = new Data.BoundingBox(this.subChunk.centerPosition, new Vector3(32f, this.maxHeight - this.minHeight, 32f));            // Exact bounds
-                    this.subChunk.cullingAABB = new Data.BoundingBox(this.subChunk.centerPosition, new Vector3(64f, (this.maxHeight - this.minHeight) * 2, 64f));
+                    this.subChunk.AABB = new Data.AABB(this.subChunk.centerPosition, new Vector3(32f, this.maxHeight - this.minHeight, 32f));            // Exact bounds
+                    this.subChunk.cullingAABB = new Data.AABB(this.subChunk.centerPosition, new Vector3(64f, (this.maxHeight - this.minHeight) * 2, 64f));
 
                     // Upload to GPU
                     // https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer

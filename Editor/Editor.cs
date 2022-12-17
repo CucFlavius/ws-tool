@@ -81,14 +81,14 @@ namespace ProjectWS.Editor
                 InputUpdate();
                 this.engine.Update(this.deltaTime, this.timeScale);
 
-                for (int i = 0; i < this.tools.Count; i++)
+                for (int i = 0; i < this.tools?.Count; i++)
                 {
                     if (this.tools[i].isEnabled)
                         this.tools[i].Update(this.deltaTime);
                 }
 
                 if (Program.app != null && this.fps != null)
-                    Program.app.MainWindow.Title = $"FPS:{this.fps.Get()} DrawCalls:{WorldRenderer.drawCalls} PropDrawCalls:{WorldRenderer.propDrawCalls}";
+                    Program.app.MainWindow.Title = $"FPS:{this.fps.Get()} DrawCalls:{WorldRenderer.drawCalls} PropDrawCalls:{WorldRenderer.propDrawCalls} VRam Usage:{this.engine.total_mem_mb - this.engine.cur_avail_mem_mb}MB/{this.engine.total_mem_mb}MB";
             }
         }
 
@@ -306,14 +306,14 @@ namespace ProjectWS.Editor
                 this.tools?.Add(new PropTool(this.engine, this, worldRenderer));
 
                 this.engine.renderers.Add(renderer);
-
+                /*
                 var gizmo = new Engine.Objects.Gizmos.BoxGizmo(Vector4.One);
                 gizmo.transform.SetPosition(0.1f, 0.1f, 0.1f);
                 if (renderer.gizmos != null)
                     renderer.gizmos.Add(gizmo);
 
                 this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(gizmo));
-
+                */
                 rendererPane.changeViewMode = renderer.SetViewportMode;
                 rendererPane.toggleFog = renderer.ToggleFog;
                 rendererPane.toggleAreaGrid = renderer.ToggleAreaGrid;
@@ -322,20 +322,14 @@ namespace ProjectWS.Editor
                 rendererPane.displayAreaToggle.IsChecked = Engine.Engine.settings.wRenderer.toggles.displayAreaGrid;
                 rendererPane.displayChunkToggle.IsChecked = Engine.Engine.settings.wRenderer.toggles.displayChunkGrid;
 
-                var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
-                if (renderer.gizmos != null)
-                    renderer.gizmos.Add(grid);
-
-                this.worldRendererPanes.Add(ID, rendererPane);
-
-                this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(grid));
+                this.worldRendererPanes?.Add(ID, rendererPane);
             }
             else if (type == 1)
             {
                 var rendererPane = new ModelRendererPane();
                 openTkControl = rendererPane.GetOpenTKControl();
                 rendererGrid = rendererPane.GetRendererGrid();
-                this.controls.Add(ID, openTkControl);
+                this.controls?.Add(ID, openTkControl);
 
                 var layoutDoc = new LayoutDocument();
                 layoutDoc.Title = name;
@@ -354,14 +348,7 @@ namespace ProjectWS.Editor
                 this.engine.renderers.Add(renderer);
 
                 rendererPane.changeRenderMode = renderer.SetShadingOverride;
-
-                var grid = new Engine.Objects.Gizmos.InfiniteGridGizmo(Vector4.One);
-                if (renderer.gizmos != null)
-                    renderer.gizmos.Add(grid);
-
-                this.modelRendererPanes.Add(ID, rendererPane);
-
-                this.engine.taskManager.buildTasks.Enqueue(new Engine.TaskManager.BuildObjectTask(grid));
+                this.modelRendererPanes?.Add(ID, rendererPane);
             }
             else
             {

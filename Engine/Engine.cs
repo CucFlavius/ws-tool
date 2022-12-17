@@ -21,6 +21,10 @@ namespace ProjectWS.Engine
         public float time;
         public string cacheLocation;
         public int focusedRendererID;
+        public int total_mem_kb;
+        public int cur_avail_mem_kb;
+        public int total_mem_mb;
+        public int cur_avail_mem_mb;
 
         public TaskManager.Manager taskManager;
         public Data.ResourceManager.Manager resourceManager;
@@ -93,6 +97,19 @@ namespace ProjectWS.Engine
             this.deltaTime = deltaTime;
             this.time += this.deltaTime;
             this.frameTime += ((deltaTime / timeScale) - this.frameTime) * 0.03f;
+
+            CalculateGPUMemory();
+        }
+
+        const int GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX = 0x9048;
+        const int GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX = 0x9049;
+
+        void CalculateGPUMemory()
+        {
+            this.total_mem_kb = GL.GetInteger((GetPName)GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX);
+            this.cur_avail_mem_kb =  GL.GetInteger((GetPName)GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX);
+            this.total_mem_mb = (int)((float)this.total_mem_kb / 1024f);
+            this.cur_avail_mem_mb = (int)((float)this.cur_avail_mem_kb / 1024f);
         }
 
         public void Render(int renderer, int frameBuffer)
