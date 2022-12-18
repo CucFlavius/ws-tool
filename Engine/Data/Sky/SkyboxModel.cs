@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ProjectWS.FileFormats.Common;
 
 namespace ProjectWS.Engine.Data
 {
@@ -11,7 +7,7 @@ namespace ProjectWS.Engine.Data
         public short unk0;
         public short unk1;
         public int padding;
-        public string filePath;
+        public string? filePath;
         public TimeTrack<AngleAndColor>? angleAndColor;
 
         public override void Read(BinaryReader br, long startOffs)

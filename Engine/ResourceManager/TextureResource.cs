@@ -1,8 +1,4 @@
 using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 
 namespace ProjectWS.Engine.Data.ResourceManager
 {
@@ -16,7 +12,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
         public Manager manager;
 
         // Data //
-        public Tex tex;
+        public ProjectWS.FileFormats.Tex.File tex;
         public uint texturePtr;
         public Manager.ResourceState state;
 
@@ -52,14 +48,14 @@ namespace ProjectWS.Engine.Data.ResourceManager
             if (File.Exists(this.manager.engine.cacheLocation + this.filePath))
             {
                 // Load cached
-                this.tex = new Tex(this.manager.engine.cacheLocation + this.filePath);
-                this.tex.Read();
+                this.tex = new ProjectWS.FileFormats.Tex.File(this.manager.engine.cacheLocation + this.filePath);
+                this.tex.Read(File.OpenRead(this.manager.engine.cacheLocation + this.filePath));
             }
             else
             {
                 // Load straight from game data, and cache
-                this.tex = new Tex(this.filePath, this.gameData);
-                this.tex.Read();
+                this.tex = new ProjectWS.FileFormats.Tex.File(this.filePath);
+                this.tex.Read(this.gameData.GetFileData(this.filePath));
 
                 // Only cache jpeg
                 if (this.tex.header?.format == 0 && this.tex.header?.isCompressed == 1)

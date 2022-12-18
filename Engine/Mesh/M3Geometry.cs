@@ -9,11 +9,11 @@ namespace ProjectWS.Engine.Mesh
 {
     public class M3Geometry
     {
-        Data.M3.Geometry? data;
+        FileFormats.M3.Geometry? data;
         public M3Mesh[]? meshes;
         public bool isBuilt;
 
-        public M3Geometry(Data.M3.Geometry data)
+        public M3Geometry(FileFormats.M3.Geometry data)
         {
             this.data = data;
             if (data.submeshes != null)

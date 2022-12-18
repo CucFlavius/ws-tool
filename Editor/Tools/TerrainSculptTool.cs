@@ -1,9 +1,6 @@
-﻿using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Rendering;
+﻿using ProjectWS.Engine.Rendering;
 using System;
-using System.Collections.Generic;
-using static ProjectWS.Engine.Data.Area;
+using MathUtils;
 
 namespace ProjectWS.Editor.Tools
 {

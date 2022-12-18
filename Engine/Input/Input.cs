@@ -1,4 +1,4 @@
-﻿using OpenTK.Mathematics;
+﻿using MathUtils;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace ProjectWS.Engine.Input

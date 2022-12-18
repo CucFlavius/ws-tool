@@ -1,5 +1,5 @@
 ﻿using OpenTK;
-using OpenTK.Mathematics;
+using MathUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,8 +50,8 @@ namespace ProjectWS.Engine
 
             this.projection = Matrix4.CreatePerspectiveFieldOfView(this.fov, this.aspectRatio, this.nearDistance, this.farDistance);
 
-            shader.SetMat4("projection", this.projection);
-            shader.SetMat4("view", this.view);
+            shader.SetMat4("projection", ref this.projection);
+            shader.SetMat4("view", ref this.view);
             shader.SetVec3("viewPos", this.transform.GetPosition());
         }
 

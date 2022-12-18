@@ -1,5 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 using ProjectWS.Engine.World;
 using System.Runtime.InteropServices;
 
@@ -35,8 +35,8 @@ namespace ProjectWS.Engine.Mesh
         public int _vertexArrayObject;
         public int _vertexBufferObject;
         public Matrix4 matrix;
-        public Data.AABB aabb;
-        public Data.AABB cullingAABB;
+        public AABB aabb;
+        public AABB cullingAABB;
         public Vector3 centerPosition;
         public volatile bool isVisible;
         public bool isOccluded;
@@ -206,8 +206,8 @@ namespace ProjectWS.Engine.Mesh
             float hMin = this.minHeight;
             float hMax = this.maxHeight;
             this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, 16f);
-            this.aabb = new Data.AABB(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
-            this.cullingAABB = new Data.AABB(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
+            this.aabb = new AABB(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
+            this.cullingAABB = new AABB(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
         }
 
         public override void Build()
@@ -288,8 +288,8 @@ namespace ProjectWS.Engine.Mesh
             // Update bounds
             Vector3 subchunkRelativePosition = new Vector3(this.X * 32f, 0, this.Y * 32f);
             this.centerPosition = this.chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((this.maxHeight - this.minHeight) / 2f) + this.minHeight, 16f);
-            this.aabb = new Data.AABB(this.centerPosition, new Vector3(32f, this.maxHeight - this.minHeight, 32f));            // Exact bounds
-            this.cullingAABB = new Data.AABB(this.centerPosition, new Vector3(64f, (this.maxHeight - this.minHeight) * 2, 64f));
+            this.aabb = new AABB(this.centerPosition, new Vector3(32f, this.maxHeight - this.minHeight, 32f));            // Exact bounds
+            this.cullingAABB = new AABB(this.centerPosition, new Vector3(64f, (this.maxHeight - this.minHeight) * 2, 64f));
 
             // Upload to GPU
             // https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer

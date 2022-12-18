@@ -1,5 +1,5 @@
-﻿using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
+﻿using MathUtils;
+using ProjectWS.FileFormats.Extensions;
 
 namespace ProjectWS.Engine.Data
 {

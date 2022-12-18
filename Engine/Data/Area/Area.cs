@@ -1,15 +1,8 @@
 ﻿using BCnEncoder.Encoder;
 using BCnEncoder.Shared;
-using OpenTK;
-using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-using System;
-using System.Collections.Generic;
-using System.IO;
+using MathUtils;
+using ProjectWS.FileFormats.Extensions;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjectWS.Engine.Data
 {

@@ -10,13 +10,15 @@ namespace ProjectWS.Engine.Material
 {
     public class M3Material : Material
     {
-        Data.M3.Material matData;
-        Data.M3.File m3;
+        FileFormats.M3.Material matData;
+        FileFormats.M3.File m3;
+        ProjectWS.Engine.Data.ResourceManager.Manager rm;
 
-        public M3Material(Data.M3.Material matData, Data.M3.File m3)
+        public M3Material(FileFormats.M3.Material matData, FileFormats.M3.File m3, ProjectWS.Engine.Data.ResourceManager.Manager rm)
         {
             this.matData = matData;
             this.m3 = m3;
+            this.rm = rm;
         }
 
         public override void Build()
@@ -24,8 +26,6 @@ namespace ProjectWS.Engine.Material
             if (this.isBuilt || this.isBuilding) return;
 
             this.isBuilding = true;
-
-            ProjectWS.Engine.Data.ResourceManager.Manager rm = m3.gameData.resourceManager;
 
             this.texturePtrs = new Dictionary<string, uint>();
             for (int i = 0; i < this.matData.materialDescriptions.Length; i++)
@@ -35,9 +35,9 @@ namespace ProjectWS.Engine.Material
                 {
                     var texture = m3.textures[textureA];
 
-                    if (texture.textureType == Data.M3.Texture.TextureType.Diffuse)
+                    if (texture.textureType == FileFormats.M3.Texture.TextureType.Diffuse)
                         rm.AssignTexture(texture.texturePath, this, $"diffuseMap{i}");
-                    else if (texture.textureType == Data.M3.Texture.TextureType.Normal)
+                    else if (texture.textureType == FileFormats.M3.Texture.TextureType.Normal)
                         rm.AssignTexture(texture.texturePath, this, $"normalMap{i}");
                 }
 
@@ -45,9 +45,9 @@ namespace ProjectWS.Engine.Material
                 if (textureB != -1)
                 {
                     var texture = m3.textures[textureB];
-                    if (texture.textureType == Data.M3.Texture.TextureType.Diffuse)
+                    if (texture.textureType == FileFormats.M3.Texture.TextureType.Diffuse)
                         rm.AssignTexture(texture.texturePath, this, $"diffuseMap{i}");
-                    else if (texture.textureType == Data.M3.Texture.TextureType.Normal)
+                    else if (texture.textureType == FileFormats.M3.Texture.TextureType.Normal)
                         rm.AssignTexture(texture.texturePath, this, $"normalMap{i}");
                 }
             }

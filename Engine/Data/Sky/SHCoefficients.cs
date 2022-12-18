@@ -1,7 +1,4 @@
-﻿using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-
-namespace ProjectWS.Engine.Data
+﻿namespace ProjectWS.Engine.Data
 {
     public class SHCoefficients
     {

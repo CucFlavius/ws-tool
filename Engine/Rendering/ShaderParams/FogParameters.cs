@@ -1,5 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 using System.Reflection.Metadata;
 
 namespace ProjectWS.Engine.Rendering.ShaderParams
@@ -36,7 +36,7 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
 
         public void SetToShader(Shader shader)
         {
-            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.color"), this.color);
+            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.color"), this.color.X, this.color.Y, this.color.Z);
             GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.linearStart"), this.linearStart);
             GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.linearEnd"), this.linearEnd);
             GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.fogParams.density"), this.density);

@@ -1,7 +1,4 @@
-﻿using System.IO;
-using ProjectWS.Engine.Data.Extensions;
-
-namespace ProjectWS.Engine.Data
+﻿namespace ProjectWS.Engine.Data
 {
     public partial class Area
     {

@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using OpenTK;
-using OpenTK.Mathematics;
+using MathUtils;
 
 namespace ProjectWS.Engine.Data.ResourceManager
 {
@@ -11,11 +11,10 @@ namespace ProjectWS.Engine.Data.ResourceManager
         string filePath;
 
         // Reference //
-        GameData gameData;
         World.World world;
 
         // Data //
-        public Data.M3.File m3;
+        public FileFormats.M3.File m3;
         public Manager.ResourceState state;
 
         // Info //
@@ -24,14 +23,13 @@ namespace ProjectWS.Engine.Data.ResourceManager
         // Usage //
         public List<ModelReference> modelReferences;
 
-        public ModelResource(string filePath, GameData gameData, World.World world)
+        public ModelResource(string filePath, World.World world)
         {
             this.world = world;
             this.filePath = filePath;
-            this.gameData = gameData;
             this.state = Manager.ResourceState.IsLoading;
             this.modelReferences = new List<ModelReference>();
-            this.m3 = new M3.File(filePath, gameData);
+            this.m3 = new FileFormats.M3.File(filePath);
         }
 
         public void SetFileState(Manager.ResourceState state)

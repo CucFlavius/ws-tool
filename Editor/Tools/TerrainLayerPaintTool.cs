@@ -1,9 +1,6 @@
-﻿using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Rendering;
+﻿using ProjectWS.Engine.Rendering;
 using System;
-using System.Collections.Generic;
-using static ProjectWS.Engine.Data.Area;
+using MathUtils;
 
 namespace ProjectWS.Editor.Tools
 {
@@ -61,7 +58,7 @@ namespace ProjectWS.Editor.Tools
             {
                 var brushSize = this.worldRenderer.brushParameters.size;
                 var hitPoint = this.worldRenderer.mousePick.terrainHitPoint;
-                var terrainAreaHit = this.worldRenderer.mousePick.areaHit;
+                Vector2i terrainAreaHit = this.worldRenderer.mousePick.areaHit;
 
                 for (int a = 0; a < this.areaKernel.Length; a++)
                 {

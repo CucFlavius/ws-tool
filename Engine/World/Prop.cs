@@ -1,7 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using MathUtils;
 using ProjectWS.Engine.Data;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Data.M3;
 using ProjectWS.Engine.Material;
 using ProjectWS.Engine.Mesh;
 using ProjectWS.Engine.Rendering;
@@ -19,15 +17,17 @@ namespace ProjectWS.Engine.World
         public Dictionary<uint, bool> cullingResults;                // This indicates if instance is culled or not
         public List<uint> uniqueInstanceIDs;
 
-        public Data.M3.File data;
+        public FileFormats.M3.File data;
         public M3Geometry[] geometries;
         public M3Material[] materials;
         public AABB aabb;
         public bool culled;                             // Determined if renderableInstances.Count == 0
         private bool isBuilt;
+        Engine engine;
 
-        public Prop(uint uuid, Data.M3.File data, Vector3 position, Quaternion rotation, Vector3 scale/*, PropLighting lighting*/)
+        public Prop(uint uuid, FileFormats.M3.File data, Vector3 position, Quaternion rotation, Vector3 scale, Engine engine)
         {
+            this.engine = engine;
             this.data = data;
             if (data.bounds != null)
             {
@@ -35,7 +35,7 @@ namespace ProjectWS.Engine.World
             }
             else
             {
-                this.aabb = new Data.AABB(Vector3.Zero, Vector3.One);
+                this.aabb = new AABB(Vector3.Zero, Vector3.One);
             }
 
             this.cullingResults = new Dictionary<uint, bool>();
@@ -59,7 +59,7 @@ namespace ProjectWS.Engine.World
             this.materials = new M3Material[this.data.materials.Length];
             for (int i = 0; i < this.materials.Length; i++)
             {
-                this.materials[i] = new M3Material(this.data.materials[i], this.data);
+                this.materials[i] = new M3Material(this.data.materials[i], this.data, this.engine.resourceManager);
                 this.materials[i].Build();
             }
 
@@ -96,7 +96,7 @@ namespace ProjectWS.Engine.World
 
             for (int g = 0; g < this.geometries.Length; g++)
             {
-                for (int i = 0; i < this.geometries[g].meshes.Length; i++)
+                for (int i = 0; i < this.geometries[g].meshes?.Length; i++)
                 {
                     var mesh = this.geometries[g].meshes[i];
 
@@ -104,10 +104,12 @@ namespace ProjectWS.Engine.World
 
                     int matSelector = mesh.data.materialSelector;
 
+                    var mat = model;
+
                     if (mesh.positionCompressed)
-                        shader.SetMat4("model", WorldRenderer.decompressMat * model);
-                    else
-                        shader.SetMat4("model", model);
+                        mat = WorldRenderer.decompressMat * model;
+
+                    shader.SetMat4("model", ref mat);
 
                     this.materials[matSelector].SetToShader(shader);
 
@@ -135,7 +137,6 @@ namespace ProjectWS.Engine.World
             public Instance(Matrix4 transform, uint uuid)
             {
                 this.transform = transform;
-                this.position = transform.ExtractPosition();
                 this.uuid = uuid;
                 this.type = Type.WorldProp;
                 

@@ -1,4 +1,4 @@
-﻿using OpenTK.Mathematics;
+﻿using MathUtils;
 using ProjectWS.Engine.Components;
 using ProjectWS.Engine.Data;
 using ProjectWS.Engine.Objects.Gizmos;
@@ -135,7 +135,7 @@ namespace ProjectWS.Engine
                                     $"P:{instance.position}\nR:{instance.rotationEuler}\nS:{instance.scale}";
                                 Debug.DrawLabel3D(labelText, instance.position, Vector4.One, true);
                                 */
-                                instance.obb.Draw(instance.transform, new Vector4(1, 1, 0, 1));
+                                DrawOBB(instance.obb, instance.transform, new Vector4(1, 1, 0, 1));
                             }
                             /*
                             Vector2 result = instance.aabb.IntersectsRay(this.mouseRay, instance.position);
@@ -251,6 +251,24 @@ namespace ProjectWS.Engine
 
             else // This means that there is a line intersection but not a ray intersection.
                 return false;
+        }
+
+        void DrawAABB(AABB aabb, Vector3 position, Vector3 scale, Vector4 color)
+        {
+            var positionOffsetMat = Matrix4.CreateTranslation(new Vector3(position.X, aabb.center.Y + position.Y, position.Z));
+            var scaleMat = Matrix4.CreateScale(aabb.size * scale);
+            var boxMat = scaleMat * positionOffsetMat;
+
+            Debug.DrawWireBox3D(boxMat, color);
+        }
+
+        internal void DrawOBB(OBB obb, Matrix4 transform, Vector4 color)
+        {
+            var positionOffsetMat = Matrix4.CreateTranslation(obb.center);
+            var scaleMat = Matrix4.CreateScale(obb.size);
+            var boxMat = scaleMat * positionOffsetMat * transform;
+
+            Debug.DrawWireBox3D(boxMat, color);
         }
     }
 }

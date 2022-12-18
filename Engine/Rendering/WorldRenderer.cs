@@ -1,5 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 using ProjectWS.Engine.Objects.Gizmos;
 
 namespace ProjectWS.Engine.Rendering
@@ -75,7 +75,7 @@ namespace ProjectWS.Engine.Rendering
             drawCalls = 0;
             propDrawCalls = 0;
 
-            GL.ClearColor(this.envColor);
+            GL.ClearColor(this.envColor.R, this.envColor.G, this.envColor.B, this.envColor.A);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
@@ -117,7 +117,8 @@ namespace ProjectWS.Engine.Rendering
                     // Water
                     this.waterShader.Use();
                     this.viewports[v].mainCamera.SetToShader(this.waterShader);
-                    this.waterShader.SetMat4("model", Matrix4.Identity);    // Water vertices are in world space
+                    var mat = Matrix4.Identity;
+                    this.waterShader.SetMat4("model", ref mat);    // Water vertices are in world space
                     this.world.RenderWater(this.waterShader);
 
                     // Props

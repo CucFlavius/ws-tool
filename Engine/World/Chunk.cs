@@ -1,11 +1,5 @@
-﻿using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Rendering;
-using SharpFont;
+﻿using MathUtils;
 using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
-using static ProjectWS.Engine.Data.Archive;
-using static ProjectWS.Engine.Data.Area;
 
 namespace ProjectWS.Engine.World
 {
@@ -31,7 +25,7 @@ namespace ProjectWS.Engine.World
         public bool lod1Loading;
         int[] lodQuadrants;
 
-        public Data.AABB AABB;
+        public AABB AABB;
         public Data.Area area;
         public Data.Area areaLow;
 
@@ -72,7 +66,7 @@ namespace ProjectWS.Engine.World
             this.worldMatrix = new Matrix4().TRS(this.worldCoords, Quaternion.Identity, new Vector3(1, 1, 1));
             this.lowCoords = Utilities.CalculateLowCoords(coords);
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
-            this.AABB = new Data.AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
+            this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
         }
 
         /// <summary>
@@ -95,7 +89,7 @@ namespace ProjectWS.Engine.World
             this.worldMatrix = new Matrix4().TRS(this.worldCoords, Quaternion.Identity, new Vector3(1, 1, 1));
             this.lowCoords = Utilities.CalculateLowCoords(coords);
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
-            this.AABB = new Data.AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
+            this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
         }
 
         /// <summary>
@@ -116,7 +110,7 @@ namespace ProjectWS.Engine.World
             this.worldMatrix = new Matrix4().TRS(this.worldCoords, Quaternion.Identity, new Vector3(1, 1, 1));
             this.lowCoords = Utilities.CalculateLowCoords(coords);
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
-            this.AABB = new Data.AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
+            this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
         }
 
         public void EnqueueTerrainTask(TaskManager.TerrainTask task) => this.terrainTasks.Enqueue(task);
@@ -203,7 +197,7 @@ namespace ProjectWS.Engine.World
                 if (this.area.subChunks[i].mesh != null)
                 {
                     Rendering.WorldRenderer.drawCalls++;
-                    shader.SetMat4("model", this.area.subChunks[i].matrix);
+                    shader.SetMat4("model", ref this.area.subChunks[i].matrix);
 
                     this.area.subChunks[i].Render(shader);
                 }

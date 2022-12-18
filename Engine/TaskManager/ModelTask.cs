@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace ProjectWS.Engine.TaskManager
 {
@@ -24,7 +25,10 @@ namespace ProjectWS.Engine.TaskManager
             {
                 case JobType.Read:
                     this.resourceManager.modelResources[this.filePath].SetFileState(Data.ResourceManager.Manager.ResourceState.IsLoading);
-                    this.resourceManager.modelResources[this.filePath].m3.Read();
+                    using (MemoryStream str = this.resourceManager.engine.data.GetFileData(this.filePath))
+                    {
+                        this.resourceManager.modelResources[this.filePath].m3.Read(str);
+                    }
                     this.resourceManager.modelResources[this.filePath].SetFileState(Data.ResourceManager.Manager.ResourceState.IsLoaded);
                     this.jobType = JobType.Build;
                     this.resourceManager.engine.taskManager.buildTasks.Enqueue(this);

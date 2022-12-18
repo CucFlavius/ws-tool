@@ -1,13 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-using System;
+﻿using MathUtils;
+using OpenTK.Graphics.OpenGL4;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static ProjectWS.Engine.Rendering.TextRenderer;
 
 namespace ProjectWS.Engine.Rendering
 {
@@ -149,7 +142,8 @@ namespace ProjectWS.Engine.Rendering
             {
                 if (this.boxRenderQueue.TryDequeue(out Box box))
                 {
-                    this.lineShader?.SetMat4("model", box.matrix);
+                    var mat = box.matrix;
+                    this.lineShader?.SetMat4("model", ref mat);
                     this.lineShader?.SetColor4("lineColor", box.color);
 
                     GL.BindVertexArray(this.boxVAO);

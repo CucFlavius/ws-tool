@@ -1,5 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 using ProjectWS.Engine.Rendering.ShaderParams;
 
 namespace ProjectWS.Engine.Material

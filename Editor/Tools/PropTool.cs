@@ -1,4 +1,4 @@
-﻿using OpenTK.Mathematics;
+﻿using MathUtils;
 using ProjectWS.Engine.Rendering;
 
 namespace ProjectWS.Editor.Tools

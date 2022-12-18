@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,7 +66,9 @@ namespace ProjectWS.Engine.Objects.Gizmos
             if (!this.isBuilt) return;
             if (this.indices == null) return;
 
-            shader.SetMat4("model", model * this.transform.GetMatrix());
+            var mat = model * this.transform.GetMatrix();
+
+            shader.SetMat4("model", ref mat);
             shader.SetColor4("lineColor", this.color);
 
             GL.BindVertexArray(this.vao);

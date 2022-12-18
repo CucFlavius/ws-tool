@@ -1,4 +1,4 @@
-﻿using OpenTK.Mathematics;
+﻿using MathUtils;
 using ProjectWS.Engine.Material;
 using ProjectWS.Engine.Mesh;
 
@@ -6,7 +6,8 @@ namespace ProjectWS.Engine.Objects
 {
     public class M3Model : GameObject
     {
-        public Data.M3.File data;
+        Engine engine;
+        public FileFormats.M3.File data;
         public readonly Matrix4 decompressMat = Matrix4.CreateScale(1.0f / 1024.0f);
 
         public M3Geometry[] geometries;
@@ -15,9 +16,13 @@ namespace ProjectWS.Engine.Objects
 
         public M3Model(string path, Vector3 position, Engine engine) : base()
         {
-            this.data = new Data.M3.File(path, engine.data);
+            this.engine = engine;
+            this.data = new FileFormats.M3.File(path);
             this.data.modelID = 4;
-            this.data.Read();
+            using (MemoryStream str = engine.data.GetFileData(path))
+            {
+                this.data.Read(str);
+            }
 
             if (this.data.failedReading)
             {
@@ -34,7 +39,7 @@ namespace ProjectWS.Engine.Objects
             this.materials = new M3Material[this.data.materials.Length];
             for (int i = 0; i < this.materials.Length; i++)
             {
-                this.materials[i] = new M3Material(this.data.materials[i], this.data);
+                this.materials[i] = new M3Material(this.data.materials[i], this.data, this.engine.resourceManager);
                 this.materials[i].Build();
             }
 
@@ -66,10 +71,12 @@ namespace ProjectWS.Engine.Objects
 
                         int matSelector = mesh.data.materialSelector;
 
+                        var mat = model;
+
                         if (mesh.positionCompressed)
-                            shader.SetMat4("model", this.decompressMat * model);
-                        else
-                            shader.SetMat4("model", model);
+                            mat = this.decompressMat * model;
+
+                        shader.SetMat4("model", ref mat);
 
                         this.materials[matSelector].SetToShader(shader);
 

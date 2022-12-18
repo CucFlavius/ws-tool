@@ -1,8 +1,6 @@
-﻿
-using static ProjectWS.Debug;
-using System.Collections.Concurrent;
-using OpenTK.Mathematics;
+﻿using MathUtils;
 using OpenTK.Graphics.OpenGL4;
+using System.Collections.Concurrent;
 
 namespace ProjectWS.Engine.Rendering
 {
@@ -50,7 +48,7 @@ namespace ProjectWS.Engine.Rendering
                     Matrix4 projectionM = Matrix4.CreateOrthographicOffCenter(0.0f, vp.width, vp.height, 0.0f, -1.0f, 1.0f);
 
                     renderer.fontShader.Use();
-                    renderer.fontShader.SetMat4("projection", projectionM);
+                    renderer.fontShader.SetMat4("projection", ref projectionM);
 
                     vp.PointToScreen(label.position, out var pos);
 

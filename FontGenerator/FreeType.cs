@@ -1,6 +1,8 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+﻿using MathUtils;
+using OpenTK.Graphics.OpenGL4;
+//using OpenTK.Mathematics;
 using SharpFont;
+using System.Reflection;
 
 namespace FontGenerator
 {
@@ -171,7 +173,8 @@ namespace FontGenerator
                 Matrix4 transRelM = Matrix4.CreateTranslation(new Vector3(xrel, yrel, 0.0f));
 
                 Matrix4 modelM = scaleM * transRelM * rotateM * transOriginM; // OpenTK `*`-operator is reversed
-                GL.UniformMatrix4(0, false, ref modelM);
+                //GL.UniformMatrix4(0, false, ref modelM);
+                SetMat(ref modelM);
 
                 // Render glyph texture over quad
                 GL.BindTexture(TextureTarget.Texture2D, ch.TextureID);
@@ -182,6 +185,14 @@ namespace FontGenerator
 
             GL.BindVertexArray(0);
             GL.BindTexture(TextureTarget.Texture2D, 0);
+        }
+
+        unsafe void SetMat(ref Matrix4 mat)
+        {
+            fixed (float* value = &mat.Row0.X)
+            {
+                GL.UniformMatrix4(0, 1, false, value);
+            }
         }
     }
 }

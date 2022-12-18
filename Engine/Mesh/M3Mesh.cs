@@ -1,15 +1,15 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+﻿using MathUtils;
+using OpenTK.Graphics.OpenGL4;
 
 namespace ProjectWS.Engine.Mesh
 {
     public class M3Mesh : Mesh
     {
-        public Data.M3.Submesh? data;
+        public FileFormats.M3.Submesh? data;
         int vertexBlockSizeInBytes;
         byte[]? vertexBlockFieldPositions;
-        Data.M3.Geometry.VertexBlockFlags vertexBlockFlags;
-        Data.M3.Geometry.VertexFieldType[]? vertexFieldTypes;
+        FileFormats.M3.Geometry.VertexBlockFlags vertexBlockFlags;
+        FileFormats.M3.Geometry.VertexFieldType[]? vertexFieldTypes;
 
         public bool isBuilt;
         public bool positionCompressed;
@@ -19,7 +19,7 @@ namespace ProjectWS.Engine.Mesh
         public Matrix4[]? instances;
         int instanceBuffer;
 
-        public M3Mesh(Data.M3.Submesh submesh, int vertexBlockSizeInBytes, byte[] vertexBlockFieldPositions, Data.M3.Geometry.VertexBlockFlags vertexBlockFlags, Data.M3.Geometry.VertexFieldType[] vertexFieldTypes)
+        public M3Mesh(FileFormats.M3.Submesh submesh, int vertexBlockSizeInBytes, byte[] vertexBlockFieldPositions, FileFormats.M3.Geometry.VertexBlockFlags vertexBlockFlags, FileFormats.M3.Geometry.VertexFieldType[] vertexFieldTypes)
         {
             this.data = submesh;
             this.vertexBlockSizeInBytes = vertexBlockSizeInBytes;
@@ -43,19 +43,19 @@ namespace ProjectWS.Engine.Mesh
                 this.renderable = false;
             }
 
-            bool hasPositions = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasPosition);
-            bool hasTangents = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasTangent);
-            bool hasNormals = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasNormal);
-            bool hasBiTangents = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasBiTangent);
-            bool hasBoneIndices = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasBoneIndices);
-            bool hasBoneWeights = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasBoneWeights);
-            bool hasColors0 = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasVertexColor0);
-            bool hasColors1 = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasVertexColor1);
-            bool hasUV0 = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasUV0);
-            bool hasUV1 = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasUV1);
-            bool hasUnknown = vertexBlockFlags.HasFlag(Data.M3.Geometry.VertexBlockFlags.hasUnknown);
+            bool hasPositions = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasPosition);
+            bool hasTangents = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasTangent);
+            bool hasNormals = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasNormal);
+            bool hasBiTangents = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasBiTangent);
+            bool hasBoneIndices = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasBoneIndices);
+            bool hasBoneWeights = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasBoneWeights);
+            bool hasColors0 = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasVertexColor0);
+            bool hasColors1 = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasVertexColor1);
+            bool hasUV0 = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasUV0);
+            bool hasUV1 = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasUV1);
+            bool hasUnknown = vertexBlockFlags.HasFlag(FileFormats.M3.Geometry.VertexBlockFlags.hasUnknown);
 
-            this.positionCompressed = vertexFieldTypes[0] == Data.M3.Geometry.VertexFieldType.Vector3_16bit;
+            this.positionCompressed = vertexFieldTypes[0] == FileFormats.M3.Geometry.VertexFieldType.Vector3_16bit;
 
             GL.GenVertexArrays(1, out _vertexArrayObject);
             int vbo = GL.GenBuffer();

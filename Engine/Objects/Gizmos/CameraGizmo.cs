@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +120,7 @@ namespace ProjectWS.Engine.Objects.Gizmos
             rot.Invert();
             mat *= Matrix4.CreateFromQuaternion(rot);
             mat *= Matrix4.CreateTranslation(camera.transform.GetPosition());
-            shader.SetMat4("model", mat);
+            shader.SetMat4("model", ref mat);
             shader.SetColor4("lineColor", Vector4.One);
 
             // Draw the line

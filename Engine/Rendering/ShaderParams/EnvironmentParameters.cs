@@ -1,5 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 
 namespace ProjectWS.Engine.Rendering.ShaderParams
 {
@@ -23,7 +23,7 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
 
         public void SetToShader(Shader shader)
         {
-            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "envParams.ambientColor"), this.ambientColor);
+            GL.Uniform3(GL.GetUniformLocation(shader.Handle, "envParams.ambientColor"), this.ambientColor.X, this.ambientColor.Y, this.ambientColor.Z);
             GL.Uniform1(GL.GetUniformLocation(shader.Handle, "envParams.isEnabled"), this.isEnabled ? 1 : 0);
         }
 

@@ -1,4 +1,4 @@
-using OpenTK.Mathematics;
+using MathUtils;
 
 namespace ProjectWS.Engine.Data
 {

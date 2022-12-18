@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 using ProjectWS.Engine.Rendering.ShaderParams;
 using System;
 using System.Collections.Generic;

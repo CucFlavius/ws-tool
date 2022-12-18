@@ -1,9 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+﻿using MathUtils;
+using OpenTK.Graphics.OpenGL4;
 using ProjectWS.Engine.Data;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Objects.Gizmos;
-using static ProjectWS.Engine.Data.Area;
 
 namespace ProjectWS.Engine.World
 {
@@ -230,7 +227,7 @@ namespace ProjectWS.Engine.World
             Debug.Log($"Start: chunk {this.controller.chunkPosition} | world {this.controller.worldPosition}");
         }
 
-        public void LoadProp(Data.M3.File data, uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
+        public void LoadProp(FileFormats.M3.File data, uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
         {
             if (this.props.ContainsKey(data.filePath))
             {
@@ -239,7 +236,7 @@ namespace ProjectWS.Engine.World
             else
             {
                 this.loadedProps.Add(data.filePath);
-                this.props.Add(data.filePath, new Prop(uuid, data, position, rotation, scale));
+                this.props.Add(data.filePath, new Prop(uuid, data, position, rotation, scale, this.engine));
             }
         }
 

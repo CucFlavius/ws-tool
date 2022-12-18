@@ -1,6 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
+﻿using MathUtils;
+using OpenTK.Graphics.OpenGL4;
+using ProjectWS.FileFormats.Extensions;
 using System.Runtime.InteropServices;
 
 namespace ProjectWS.Engine.Data

@@ -1,7 +1,7 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 using System;
 using System.IO;
 using System.Text;
@@ -89,7 +89,7 @@ namespace ProjectWS.Engine
 
         public void SetColor4(string name, Vector4 value)
         {
-            GL.Uniform4(GL.GetUniformLocation(Handle, name), ref value);
+            GL.Uniform4(GL.GetUniformLocation(Handle, name), value.X, value.Y, value.Z, value.W);
         }
 
         public void Use()
@@ -107,14 +107,22 @@ namespace ProjectWS.Engine
             GL.Uniform1(GL.GetUniformLocation(Handle, name), value);
         }
 
-        public void SetMat4(string name, Matrix4 mat)
+        public void SetMat4(string name, ref Matrix4 mat)
         {
-            GL.UniformMatrix4(GL.GetUniformLocation(Handle, name), false, ref mat);
+            //GL.UniformMatrix4(GL.GetUniformLocation(Handle, name), false, ref mat);
+
+            unsafe
+            {
+                fixed (float* value = &mat.Row0.X)
+                {
+                    GL.UniformMatrix4(GL.GetUniformLocation(Handle, name), 1, false, value);
+                }
+            }
         }
 
         public void SetVec3(string name, Vector3 vec)
         {
-            GL.Uniform3(GL.GetUniformLocation(Handle, name), ref vec);
+            GL.Uniform3(GL.GetUniformLocation(Handle, name), vec.X, vec.Y, vec.Z);
         }
 
         public void SetVec3(string name, float x, float y, float z)
@@ -124,7 +132,7 @@ namespace ProjectWS.Engine
 
         public void SetVec4(string name, Vector4 vec)
         {
-            GL.Uniform4(GL.GetUniformLocation(Handle, name), ref vec);
+            GL.Uniform4(GL.GetUniformLocation(Handle, name), vec.X, vec.Y, vec.Z, vec.W);
         }
 
         public void SetTexture(string name)

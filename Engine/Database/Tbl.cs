@@ -1,10 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.CompilerServices;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Database.Definitions;
+using ProjectWS.FileFormats.Extensions;
 
 namespace ProjectWS.Engine.Database
 {

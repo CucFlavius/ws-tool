@@ -31,7 +31,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
         {
             if (this.modelResources.ContainsKey(path)) return;
 
-            this.modelResources.Add(path, new ModelResource(path, this.engine.data, this.engine.worlds[0]));
+            this.modelResources.Add(path, new ModelResource(path, this.engine.worlds[0]));
 
             this.engine.taskManager.modelThread.Enqueue(new TaskManager.ModelTask(path, TaskManager.Task.JobType.Read, this));
         }

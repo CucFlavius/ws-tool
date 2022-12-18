@@ -1,8 +1,5 @@
-﻿using ProjectWS.Engine.Input;
-using OpenTK.Mathematics;
+﻿using MathUtils;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Runtime.CompilerServices;
-using ProjectWS.Engine.Data.Extensions;
 
 namespace ProjectWS.Engine.Components
 {

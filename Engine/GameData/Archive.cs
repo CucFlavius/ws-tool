@@ -1,8 +1,4 @@
-using ProjectWS.Engine.Data.Extensions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+using ProjectWS.FileFormats.Extensions;
 
 namespace ProjectWS.Engine.Data
 {
@@ -25,7 +21,7 @@ namespace ProjectWS.Engine.Data
             this.index = new Index(this);
             this.data = new Data(this);
             this.blockTree = new Dictionary<string, Block>();
-            this.fileNames = new Dictionary<byte[], string>(new Extensions.ByteArrayComparer());
+            this.fileNames = new Dictionary<byte[], string>(new ByteArrayComparer());
             this.fileList = new Dictionary<string, Block.FileEntry>();
         }
 
@@ -203,7 +199,7 @@ namespace ProjectWS.Engine.Data
 
                             // AARC Entries
                             br.BaseStream.Position = (long)this.blockHeaders[(int)this.aarc.entriesOffset].blockOffset;
-                            this.aarcEntries = new Dictionary<byte[], Entry>(new Extensions.ByteArrayComparer());
+                            this.aarcEntries = new Dictionary<byte[], Entry>(new ByteArrayComparer());
                             for (int i = 0; i < this.aarc.entriesCount; i++)
                             {
                                 var entry = new Entry(br);

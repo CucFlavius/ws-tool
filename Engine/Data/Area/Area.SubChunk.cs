@@ -1,8 +1,7 @@
-﻿using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-using BCnEncoder.Encoder;
+﻿using BCnEncoder.Decoder;
 using BCnEncoder.Shared;
-using BCnEncoder.Decoder;
+using MathUtils;
+using ProjectWS.FileFormats.Extensions;
 
 namespace ProjectWS.Engine.Data
 {
@@ -38,8 +37,8 @@ namespace ProjectWS.Engine.Data
             public Matrix4 matrix;
             public float minHeight;
             public float maxHeight;
-            public Data.AABB AABB;
-            public Data.AABB cullingAABB;
+            public AABB AABB;
+            public AABB cullingAABB;
             public Vector3 centerPosition;
             public volatile bool isVisible;
             public bool isOccluded;
@@ -404,8 +403,8 @@ namespace ProjectWS.Engine.Data
                 float hMin = this.mesh.minHeight;
                 float hMax = this.mesh.maxHeight;
                 this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, 16f);
-                this.AABB = new Data.AABB(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
-                this.cullingAABB = new Data.AABB(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
+                this.AABB = new AABB(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
+                this.cullingAABB = new AABB(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
                 GenerateMissingData();
             }
 

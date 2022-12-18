@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ProjectWS.Engine.Input;
-using OpenTK;
-using OpenTK.Graphics;
+﻿using MathUtils;
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
-using ProjectWS.Engine.Objects.Gizmos;
 
 namespace ProjectWS.Engine.Rendering
 {
@@ -76,7 +67,7 @@ namespace ProjectWS.Engine.Rendering
         {
             if (!this.rendering) return;
 
-            GL.ClearColor(new Color4(0.1f, 0.1f, 0.15f, 1.0f));
+            GL.ClearColor(0.1f, 0.1f, 0.15f, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 

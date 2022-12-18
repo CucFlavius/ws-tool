@@ -1,18 +1,10 @@
-﻿using ColorPicker.Models;
-using OpenTK.Mathematics;
-using ProjectWS;
+﻿using MathUtils;
 using ProjectWS.Engine.Data;
-using ProjectWS.Engine.World;
-using SevenZip.Compression.LZ;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
-using Xceed.Wpf.Toolkit;
-using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
-using static ProjectWS.Engine.Data.Archive.Index;
 
 namespace ProjectWS.Editor
 {

@@ -1,5 +1,5 @@
 ﻿using ProjectWS.Engine.Input;
-using OpenTK.Mathematics;
+using MathUtils;
 using ProjectWS.Engine.Components;
 using OpenTK.Graphics.OpenGL4;
 

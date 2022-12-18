@@ -177,8 +177,11 @@ namespace StatisticalAnalyzer
 
             foreach (var filePath in m3Files)
             {
-                var m3 = new ProjectWS.Engine.Data.M3.File(filePath);
-                m3.Read();
+                var m3 = new ProjectWS.FileFormats.M3.File(filePath);
+                using (var str = File.OpenRead(filePath))
+                {
+                    m3.Read(str);
+                }
 
                 if (m3.failedReading)
                     continue;

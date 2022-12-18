@@ -1,5 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+using MathUtils;
 
 namespace ProjectWS.Engine.Objects.Gizmos
 {
@@ -49,7 +49,8 @@ namespace ProjectWS.Engine.Objects.Gizmos
         public override void Render(Matrix4 model, Shader shader)
         {
             if (!this.isBuilt) return;
-            shader.SetMat4("model", model * transform.GetMatrix());
+            var mat = model * transform.GetMatrix();
+            shader.SetMat4("model", ref mat);
             shader.SetColor4("lineColor", this.color);
 
             GL.BindVertexArray(_vertexArrayObject);
