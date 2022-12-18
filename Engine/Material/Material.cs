@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProjectWS.Engine.Materials
+namespace ProjectWS.Engine.Material
 {
     public abstract class Material
     {

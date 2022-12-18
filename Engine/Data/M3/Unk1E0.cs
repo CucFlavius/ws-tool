@@ -1,19 +1,19 @@
 using System.IO;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.Engine.Data.M3
 {
-    public class Unk230 : ArrayData
+    public class Unk1E0 : ArrayData
     {
         public byte[]? data;
 
         public override int GetSize()
         {
-            return 4;
+            return 152;
         }
 
         public override void Read(BinaryReader br, long startOffset)
         {
-            this.data = br.ReadBytes(4);
+            this.data = br.ReadBytes(152);
         }
     }
 }

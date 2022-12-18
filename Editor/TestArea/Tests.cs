@@ -1,16 +1,7 @@
 ﻿using OpenTK.Mathematics;
 using ProjectWS.Editor;
-using ProjectWS.Engine.Rendering;
-using System.Net.Sockets;
-using System;
-using System.IO;
-using ProjectWS.Engine.Data.Extensions;
-using SharpFont;
-using System.Linq;
-using ProjectWS.Engine.Extensions;
-using System.IO.Pipes;
-using System.Security.Principal;
 using ProjectWS.Engine.Data;
+using System;
 
 namespace ProjectWS.TestArea
 {

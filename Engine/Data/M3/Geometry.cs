@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.Engine.Data.M3
 {
     public class Geometry : ArrayData
     {
@@ -97,26 +97,26 @@ namespace ProjectWS.Engine.Data
             this.unk0A8 = new ArrayInt16(br, startOffset).data;
             this.unk0B8 = new ArrayInt32(br, startOffset).data;
         }
-
+        /*
         public void Build(M3 m3)
         {
             for (int i = 0; i < this.submeshes.Length; i++)
             {
-                this.submeshes[i].vertexData = new byte[this.submeshes[i].vertexCount * this.vertexBlockSizeInBytes];
-                Array.Copy(this.vertexData, this.submeshes[i].startVertex * this.vertexBlockSizeInBytes, this.submeshes[i].vertexData, 0, this.submeshes[i].vertexCount * this.vertexBlockSizeInBytes);
+                submesh.vertexData = new byte[submesh.vertexCount * this.vertexBlockSizeInBytes];
+                Array.Copy(this.vertexData, submesh.startVertex * this.vertexBlockSizeInBytes, submesh.vertexData, 0, submesh.vertexCount * this.vertexBlockSizeInBytes);
 
-                this.submeshes[i].indexData = new uint[this.submeshes[i].indexCount];
-                Array.Copy(this.indexData, this.submeshes[i].startIndex, this.submeshes[i].indexData, 0, this.submeshes[i].indexCount);
+                submesh.indexData = new uint[submesh.indexCount];
+                Array.Copy(this.indexData, submesh.startIndex, submesh.indexData, 0, submesh.indexCount);
 
-                if (this.submeshes[i].meshGroupID == m3.modelID || this.submeshes[i].meshGroupID == -1)
+                if (submesh.meshGroupID == m3.modelID || submesh.meshGroupID == -1)
                 {
-                    this.submeshes[i].Build(this.vertexBlockSizeInBytes, this.vertexBlockFieldPositions, this.vertexBlockFlags, this.vertexFieldTypes);
+                    submesh.Build(this.vertexBlockSizeInBytes, this.vertexBlockFieldPositions, this.vertexBlockFlags, this.vertexFieldTypes);
 
-                    m3.materials[this.submeshes[i].materialSelector].Build(m3);
+                    m3.materials[submesh.materialSelector].Build(m3);
                 }
             }
         }
-
+        */
         public override int GetSize()
         {
             return 208;

@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.Engine.Data.M3
 {
     public class Unk240 : ArrayData
     {

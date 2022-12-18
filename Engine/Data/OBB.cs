@@ -1,11 +1,4 @@
 ﻿using OpenTK.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static ProjectWS.Engine.Data.M3;
-using static ProjectWS.Engine.World.Prop;
 
 namespace ProjectWS.Engine.Data
 {

@@ -74,7 +74,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
             this.mipmapCount = this.tex.header.mipCount;
         }
 
-        public bool AssignTexture(Materials.Material material, string samplerName)
+        public bool AssignTexture(Material.Material material, string samplerName)
         {
             this.referenceCount++;
 
@@ -195,7 +195,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
 
         public struct MaterialReference
         {
-            public Materials.Material material;
+            public Material.Material material;
             public string samplerName;
             //public TextureWrapMode wrapMode;
         }

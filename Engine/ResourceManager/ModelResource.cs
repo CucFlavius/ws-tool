@@ -15,7 +15,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
         World.World world;
 
         // Data //
-        public Data.M3 m3;
+        public Data.M3.File m3;
         public Manager.ResourceState state;
 
         // Info //
@@ -31,7 +31,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
             this.gameData = gameData;
             this.state = Manager.ResourceState.IsLoading;
             this.modelReferences = new List<ModelReference>();
-            this.m3 = new M3(filePath, gameData);
+            this.m3 = new M3.File(filePath, gameData);
         }
 
         public void SetFileState(Manager.ResourceState state)

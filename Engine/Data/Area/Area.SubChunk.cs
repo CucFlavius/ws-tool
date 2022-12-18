@@ -34,7 +34,7 @@ namespace ProjectWS.Engine.Data
             public Water[] waters;
 
             public Mesh mesh;
-            public Materials.TerrainMaterial material;
+            public Material.TerrainMaterial material;
             public Matrix4 matrix;
             public float minHeight;
             public float maxHeight;
@@ -388,7 +388,7 @@ namespace ProjectWS.Engine.Data
                 else if (lod == 1)
                     this.mesh = new Mesh(this.lodHeightMap, this);
 
-                this.material = new Materials.TerrainMaterial(this);
+                this.material = new Material.TerrainMaterial(this.chunk, this);
 
                 // Calc Model Matrix
                 int chunkX = index % 16;

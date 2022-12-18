@@ -1,12 +1,6 @@
-﻿using System;
+﻿using ProjectWS.Engine.Data;
 using System.Diagnostics;
-using System.IO.Compression;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using ProjectWS;
-using ProjectWS.Engine;
-using ProjectWS.Engine.Data;
 
 namespace StatisticalAnalyzer
 {
@@ -183,7 +177,7 @@ namespace StatisticalAnalyzer
 
             foreach (var filePath in m3Files)
             {
-                var m3 = new M3(filePath);
+                var m3 = new ProjectWS.Engine.Data.M3.File(filePath);
                 m3.Read();
 
                 if (m3.failedReading)
@@ -227,7 +221,7 @@ namespace StatisticalAnalyzer
 
             foreach (var filePath in areaFiles)
             {
-                var area = new Area(filePath);
+                var area = new ProjectWS.Engine.Data.Area(filePath);
                 area.Read();
                 /*
                 for (int i = 0; i < area.subChunks.Count; i++)

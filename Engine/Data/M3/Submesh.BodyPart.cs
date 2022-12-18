@@ -2,7 +2,7 @@ using System.IO;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.Engine.Data.M3
 {
     public partial class Submesh : ArrayData
     {

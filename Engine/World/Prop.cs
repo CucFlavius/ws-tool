@@ -1,18 +1,16 @@
 ﻿using OpenTK.Mathematics;
 using ProjectWS.Engine.Data;
 using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Materials;
+using ProjectWS.Engine.Data.M3;
+using ProjectWS.Engine.Material;
+using ProjectWS.Engine.Mesh;
 using ProjectWS.Engine.Rendering;
 using System.Collections.Concurrent;
-using static ProjectWS.Engine.Data.Area;
 
 namespace ProjectWS.Engine.World
 {
     public class Prop
     {
-        // Animation Model
-        public Batch[] batches;
-
         // Instance Buffers //
         public ConcurrentDictionary<uint, Instance> instances;
         public List<Matrix4> renderableInstances;
@@ -21,13 +19,14 @@ namespace ProjectWS.Engine.World
         public Dictionary<uint, bool> cullingResults;                // This indicates if instance is culled or not
         public List<uint> uniqueInstanceIDs;
 
-        public M3 data;
+        public Data.M3.File data;
+        public M3Geometry[] geometries;
+        public M3Material[] materials;
         public AABB aabb;
-        //Mesh[] meshes;
-        List<uint> textureResources;
         public bool culled;                             // Determined if renderableInstances.Count == 0
+        private bool isBuilt;
 
-        public Prop(uint uuid, M3 data, Vector3 position, Quaternion rotation, Vector3 scale/*, PropLighting lighting*/)
+        public Prop(uint uuid, Data.M3.File data, Vector3 position, Quaternion rotation, Vector3 scale/*, PropLighting lighting*/)
         {
             this.data = data;
             if (data.bounds != null)
@@ -51,18 +50,28 @@ namespace ProjectWS.Engine.World
             if (this.data.geometries.Length <= 0) return;
             if (this.data.geometries[0].submeshes == null) return;
 
-            this.batches = new Batch[this.data.geometries[0].submeshes.Length];
-
             AddInstance(uuid, position, rotation, scale);
+            Build();
+        }
 
-            this.data.Build();
-
-            for (int i = 0; i < this.batches.Length; i++)
+        public void Build()
+        {
+            this.materials = new M3Material[this.data.materials.Length];
+            for (int i = 0; i < this.materials.Length; i++)
             {
-                this.batches[i] = new Batch();
-                this.batches[i].mesh = this.data.geometries[0].submeshes[i];
-                //this.batches[i].material = mat;
+                this.materials[i] = new M3Material(this.data.materials[i], this.data);
+                this.materials[i].Build();
             }
+
+            this.geometries = new M3Geometry[this.data.geometries.Length];
+
+            for (int i = 0; i < this.geometries.Length; i++)
+            {
+                this.geometries[i] = new M3Geometry(this.data.geometries[i]);
+                this.geometries[i].Build(this.data.modelID);
+            }
+
+            this.isBuilt = true;
         }
 
         public void AddInstance(uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
@@ -83,36 +92,29 @@ namespace ProjectWS.Engine.World
 
         public void Render(Shader shader, Matrix4 model)
         {
-            if (!this.data.isBuilt) return;
+            if (!this.isBuilt) return;
 
-            for (int k = 0; k < this.data.geometries[0].submeshes.Length; k++)
+            for (int g = 0; g < this.geometries.Length; g++)
             {
-                var submesh = this.data.geometries[0].submeshes[k];
-
-                if (!submesh.isBuilt) continue;
-                int matSelector = submesh.materialSelector;
-
-                if (submesh.positionCompressed)
-                    shader.SetMat4("model", WorldRenderer.decompressMat * model);
-                else
-                    shader.SetMat4("model", model);
-
-                this.data.materials[matSelector].mat.SetToShader(shader);
-
-                submesh.Draw();
-                Rendering.WorldRenderer.propDrawCalls++;
-            }
-
-            /*
-            if (this.batches != null && !this.culled)
-            {
-                for (int b = 0; b < this.batches.Length; b++)
+                for (int i = 0; i < this.geometries[g].meshes.Length; i++)
                 {
-                    this.batches[b].mesh.Draw();
-                    Rendering.WorldRenderer.drawCalls++;
+                    var mesh = this.geometries[g].meshes[i];
+
+                    if (mesh == null || !mesh.isBuilt || mesh.data == null) continue;
+
+                    int matSelector = mesh.data.materialSelector;
+
+                    if (mesh.positionCompressed)
+                        shader.SetMat4("model", WorldRenderer.decompressMat * model);
+                    else
+                        shader.SetMat4("model", model);
+
+                    this.materials[matSelector].SetToShader(shader);
+
+                    mesh.Draw();
+                    Rendering.WorldRenderer.propDrawCalls++;
                 }
             }
-            */
         }
 
         public class Instance
@@ -160,14 +162,6 @@ namespace ProjectWS.Engine.World
                 WorldProp,
                 I3Prop,
             }
-        }
-
-        public class Batch
-        {
-            public Data.Submesh mesh;
-            public M3Material material;
-            //public ShadowCastingMode shadowCastingMode;
-            //public bool receiveShadows;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
             this.modelResources = new Dictionary<string, ModelResource>();
         }
 
-        public void AssignTexture(string filePath, Materials.Material material, string samplerName)
+        public void AssignTexture(string filePath, Material.Material material, string samplerName)
         {
             //Debug.Log(filePath + " " + samplerName);
             if (!this.textureResources.ContainsKey(filePath))

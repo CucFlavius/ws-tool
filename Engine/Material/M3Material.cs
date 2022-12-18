@@ -5,16 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static ProjectWS.Engine.Data.M3;
 
-namespace ProjectWS.Engine.Materials
+namespace ProjectWS.Engine.Material
 {
     public class M3Material : Material
     {
-        M3.Material matData;
-        M3 m3;
+        Data.M3.Material matData;
+        Data.M3.File m3;
 
-        public M3Material(M3.Material matData, M3 m3)
+        public M3Material(Data.M3.Material matData, Data.M3.File m3)
         {
             this.matData = matData;
             this.m3 = m3;
@@ -36,9 +35,9 @@ namespace ProjectWS.Engine.Materials
                 {
                     var texture = m3.textures[textureA];
 
-                    if (texture.textureType == M3.Texture.TextureType.Diffuse)
+                    if (texture.textureType == Data.M3.Texture.TextureType.Diffuse)
                         rm.AssignTexture(texture.texturePath, this, $"diffuseMap{i}");
-                    else if (texture.textureType == M3.Texture.TextureType.Normal)
+                    else if (texture.textureType == Data.M3.Texture.TextureType.Normal)
                         rm.AssignTexture(texture.texturePath, this, $"normalMap{i}");
                 }
 
@@ -46,9 +45,9 @@ namespace ProjectWS.Engine.Materials
                 if (textureB != -1)
                 {
                     var texture = m3.textures[textureB];
-                    if (texture.textureType == M3.Texture.TextureType.Diffuse)
+                    if (texture.textureType == Data.M3.Texture.TextureType.Diffuse)
                         rm.AssignTexture(texture.texturePath, this, $"diffuseMap{i}");
-                    else if (texture.textureType == M3.Texture.TextureType.Normal)
+                    else if (texture.textureType == Data.M3.Texture.TextureType.Normal)
                         rm.AssignTexture(texture.texturePath, this, $"normalMap{i}");
                 }
             }

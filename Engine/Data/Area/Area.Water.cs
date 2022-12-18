@@ -1,6 +1,4 @@
-﻿using OpenTK.Mathematics;
-using ProjectWS.Engine.Data.Extensions;
-using ProjectWS.Engine.Materials;
+﻿using ProjectWS.Engine.Material;
 
 namespace ProjectWS.Engine.Data
 {
@@ -27,7 +25,7 @@ namespace ProjectWS.Engine.Data
             public uint unk10;
 
             public Mesh mesh;
-            public Material material;
+            public WaterMaterial material;
 
             public Water(BinaryReader br)
             {
@@ -67,7 +65,7 @@ namespace ProjectWS.Engine.Data
                     this.mesh.vertices[i] = new Mesh.WaterVertex(br);
                 }
 
-                this.material = new Materials.WaterMaterial(this);
+                this.material = new Material.WaterMaterial(this);
             }
 
             public void Build()

@@ -33,8 +33,6 @@ namespace ProjectWS.Engine.World
         uint loadedWorldID;
         public Dictionary<Vector2i, Chunk> chunks;
         public Dictionary<Vector2i, Chunk> activeChunks;
-        Dictionary<int, Chunk> areaIDtoChunk;
-        List<Data.Submesh> distanceSortedSubchunksBuffer;
         ChunkDistanceComparer chunkComparer;
         uint currentWorldSkyID = 0;
 
@@ -63,8 +61,6 @@ namespace ProjectWS.Engine.World
         {
             this.chunks = new Dictionary<Vector2i, Chunk>();
             this.activeChunks = new Dictionary<Vector2i, Chunk>();
-            this.areaIDtoChunk = new Dictionary<int, Chunk>();
-            this.distanceSortedSubchunksBuffer = new List<Data.Submesh>();
             this.chunkComparer = new ChunkDistanceComparer();
             this.loadedProps = new List<string>();
             this.props = new Dictionary<string, Prop>();
@@ -234,7 +230,7 @@ namespace ProjectWS.Engine.World
             Debug.Log($"Start: chunk {this.controller.chunkPosition} | world {this.controller.worldPosition}");
         }
 
-        public void LoadProp(Data.M3 data, uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
+        public void LoadProp(Data.M3.File data, uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
         {
             if (this.props.ContainsKey(data.filePath))
             {

@@ -1,14 +1,4 @@
-﻿using OpenTK.Mathematics;
-using ProjectWS.Engine.Data;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static ProjectWS.Engine.Data.Area;
-
-namespace ProjectWS.Engine.World
+﻿namespace ProjectWS.Engine.World
 {
     public class Environment
     {
@@ -70,7 +60,7 @@ namespace ProjectWS.Engine.World
             }
         }
 
-        void SwapSkyChunk(SubChunk subchunk)
+        void SwapSkyChunk(Data.Area.SubChunk subchunk)
         {
             Debug.Log("------------------------------");
             for (int i = 0; i < 4; i++)

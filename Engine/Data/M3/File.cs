@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.Engine.Data.M3
 {
-    public partial class M3
+    public class File
     {
         public string filePath;
         public string fileName;
@@ -13,7 +13,6 @@ namespace ProjectWS.Engine.Data
         public bool failedReading;
         public DataSource source;
         public int modelID = -1;
-        public bool isBuilt;
 
         public int headerSize;
         public uint version;
@@ -49,7 +48,7 @@ namespace ProjectWS.Engine.Data
         public Unk240[] unk240;
         public Geometry[] geometries;
 
-        public M3(string filePath, Data.GameData gameData)
+        public File(string filePath, Data.GameData gameData)
         {
             this.filePath = filePath;
             this.fileName = Path.GetFileNameWithoutExtension(filePath);
@@ -58,7 +57,7 @@ namespace ProjectWS.Engine.Data
             this.source = DataSource.GameData;
         }
 
-        public M3(string filePath)
+        public File(string filePath)
         {
             this.filePath = filePath;
             this.fileName = Path.GetFileNameWithoutExtension(filePath);
@@ -77,7 +76,7 @@ namespace ProjectWS.Engine.Data
             }
             else if (this.source == DataSource.Extracted)
             {
-                using (Stream str = File.OpenRead(this.filePath))
+                using (Stream str = System.IO.File.OpenRead(this.filePath))
                 {
                     Read(str);
                 }
@@ -165,24 +164,6 @@ namespace ProjectWS.Engine.Data
                 Debug.LogError($"M3 : Failed Reading File {this.filePath}");
                 Debug.LogException(e);
             }
-        }
-
-        public void Build()
-        {
-            if (this.geometries != null)
-            {
-                for (int i = 0; i < this.materials.Length; i++)
-                {
-                    this.materials[i].Build(this);
-                }
-
-                for (int i = 0; i < this.geometries.Length; i++)
-                {
-                    this.geometries[i].Build(this);
-                }
-            }
-
-            this.isBuilt = true;
         }
     }
 }
