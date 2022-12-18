@@ -21,8 +21,8 @@ namespace ProjectWS.Engine.Data
             public short unk12;
             public short unk13;
             public short unk14;
-            public AABB? bbA;
-            public AABB? bbB;
+            public AABB bbA;
+            public AABB bbB;
             public string? name;
 
             public override int GetSize()

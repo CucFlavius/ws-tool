@@ -17,7 +17,9 @@ namespace ProjectWS.Engine.Rendering
         int drawCalls;
         int boxVAO;
         int[]? boxIndices;
+        Matrix4[] boxInstances;
         Shader? lineShader;
+        const int BOX_INSTANCE_COUNT = 100;
 
         public struct Box
         {
@@ -54,6 +56,7 @@ namespace ProjectWS.Engine.Rendering
         {
             this.boxRenderQueue = new ConcurrentQueue<Box>();
             this.drawCalls = 0;
+            this.boxInstances = new Matrix4[100];
         }
 
         public void Initialize(Shader lineShader)
@@ -94,6 +97,14 @@ namespace ProjectWS.Engine.Rendering
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, this.boxIndices.Length * 4, this.boxIndices, BufferUsageHint.StaticDraw);
 
+            /*
+            // configure instanced array
+            // -------------------------
+            int buffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, buffer);
+            GL.BufferData(BufferTarget.ArrayBuffer, BOX_INSTANCE_COUNT * 64, this.boxInstances, BufferUsageHint.StaticDraw);
+            */
+
             GL.BindVertexArray(0);
         }
 
@@ -112,12 +123,32 @@ namespace ProjectWS.Engine.Rendering
 
         private void RenderBoxes(Renderer renderer, Viewport viewport)
         {
+            if (this.boxIndices == null) return;
+            /*
+            int idx = 0;
             for (int i = 0; i < this.boxRenderQueue?.Count; i++)
             {
                 if (this.boxRenderQueue.TryDequeue(out Box box))
                 {
-                    if (this.boxIndices == null) return;
+                    //this.boxInstances[idx] = box.matrix;
+                    this.lineShader?.SetMat4($"instances[{i}]", box.matrix);
+                    idx++;
+                }
+            }
 
+            this.lineShader?.SetColor4("lineColor", Vector4.One);
+
+            GL.BindVertexArray(this.boxVAO);
+            GL.DrawElementsInstanced(PrimitiveType.Lines, this.boxIndices.Length, DrawElementsType.UnsignedInt, IntPtr.Zero, BOX_INSTANCE_COUNT);
+            GL.BindVertexArray(0);
+
+            drawCalls++;
+            */
+
+            for (int i = 0; i < this.boxRenderQueue?.Count; i++)
+            {
+                if (this.boxRenderQueue.TryDequeue(out Box box))
+                {
                     this.lineShader?.SetMat4("model", box.matrix);
                     this.lineShader?.SetColor4("lineColor", box.color);
 
@@ -127,6 +158,7 @@ namespace ProjectWS.Engine.Rendering
                     drawCalls++;
                 }
             }
+
         }
 
         /// <summary>

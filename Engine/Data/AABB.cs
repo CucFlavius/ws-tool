@@ -33,6 +33,10 @@ namespace ProjectWS.Engine.Data
         public Vector3 extents;
         public Vector3 size;
 
+        public Matrix4 boxMat;      // A matrix that when applied to a 1,1,1 box will transform it into this aabb
+                                    // Used strictly for rendering the AABB for debug
+        public bool boxMatNeedsUpdate;
+
         public AABB(Vector3 center, Vector3 extents)
         {
             this.center = center;
@@ -40,6 +44,7 @@ namespace ProjectWS.Engine.Data
             this.size = this.extents * 2;
             this.min = center - extents;
             this.max = center + extents;
+            this.boxMatNeedsUpdate = true;
         }
 
         public AABB(BinaryReader br)
@@ -49,6 +54,7 @@ namespace ProjectWS.Engine.Data
             this.center = (this.min + this.max) / 2;
             this.extents = (this.max - this.min) / 2;
             this.size = this.max - this.min;
+            this.boxMatNeedsUpdate = true;
         }
 
         public AABB(AABB bounds)
@@ -58,6 +64,7 @@ namespace ProjectWS.Engine.Data
             this.center = bounds.center;
             this.extents = bounds.extents;
             this.size = bounds.size;
+            this.boxMatNeedsUpdate = true;
         }
 
         public Vector3[] GetCorners()
@@ -236,10 +243,10 @@ namespace ProjectWS.Engine.Data
         }
         */
 
-        public Vector2 RayBoxIntersect(Vector3 rayOrigin, Vector3 rayDir)
+        public Vector2 IntersectsRay(Ray ray)
         {
-            Vector3 tMin = (this.min - rayOrigin) / rayDir;
-            Vector3 tMax = (this.max - rayOrigin) / rayDir;
+            Vector3 tMin = (this.min - ray.origin) / ray.direction;
+            Vector3 tMax = (this.max - ray.origin) / ray.direction;
             Vector3 t1 = new Vector3(MathF.Min(tMin.X, tMax.X), MathF.Min(tMin.Y, tMax.Y), MathF.Min(tMin.Z, tMax.Z));
             Vector3 t2 = new Vector3(MathF.Max(tMin.X, tMax.X), MathF.Max(tMin.Y, tMax.Y), MathF.Max(tMin.Z, tMax.Z));
             float tNear = MathF.Max(MathF.Max(t1.X, t1.Y), t1.Z);
@@ -247,16 +254,13 @@ namespace ProjectWS.Engine.Data
             return new Vector2(tNear, tFar);
         }
 
-        public Vector2 RayBoxIntersect(Vector3 rayOrigin, Vector3 rayDir, World.Prop.Instance instance)
+        public Vector2 IntersectsRay(Ray ray, Vector3 worldPosition)
         {
-            Vector3 tMin = this.min;
-            Vector3 tMax = this.max;
+            Vector3 tMin = this.min + worldPosition;
+            Vector3 tMax = this.max + worldPosition;
 
-            tMin += instance.position;
-            tMax += instance.position;
-
-            tMin = (tMin - rayOrigin) / rayDir;
-            tMax = (tMax - rayOrigin) / rayDir;
+            tMin = (tMin - ray.origin) / ray.direction;
+            tMax = (tMax - ray.origin) / ray.direction;
             Vector3 t1 = new Vector3(MathF.Min(tMin.X, tMax.X), MathF.Min(tMin.Y, tMax.Y), MathF.Min(tMin.Z, tMax.Z));
             Vector3 t2 = new Vector3(MathF.Max(tMin.X, tMax.X), MathF.Max(tMin.Y, tMax.Y), MathF.Max(tMin.Z, tMax.Z));
             float tNear = MathF.Max(MathF.Max(t1.X, t1.Y), t1.Z);
@@ -264,6 +268,7 @@ namespace ProjectWS.Engine.Data
             return new Vector2(tNear, tFar);
         }
 
+        /*
         /// <summary>
         /// Check if ray intersects bounds
         /// This is faster than unity *.bounds.IntersectRay(ray)
@@ -288,7 +293,7 @@ namespace ProjectWS.Engine.Data
             float tNear = MathF.Max(MathF.Max(t1.X, t1.Y), t1.Z);
             float tFar = MathF.Min(MathF.Min(t2.X, t2.Y), t2.Z);
             return new Vector2(tNear, tFar);
-
+        */
             /*
             Vector3 rpos = rayOrigin;
             Vector3 rdir = rayDir;
@@ -318,7 +323,7 @@ namespace ProjectWS.Engine.Data
 
             return t9;
             */
-        }
+       //}
 
         /*
         public void RenderScreenBounds(Matrix4x4 transform, Color color, Matrix4x4 V, Matrix4x4 P)
@@ -337,13 +342,26 @@ namespace ProjectWS.Engine.Data
             min = new Vector2(min.X >= point.X ? point.X : min.X, min.Y >= point.Y ? point.Y : min.Y);
             max = new Vector2(max.X <= point.X ? point.X : max.X, max.Y <= point.Y ? point.Y : max.Y);
         }
-        /*
-        Vector3 WorldToScreenPoint(Vector3 point, Matrix4x4 V, Matrix4x4 P, Vector3 offset)
+
+        internal void Draw(Vector3 position, Vector3 scale, Vector4 color)
         {
-            Matrix4 MVP = P * V;
-            Vector3 screenPos = MVP.MultiplyPoint(point + offset);
-            return new Vector3(screenPos.X + 1f, screenPos.Y + 1f, screenPos.Z + 1f) / 2f;
+            if (this.boxMatNeedsUpdate)
+            {
+                var positionOffsetMat = Matrix4.CreateTranslation(new Vector3(position.X, this.center.Y + position.Y, position.Z));
+                var scaleMat = Matrix4.CreateScale(this.size * scale);
+                this.boxMat = scaleMat * positionOffsetMat;
+                this.boxMatNeedsUpdate = false;
+            }
+
+            Debug.DrawWireBox3D(this.boxMat, color);
         }
-        */
+        /*
+Vector3 WorldToScreenPoint(Vector3 point, Matrix4x4 V, Matrix4x4 P, Vector3 offset)
+{
+   Matrix4 MVP = P * V;
+   Vector3 screenPos = MVP.MultiplyPoint(point + offset);
+   return new Vector3(screenPos.X + 1f, screenPos.Y + 1f, screenPos.Z + 1f) / 2f;
+}
+*/
     }
 }

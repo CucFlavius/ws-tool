@@ -1,5 +1,6 @@
 ﻿using OpenTK.Mathematics;
 using ProjectWS.Engine.Components;
+using ProjectWS.Engine.Data;
 using ProjectWS.Engine.Objects.Gizmos;
 using ProjectWS.Engine.Rendering;
 
@@ -9,14 +10,13 @@ namespace ProjectWS.Engine
     {
         public Mode mode = Mode.Disabled;
         private WorldRenderer renderer;
-        public Vector3 rayOrigin;
-        public Vector3 rayVec;
+        public Ray mouseRay;
 
         public Vector3 terrainHitPoint;
         public Vector2i terrainSubchunkHit;
         public Vector2i areaHit;
-        public World.Prop propHit;
-        public World.Prop.Instance propInstanceHit;
+        public World.Prop? propHit;
+        public World.Prop.Instance? propInstanceHit;
 
         public enum Mode
         {
@@ -42,9 +42,7 @@ namespace ProjectWS.Engine
                 if (vp.interactive)
                 {
                     var mousePos = this.renderer.engine.input.GetMousePosition();
-                    this.rayVec = Unproject(vp, mousePos);
-                    this.rayOrigin = vp.mainCamera.transform.GetPosition();
-
+                    this.mouseRay = new Ray(vp.mainCamera.transform.GetPosition(), Unproject(vp, mousePos));
                 }
             }
 
@@ -70,7 +68,7 @@ namespace ProjectWS.Engine
                         {
                             if (sc.isVisible)
                             {
-                                Vector2 result = sc.AABB.RayBoxIntersect(this.rayOrigin, this.rayVec);
+                                Vector2 result = sc.AABB.IntersectsRay(this.mouseRay);
 
                                 if (result.X <= result.Y)
                                 {
@@ -89,7 +87,7 @@ namespace ProjectWS.Engine
                                         var v1 = sc.mesh.vertices[i1].position + subPos;
                                         var v2 = sc.mesh.vertices[i2].position + subPos;
                                         
-                                        if (RayTriangleIntersect(this.rayOrigin, this.rayVec, v0, v1, v2, out var point))
+                                        if (RayTriangleIntersect(this.mouseRay.origin, this.mouseRay.direction, v0, v1, v2, out var point))
                                         {
                                             this.renderer.brushParameters.isEnabled = true;
                                             this.terrainHitPoint = point;
@@ -115,7 +113,7 @@ namespace ProjectWS.Engine
 
                 foreach (var propItem in this.renderer.world.props)
                 {
-                    var bounds = propItem.Value.boundingBox;
+                    //var aabb = propItem.Value.aabb;
 
                     int instanceIndex = 0;
                     foreach (var instanceItem in propItem.Value.instances)
@@ -123,8 +121,24 @@ namespace ProjectWS.Engine
                         var instance = instanceItem.Value;
                         if (instance.visible)
                         {
-                            // TODO : OBB intersection check insted of AABB, also use the instance scale
-                            Vector2 result = bounds.RayBoxIntersect(this.rayOrigin, this.rayVec, instance);
+                            Vector2 intersection = instance.obb.IntersectsRay(this.mouseRay, instance.position, instance.scale);
+                            if (intersection.X <= intersection.Y)
+                            {
+                                this.propHit = propItem.Value;
+                                this.propInstanceHit = instance;
+
+                                // Exiting once a prop is found
+                                // TODO : Instead of drawing all labels, check if the prop triangles were hit, and check which hit is closer to the camera
+                                /*
+                                var labelText = $"{propItem.Value.data.fileName}\n" +
+                                    $"UUID:{instance.uuid} Instance:{instanceIndex}\n" +
+                                    $"P:{instance.position}\nR:{instance.rotationEuler}\nS:{instance.scale}";
+                                Debug.DrawLabel3D(labelText, instance.position, Vector4.One, true);
+                                */
+                                instance.obb.Draw(instance.transform, new Vector4(1, 1, 0, 1));
+                            }
+                            /*
+                            Vector2 result = instance.aabb.IntersectsRay(this.mouseRay, instance.position);
 
                             if (result.X <= result.Y)
                             {
@@ -139,28 +153,9 @@ namespace ProjectWS.Engine
                                     $"P:{instance.position}\nR:{instance.rotationEuler}\nS:{instance.scale}";
                                 Debug.DrawLabel3D(labelText, instance.position, Vector4.One, true);
 
-                                for (int i = 0; i < propItem.Value.data.bounds?.Length; i++)
-                                {
-                                    var bbA = propItem.Value.data.bounds[i].bbA;
-                                    if (bbA != null)
-                                    {
-                                        var positionOffsetMat = Matrix4.CreateTranslation(new Vector3(0, bbA.center.Y, 0));
-                                        var scaleMat = Matrix4.CreateScale(bbA.size);
-                                        var boundsMat = scaleMat * positionOffsetMat * instance.transform;
-                                        Debug.DrawWireBox3D(boundsMat, new Vector4(1, 1, 0, 1));
-                                    }
-                                    /*
-                                    var bbB = propItem.Value.data.bounds[i].bbB;
-                                    if (bbB != null)
-                                    {
-                                        var positionOffsetMat = Matrix4.CreateTranslation(new Vector3(0, bbB.center.Y, 0));
-                                        var scaleMat = Matrix4.CreateScale(bbB.size);
-                                        var boundsMat = scaleMat * positionOffsetMat * instance.transform;
-                                        Debug.DrawWireBox3D(boundsMat, new Vector4(0, 1, 1, 1));
-                                    }
-                                    */
-                                }
+                                instance.aabb.Draw(instance.position, instance.scale, new Vector4(0, 1, 1, 1));
                             }
+                            */
                         }
 
                         instanceIndex++;

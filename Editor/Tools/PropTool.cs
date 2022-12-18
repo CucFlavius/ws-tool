@@ -43,9 +43,6 @@ namespace ProjectWS.Editor.Tools
                 var propHit = this.worldRenderer.mousePick.propHit;
                 var propInstanceHit = this.worldRenderer.mousePick.propInstanceHit;
 
-                // TODO : Do stuff on mouse click etc
-                if (propHit != null)
-                    Debug.DrawLabel3D(propHit.data.fileName, propInstanceHit.position, Vector4.One, true);
             }
         }
     }

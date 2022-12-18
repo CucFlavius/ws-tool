@@ -1,4 +1,5 @@
 ﻿using OpenTK.Mathematics;
+using ProjectWS.Engine.Data;
 using ProjectWS.Engine.Data.Extensions;
 using ProjectWS.Engine.Materials;
 using ProjectWS.Engine.Rendering;
@@ -20,22 +21,22 @@ namespace ProjectWS.Engine.World
         public Dictionary<uint, bool> cullingResults;                // This indicates if instance is culled or not
         public List<uint> uniqueInstanceIDs;
 
-        public Data.M3 data;
-        public Data.AABB boundingBox;
+        public M3 data;
+        public AABB aabb;
         //Mesh[] meshes;
         List<uint> textureResources;
         public bool culled;                             // Determined if renderableInstances.Count == 0
 
-        public Prop(uint uuid, Data.M3 data, Vector3 position, Quaternion rotation, Vector3 scale/*, PropLighting lighting*/)
+        public Prop(uint uuid, M3 data, Vector3 position, Quaternion rotation, Vector3 scale/*, PropLighting lighting*/)
         {
             this.data = data;
             if (data.bounds != null)
             {
-                this.boundingBox = data.bounds[0].bbA;
+                this.aabb = data.bounds[0].bbA;
             }
             else
             {
-                this.boundingBox = new Data.AABB(Vector3.Zero, Vector3.One);
+                this.aabb = new Data.AABB(Vector3.Zero, Vector3.One);
             }
 
             this.cullingResults = new Dictionary<uint, bool>();
@@ -71,7 +72,11 @@ namespace ProjectWS.Engine.World
             //Matrix4 mat = Matrix4.Identity;
             //mat = mat.TRS(position, rotation, scale);
             //this.instances.Add(uuid, new Instance(mat, uuid));
-            this.instances.TryAdd(uuid, new Instance(position, rotation, scale, uuid));
+            var instance = new Instance(position, rotation, scale, uuid);
+            instance.obb = new OBB(this.aabb, rotation);
+            instance.aabb = instance.obb.GetEncapsulatingAABB();
+
+            this.instances.TryAdd(uuid, instance);
             this.uniqueInstanceIDs.Add(uuid);
             this.cullingResults.Add(uuid, false);
         }
@@ -120,6 +125,8 @@ namespace ProjectWS.Engine.World
             public Type type;
             public uint uuid;
             internal bool visible;
+            public OBB obb;
+            public AABB aabb;
 
             //public Rect screenSpace;
 
