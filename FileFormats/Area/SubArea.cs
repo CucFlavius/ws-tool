@@ -1,15 +1,12 @@
 ﻿using BCnEncoder.Decoder;
 using BCnEncoder.Shared;
-using MathUtils;
 using ProjectWS.FileFormats.Extensions;
 
-namespace ProjectWS.Engine.Data.Area
+namespace ProjectWS.FileFormats.Area
 {
-    public partial class SubChunk
+    public partial class SubArea
     {
         public int index;
-        public int X;
-        public int Y;
         public Flags flags;
         public ushort[] heightMap;
         public uint[] worldLayerIDs;
@@ -30,25 +27,6 @@ namespace ProjectWS.Engine.Data.Area
         public bool hasWater;
         public Water[] waters;
 
-        public Mesh mesh;
-        public Material.TerrainMaterial material;
-        public Matrix4 matrix;
-        public float minHeight;
-        public float maxHeight;
-        public AABB AABB;
-        public AABB cullingAABB;
-        public Vector3 centerPosition;
-        public volatile bool isVisible;
-        public bool isOccluded;
-        public bool isCulled;
-        public float distanceToCam;
-        //public Rect screenRect;
-        public bool rectBehindCamera;
-        public Vector2 subCoords;
-
-        // Reference //
-        public World.Chunk chunk;
-
         public enum MapMode
         {
             Raw,
@@ -56,11 +34,8 @@ namespace ProjectWS.Engine.Data.Area
             DXT5,
         }
 
-        public SubChunk(BinaryReader br, World.Chunk chunk, int index, int lod, bool areaCompressed)
+        public SubArea(BinaryReader br, int index, bool areaCompressed)
         {
-            this.minHeight = ushort.MaxValue;
-            this.maxHeight = 0;
-            this.chunk = chunk;
             uint subchunkSize = br.ReadUInt32();
             if (!areaCompressed)
                 subchunkSize = subchunkSize & 0xFFFFFF;
@@ -163,7 +138,7 @@ namespace ProjectWS.Engine.Data.Area
                 }
                 else
                 {
-                    Debug.LogError("Sky corners should not be null.");
+                    Console.WriteLine("Sky corners should not be null.");
                 }
             }
 
@@ -171,7 +146,7 @@ namespace ProjectWS.Engine.Data.Area
             // 4225 bytes
             if (this.flags.HasFlag(Flags.hasShadowMap))
             {
-                Debug.Log("Shadow map");
+                Console.WriteLine("Shadow map");
                 br.ReadBytes(65 * 65);
             }
 
@@ -217,7 +192,7 @@ namespace ProjectWS.Engine.Data.Area
             // Unknown Map DXT1 //
             if (this.flags.HasFlag(Flags.hasUnkMap0))
             {
-                Debug.Log("ye0");
+                Console.WriteLine("ye0");
                 br.ReadBytes(2312);
             }
 
@@ -260,7 +235,7 @@ namespace ProjectWS.Engine.Data.Area
             // Unknown Map DXT1 //
             if (this.flags.HasFlag(Flags.hasUnkMap3))
             {
-                Debug.Log("ye2");
+                Console.WriteLine("ye2");
                 br.ReadBytes(2312);
             }
 
@@ -334,7 +309,7 @@ namespace ProjectWS.Engine.Data.Area
             // Unknown Map DXT1 //
             if (this.flags.HasFlag(Flags.hasUnkMap4))
             {
-                Debug.Log("yeA");
+                Console.WriteLine("yeA");
                 br.ReadBytes(2312);
             }
 
@@ -380,37 +355,11 @@ namespace ProjectWS.Engine.Data.Area
 
             br.BaseStream.Position = subchunkSize + save;
 
-            if (lod == 0)
-                this.mesh = new Mesh(this.heightMap, this);
-            else if (lod == 1)
-                this.mesh = new Mesh(this.lodHeightMap, this);
-
-            this.material = new Material.TerrainMaterial(this.chunk, this);
-
-            // Calc Model Matrix
-            int chunkX = index % 16;
-            int chunkY = index / 16;
-            this.X = chunkX;
-            this.Y = chunkY;
-            this.subCoords = (this.chunk.coords * 16) + new Vector2(chunkX, chunkY);
-            Vector3 subchunkRelativePosition = new Vector3(chunkX * 32f, 0, chunkY * 32f);
-            this.matrix = Matrix4.CreateTranslation(subchunkRelativePosition);
-            this.matrix *= chunk.worldMatrix;
-
-            // Calc AABB
-            float hMin = this.mesh.minHeight;
-            float hMax = this.mesh.maxHeight;
-            this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, 16f);
-            this.AABB = new AABB(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
-            this.cullingAABB = new AABB(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
             GenerateMissingData();
         }
 
-        public SubChunk(World.Chunk chunk, int index, int lod)
+        public SubArea(int index)
         {
-            this.minHeight = ushort.MaxValue;
-            this.maxHeight = 0;
-            this.chunk = chunk;
             this.index = index;
 
             this.flags = Flags.hasHeightmap;
@@ -445,12 +394,6 @@ namespace ProjectWS.Engine.Data.Area
                 var weights = new byte[] { 0, 0, 0, 255 };
                 this.skyCorners[i] = new SkyCorner(ids, weights);
             }
-        }
-
-        public void Render(Shader terrainShader)
-        {
-            this.material.SetToShader(terrainShader);
-            this.mesh.Draw();
         }
 
         public void Write(BinaryWriter bw)
@@ -559,35 +502,6 @@ namespace ProjectWS.Engine.Data.Area
             bw.BaseStream.Position = subStart - 4;
             bw.Write(subSize);          // Size calculated
             bw.BaseStream.Position = subEnd;
-        }
-
-        public void Build()
-        {
-            // Mesh //
-            this.mesh.Build();
-
-            // Material //
-            this.material.Build();
-
-            // Water //
-            if (this.waters != null && this.hasWater)
-            {
-                for (int i = 0; i < this.waters.Length; i++)
-                {
-                    this.waters[i].Build();
-                }
-            }
-
-            // Curd test //
-            // Seem to be some sort of paths or poligonal areas
-            /*
-            for (int i = 0; i < this.curd.positionCount; i++)
-            {
-                GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.transform.position = this.curd.positions[i];
-                go.transform.localScale = Vector3.one * 10f;
-            }
-            */
         }
 
         void GenerateMissingData()

@@ -1,4 +1,4 @@
-﻿namespace ProjectWS.Engine.Data.Area
+﻿namespace ProjectWS.FileFormats.Area
 {
     public struct Header
     {

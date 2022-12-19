@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ProjectWS.Engine.World
 {
-    public class ChunkDistanceComparer : IComparer<Data.Area.SubChunk>
+    public class ChunkDistanceComparer : IComparer<SubChunk>
     {
-        public int Compare(Data.Area.SubChunk a, Data.Area.SubChunk b)
+        public int Compare(SubChunk a, SubChunk b)
         {
             if (a.distanceToCam > b.distanceToCam)
                 return 1;

@@ -1,15 +1,16 @@
 ﻿using MathUtils;
 using OpenTK.Graphics.OpenGL4;
+using ProjectWS.Engine.World;
 using System.Runtime.InteropServices;
 
 namespace ProjectWS.Engine.Mesh
 {
-    public class AreaMesh : Mesh
+    public class TerrainMesh : Mesh
     {
         const int VERTEXCOUNT = 361;
         const int VERTEXSIZE = 48;
 
-        Data.Area.SubChunk subChunk;
+        SubChunk subChunk;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct TerrainVertex
@@ -30,7 +31,7 @@ namespace ProjectWS.Engine.Mesh
         public int _vertexArrayObject;
         public int _vertexBufferObject;
 
-        public AreaMesh(ushort[] heightMap, Data.Area.SubChunk subChunk)
+        public TerrainMesh(ushort[] heightMap, SubChunk subChunk)
         {
             if (heightMap == null) return;
             this.subChunk = subChunk;
@@ -216,7 +217,7 @@ namespace ProjectWS.Engine.Mesh
                     float h = this.vertices[index].position.Y;
 
                     // Update height map
-                    this.subChunk.heightMap[(y + 1) * 19 + x + 1] = (ushort)((h + 2048.0f) * 8.0f);
+                    this.subChunk.subArea.heightMap[(y + 1) * 19 + x + 1] = (ushort)((h + 2048.0f) * 8.0f);
 
                     // Recalculate minmax
                     if (h < this.minHeight)

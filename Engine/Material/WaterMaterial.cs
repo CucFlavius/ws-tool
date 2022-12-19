@@ -12,10 +12,10 @@ namespace ProjectWS.Engine.Material
 {
     public class WaterMaterial : Material
     {
-        Data.Area.Water water;
+        FileFormats.Area.Water water;
         //WaterParameters wParams;
 
-        public WaterMaterial(Data.Area.Water water)
+        public WaterMaterial(FileFormats.Area.Water water)
         {
             this.water = water;
             //this.wParams = new WaterParameters();

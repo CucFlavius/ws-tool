@@ -1,7 +1,7 @@
 ﻿using MathUtils;
 using ProjectWS.FileFormats.Extensions;
 
-namespace ProjectWS.Engine.Data.Area
+namespace ProjectWS.FileFormats.Area
 {
     public struct Curd
     {

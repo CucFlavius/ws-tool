@@ -10,6 +10,7 @@ namespace ProjectWS.Engine.World
         public Data.GameData gameData;
         public World world;
         public Data.Block.FileEntry areaFileEntry;
+        public Data.Block.FileEntry areaLowFileEntry;
         public string areaFilePath;
         public Vector2 coords;
         Vector2 center;
@@ -26,8 +27,9 @@ namespace ProjectWS.Engine.World
         int[] lodQuadrants;
 
         public AABB AABB;
-        public Data.Area.Area area;
-        public Data.Area.Area areaLow;
+        public FileFormats.Area.File area;
+        public FileFormats.Area.File areaLow;
+        public List<SubChunk> subChunks;
 
         const float LABEL_DISTANCE = 300f;
 
@@ -67,6 +69,7 @@ namespace ProjectWS.Engine.World
             this.lowCoords = Utilities.CalculateLowCoords(coords);
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
             this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
+            this.subChunks = new List<SubChunk>();
         }
 
         /// <summary>
@@ -90,6 +93,7 @@ namespace ProjectWS.Engine.World
             this.lowCoords = Utilities.CalculateLowCoords(coords);
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
             this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
+            this.subChunks = new List<SubChunk>();
         }
 
         /// <summary>
@@ -111,6 +115,7 @@ namespace ProjectWS.Engine.World
             this.lowCoords = Utilities.CalculateLowCoords(coords);
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
             this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
+            this.subChunks = new List<SubChunk>();
         }
 
         public void EnqueueTerrainTask(TaskManager.TerrainTask task) => this.terrainTasks.Enqueue(task);
@@ -187,19 +192,20 @@ namespace ProjectWS.Engine.World
         {
             if (this.area == null) return;
 
-            if (this.area.subChunks == null) return;
+            if (this.area.subAreas == null) return;
 
-            for (int i = 0; i < this.area.subChunks.Count; i++)
+            for (int i = 0; i < this.subChunks.Count; i++)
             {
-                if (!this.area.subChunks[i].isVisible)
+                if (!this.subChunks[i].isVisible)
                     continue;
 
-                if (this.area.subChunks[i].mesh != null)
+                if (this.subChunks[i].terrainMesh != null)
                 {
                     Rendering.WorldRenderer.drawCalls++;
-                    shader.SetMat4("model", ref this.area.subChunks[i].matrix);
+                    shader.SetMat4("model", ref this.subChunks[i].matrix);
 
-                    this.area.subChunks[i].Render(shader);
+                    this.subChunks[i].terrainMaterial.SetToShader(shader);
+                    this.subChunks[i].terrainMesh.Draw();
                 }
             }
         }
@@ -208,16 +214,17 @@ namespace ProjectWS.Engine.World
         {
             if (this.area == null) return;
 
-            for (int i = 0; i < this.area.subChunks.Count; i++)
+            for (int i = 0; i < this.subChunks?.Count; i++)
             {
-                if (!this.area.subChunks[i].isVisible)
+                if (!this.subChunks[i].isVisible)
                     continue;
 
-                if (this.area.subChunks[i].hasWater)
+                if (this.area.subAreas[i].hasWater)
                 {
-                    for (int j = 0; j < this.area.subChunks[i].waters.Length; j++)
+                    for (int j = 0; j < this.subChunks[i].waterMeshes.Length; j++)
                     {
-                        this.area.subChunks[i].waters[j].Render(shader);
+                        this.subChunks[i].waterMaterials[j].SetToShader(shader);
+                        this.subChunks[i].waterMeshes[j].Draw();
                     }
                 }
             }
@@ -226,21 +233,21 @@ namespace ProjectWS.Engine.World
         public void RenderDebug()
         {
             if (this.area == null) return;
-            if (this.area.subChunks == null) return;
+            if (this.area.subAreas == null) return;
 
-            for (int i = 0; i < this.area.subChunks.Count; i++)
+            for (int i = 0; i < this.subChunks.Count; i++)
             {
-                if (this.area.subChunks[i] == null)
+                if (this.subChunks[i] == null)
                     continue;
 
-                if (!this.area.subChunks[i].isVisible)
+                if (!this.subChunks[i].isVisible)
                     continue;
 
-                if (this.area.subChunks[i].mesh != null)
+                if (this.subChunks[i].terrainMesh != null)
                 {
-                    var pos = this.area.subChunks[i].centerPosition;
+                    var pos = this.subChunks[i].centerPosition;
 
-                    if (this.area.subChunks[i].distanceToCam < LABEL_DISTANCE)
+                    if (this.subChunks[i].distanceToCam < LABEL_DISTANCE)
                     {
                         /*
                         if (this.world.controller.subchunkIndex == i)
@@ -330,7 +337,7 @@ namespace ProjectWS.Engine.World
             {
                 this.lod0Loading = true;
 
-                this.area = new Data.Area.Area(this, 0);
+                this.area = new FileFormats.Area.File(this.areaFilePath);
                 this.terrainTasks.Enqueue(new TaskManager.TerrainTask(this, 0, TaskManager.Task.JobType.Read));
             }
         }
@@ -362,23 +369,82 @@ namespace ProjectWS.Engine.World
             {
                 if (this.lod0Available)
                 {
-                    for (int i = 0; i < this.area.subChunks.Count; i++)
+                    for (int i = 0; i < this.subChunks?.Count; i++)
                     {
                         // Reset occlusion //
-                        this.area.subChunks[i].isOccluded = false;
+                        this.subChunks[i].isOccluded = false;
 
                         // Distance Culling //
-                        this.area.subChunks[i].distanceToCam = Math.Abs(Vector3.Distance(this.area.subChunks[i].centerPosition, camera.transform.GetPosition()));
-                        this.area.subChunks[i].isCulled = this.area.subChunks[i].distanceToCam > 1024f;  // 1024 being the distance between 2 chunks
+                        this.subChunks[i].distanceToCam = Math.Abs(Vector3.Distance(this.subChunks[i].centerPosition, camera.transform.GetPosition()));
+                        this.subChunks[i].isCulled = this.subChunks[i].distanceToCam > 1024f;  // 1024 being the distance between 2 chunks
 
                         // Frustum Culling //
-                        if (!this.area.subChunks[i].isCulled)
+                        if (!this.subChunks[i].isCulled)
                         {
-                            var aabb = this.area.subChunks[i].AABB;
-                            this.area.subChunks[i].isCulled = !camera.frustum.VolumeVsFrustum(aabb.center + (aabb.extents / 2), aabb.extents.X, aabb.extents.Y, aabb.extents.Z);
+                            var aabb = this.subChunks[i].AABB;
+                            this.subChunks[i].isCulled = !camera.frustum.VolumeVsFrustum(aabb.center + (aabb.extents / 2), aabb.extents.X, aabb.extents.Y, aabb.extents.Z);
                         }
                     }
                 }
+            }
+        }
+
+        internal void Build(int lod, int quadrant)
+        {
+            if (lod == 0)
+            {
+                int from = quadrant * (256 / 4);
+                int to = from + (256 / 4);
+                int total = this.area.subAreas.Count;
+                for (int i = from; i < to; i++)
+                {
+                    if (i < total)
+                    {
+                        // Terrain //
+                        this.subChunks[i].terrainMesh.Build();
+                        this.subChunks[i].terrainMaterial.Build();
+
+                        // Water //
+                        if (this.subChunks[i].waterMeshes != null)
+                        {
+                            for (int j = 0; j < this.subChunks[i].waterMeshes.Length; j++)
+                            {
+                                this.subChunks[i].waterMeshes[j].Build();
+                            }
+                        }
+                    }
+                }
+
+                this.lod0Available = true;
+            }
+            else if (lod == 1)
+            {
+                this.lod1Available = true;
+            }
+        }
+
+        internal void ReadArea(FileFormats.Area.File area)
+        {
+            using (Stream? str = this.gameData.GetFileData(areaFileEntry))
+                area.Read(str);
+
+            // Create subchunks
+            for (int i = 0; i < area.subAreas?.Count; i++)
+            {
+                this.subChunks.Add(new SubChunk(this, area.subAreas[i]));
+            }
+        }
+
+        internal void ReadAreaLow(FileFormats.Area.File areaLow)
+        {
+            using (Stream? str = this.gameData.GetFileData(areaLowFileEntry))
+                areaLow.Read(str);
+
+            for (int i = 0; i < areaLow.subAreas?.Count; i++)
+            {
+                var sc = new SubChunk(this, areaLow.subAreas[i]);
+                //sc.mesh = new TerrainMesh(areaLow.subAreas[i].lodHeightMap, areaLow.subAreas[i]);
+                //this.subChunksLow.Add(sc);
             }
         }
     }

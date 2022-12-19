@@ -27,7 +27,7 @@ namespace ProjectWS.Engine.TaskManager
                 case JobType.Read:
                     if (this.lod == 0)
                     {
-                        this.chunk.area.Read();
+                        this.chunk.ReadArea(this.chunk.area);
 
                         TerrainTask q0 = new TerrainTask(this.chunk, this.lod, JobType.Build);
                         q0.quadrant = 0;
@@ -44,7 +44,7 @@ namespace ProjectWS.Engine.TaskManager
                     }
                     else if (this.lod == 1)
                     {
-                        this.chunk.areaLow.Read();
+                        this.chunk.ReadAreaLow(this.chunk.areaLow);
 
                         TerrainTask q0 = new TerrainTask(this.chunk, this.lod, JobType.Build);
                         q0.quadrant = this.chunk.GetLoDQuadrant(0);
@@ -63,14 +63,7 @@ namespace ProjectWS.Engine.TaskManager
                 case JobType.Write:
                     break;
                 case JobType.Build:
-                    if (this.lod == 0)
-                    {
-                        this.chunk.area.Build(this.quadrant);
-                    }
-                    else if (this.lod == 1)
-                    {
-                        this.chunk.areaLow.Build(this.quadrant);
-                    }
+                    this.chunk.Build(this.lod, this.quadrant);
                     break;
                 case JobType.Destroy:
                     break;

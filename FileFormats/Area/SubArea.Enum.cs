@@ -1,6 +1,6 @@
-﻿namespace ProjectWS.Engine.Data.Area
+﻿namespace ProjectWS.FileFormats.Area
 {
-    public partial class SubChunk
+    public partial class SubArea
     {
         [System.Flags]
         public enum Flags : uint
@@ -37,6 +37,14 @@
             unk0x20000000 = 0x20000000,
             unk0x40000000 = 0x40000000,
             hasUnkMap4 = 0x80000000
+        }
+
+        public enum ChunkID : uint
+        {
+            PROP = 0x50524F50,
+            curD = 0x63757244,
+            WAtG = 0x57417447,
+            wbsP = 0x77627350,
         }
     }
 }

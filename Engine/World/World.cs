@@ -154,7 +154,7 @@ namespace ProjectWS.Engine.World
             string x = coords.X.ToString("X").ToLower();
             string y = coords.Y.ToString("X").ToLower();
             chunk.areaFilePath = $"{mapDir}\\{worldName}.{y}{x}.area";
-            var area = new Data.Area.Area(chunk, 0);
+            var area = new FileFormats.Area.File(chunk.areaFilePath);
             area.Create();
             area.AddProp("Art\\Dev\\gray_sphere.m3", new Vector3(256, -995, 254), Quaternion.Identity, 5.0f);
             area.Write();
@@ -493,9 +493,9 @@ namespace ProjectWS.Engine.World
                 {
                     if (item.Value.lod0Available)
                     {
-                        for (int i = 0; i < item.Value.area.subChunks.Count; i++)
+                        for (int i = 0; i < item.Value.subChunks.Count; i++)
                         {
-                            item.Value.area.subChunks[i].isVisible = !item.Value.area.subChunks[i].isCulled && !item.Value.area.subChunks[i].isOccluded;
+                            item.Value.subChunks[i].isVisible = !item.Value.subChunks[i].isCulled && !item.Value.subChunks[i].isOccluded;
                         }
                     }
                 }
@@ -584,55 +584,53 @@ namespace ProjectWS.Engine.World
                 {
                     if (item.Value.lod0Available)
                     {
-                        for (int i = 0; i < item.Value.area.subChunks.Count; i++)
+                        for (int i = 0; i < item.Value.subChunks.Count; i++)
                         {
-                            if (item.Value.area.subChunks[i].isVisible)
+                            if (item.Value.subChunks[i].isVisible)
                             {
-                                if (item.Value.area.subChunks[i].propUniqueIDs == null) continue;
-                                for (int j = 0; j < item.Value.area.subChunks[i].propUniqueIDs.Count; j++)
+                                if (item.Value.area.subAreas[i].propUniqueIDs == null) continue;
+                                for (int j = 0; j < item.Value.area.subAreas[i].propUniqueIDs.Count; j++)
                                 {
-                                    var uuid = item.Value.area.subChunks[i].propUniqueIDs[j];
+                                    var uuid = item.Value.area.subAreas[i].propUniqueIDs[j];
                                     var areaprop = item.Value.area.propLookup[uuid];
                                     var size = areaprop.placement.sizef;
                                     if (areaprop.path == null) continue;
 
-                                    if (item.Value.area.subChunks[i].distanceToCam / (size * areaprop.scale) < 200f)
+                                    if (item.Value.subChunks[i].distanceToCam / (size * areaprop.scale) < 200f)
                                     {
                                         if (areaprop.loadRequested)
                                         {
                                             if (this.props.TryGetValue(areaprop.path, out Prop? prop))
                                             {
                                                 prop.cullingResults[uuid] = true;
-                                                /*
-                                                if (prop.boundingBox != null)
-                                                {
-                                                    if (prop.instances.TryGetValue(uuid, out Prop.Instance? instance))
-                                                    {
-                                                        if (prop.boundingBox.GetScreenSpaceRect(instance.transform, out Rect rect, this.renderer.viewports[0]))
-                                                        {
-                                                            if (rect.height > 10f)
-                                                                prop.cullingResults[uuid] = true;
-                                                        }
-                                                    }
-                                                }
-                                                */
+                                                //if (prop.boundingBox != null)
+                                                //{
+                                                //    if (prop.instances.TryGetValue(uuid, out Prop.Instance? instance))
+                                                //    {
+                                                //        if (prop.boundingBox.GetScreenSpaceRect(instance.transform, out Rect rect, this.renderer.viewports[0]))
+                                                //        {
+                                                //            if (rect.height > 10f)
+                                                //                prop.cullingResults[uuid] = true;
+                                                //        }
+                                                //    }
+                                                //}
                                             }
                                         }
 
                                         if (!areaprop.loadRequested)
                                         {
                                             areaprop.loadRequested = true;
-                                            if (areaprop.modelType == Data.Area.Prop.ModelType.M3)
+                                            if (areaprop.modelType == FileFormats.Area.Prop.ModelType.M3)
                                             {
                                                 // Load M3 Model //
                                                 this.gameData.resourceManager.LoadM3Model(areaprop.path);
                                                 this.gameData.resourceManager.modelResources[areaprop.path].TryBuildObject(areaprop.uniqueID, areaprop.position, areaprop.rotation, areaprop.scale * Vector3.One);
                                             }
-                                            else if (areaprop.modelType == Data.Area.Prop.ModelType.I3)
+                                            else if (areaprop.modelType == FileFormats.Area.Prop.ModelType.I3)
                                             {
                                                 // Load I3 Model //
                                             }
-                                            else if (areaprop.modelType == Data.Area.Prop.ModelType.DGN)
+                                            else if (areaprop.modelType == FileFormats.Area.Prop.ModelType.DGN)
                                             {
                                                 // Load DGN File //
                                             }

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ProjectWS.Engine.Data.Area
+﻿namespace ProjectWS.FileFormats.Area
 {
     public struct Placement
     {

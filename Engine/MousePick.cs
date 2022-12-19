@@ -60,11 +60,11 @@ namespace ProjectWS.Engine
                 this.renderer.brushParameters.isEnabled = false;
                 foreach (var chunkItem in this.renderer.world.chunks)
                 {
-                    if (chunkItem.Value.area != null && chunkItem.Value.lod0Available && chunkItem.Value.area.subChunks != null)
+                    if (chunkItem.Value.area != null && chunkItem.Value.lod0Available && chunkItem.Value.area.subAreas != null)
                     {
                         var areaPos = chunkItem.Value.worldCoords;
 
-                        foreach (var sc in chunkItem.Value.area.subChunks)
+                        foreach (var sc in chunkItem.Value.subChunks)
                         {
                             if (sc.isVisible)
                             {
@@ -77,15 +77,15 @@ namespace ProjectWS.Engine
                                     this.terrainSubchunkHit = new Vector2i(sc.X, sc.Y);
                                     this.areaHit = chunkItem.Key;
 
-                                    for (int i = 0; i < sc.mesh.indexData.Length; i += 3)
+                                    for (int i = 0; i < sc.terrainMesh.indexData.Length; i += 3)
                                     {
-                                        uint i0 = sc.mesh.indexData[i];
-                                        uint i1 = sc.mesh.indexData[i + 1];
-                                        uint i2 = sc.mesh.indexData[i + 2];
+                                        uint i0 = sc.terrainMesh.indexData[i];
+                                        uint i1 = sc.terrainMesh.indexData[i + 1];
+                                        uint i2 = sc.terrainMesh.indexData[i + 2];
 
-                                        var v0 = sc.mesh.vertices[i0].position + subPos;
-                                        var v1 = sc.mesh.vertices[i1].position + subPos;
-                                        var v2 = sc.mesh.vertices[i2].position + subPos;
+                                        var v0 = sc.terrainMesh.vertices[i0].position + subPos;
+                                        var v1 = sc.terrainMesh.vertices[i1].position + subPos;
+                                        var v2 = sc.terrainMesh.vertices[i2].position + subPos;
                                         
                                         if (RayTriangleIntersect(this.mouseRay.origin, this.mouseRay.direction, v0, v1, v2, out var point))
                                         {

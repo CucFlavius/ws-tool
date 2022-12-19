@@ -4,15 +4,11 @@ using MathUtils;
 using ProjectWS.FileFormats.Extensions;
 using System.IO.Compression;
 
-namespace ProjectWS.Engine.Data.Area
+namespace ProjectWS.FileFormats.Area
 {
-    public class Area
+    public class File
     {
-        Block.FileEntry? fileEntry;
         string? filePath;
-        GameData? gameData;
-        World.Chunk? chunk;
-        int lod;
 
         public float minHeight;
         public float maxHeight;
@@ -20,7 +16,7 @@ namespace ProjectWS.Engine.Data.Area
         const uint AREA = 1095910721;
 
         public Header header;
-        public List<SubChunk>? subChunks;    // Variable size, not always 16*16
+        public List<SubArea>? subAreas;    // Variable size, not always 16*16
         public List<Prop>? props;
         public Dictionary<uint, Prop>? propLookup;
         public HashSet<uint>? renderedProps;
@@ -28,19 +24,7 @@ namespace ProjectWS.Engine.Data.Area
 
         public Action? onFinishedReading;
 
-        public Area(World.Chunk chunk, int lod)
-        {
-            this.lod = lod;
-            this.chunk = chunk;
-            this.fileEntry = chunk.areaFileEntry;
-            this.filePath = chunk.areaFilePath;
-            this.gameData = chunk.gameData;
-            this.minHeight = float.MaxValue;
-            this.maxHeight = float.MinValue;
-            renderedProps = new HashSet<uint>();
-        }
-
-        public Area(string filePath)
+        public File(string filePath)
         {
             this.minHeight = float.MaxValue;
             this.maxHeight = float.MinValue;
@@ -50,12 +34,12 @@ namespace ProjectWS.Engine.Data.Area
         public void Create()
         {
             this.header = new Header(1634887009, 0);
-            this.subChunks = new List<SubChunk>();
+            this.subAreas = new List<SubArea>();
             int idx = 0;
             for (int i = 0; i < 16 * 16; i++)
             {
-                SubChunk sub = new SubChunk(this.chunk, idx, 0);
-                this.subChunks.Add(sub);
+                SubArea sub = new SubArea(idx);
+                this.subAreas.Add(sub);
                 idx++;
             }
 
@@ -65,52 +49,14 @@ namespace ProjectWS.Engine.Data.Area
             ProcessForExport();
         }
 
-        public void Read()
+        public void Read(Stream str)
         {
-            //try
+            if (str == null) return;
+            if (str.Length == 0) return;
+
+            using (var br = new BinaryReader(str))
             {
-                if (this.fileEntry == null)
-                {
-                    if (this.filePath != null)
-                    {
-                        // Load project area
-                        using (Stream? str = File.OpenRead(this.filePath))
-                        {
-                            if (str == null) return;
-                            if (str.Length == 0) return;
-
-                            using (var br = new BinaryReader(str))
-                            {
-                                Read(br);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning("No File Path or Entry provided for Area.");
-                    }
-                }
-                else
-                {
-                    using (Stream? str = this.gameData.GetFileData(this.fileEntry))
-                    {
-                        if (str == null) return;
-                        if (str.Length == 0) return;
-
-                        using (var br = new BinaryReader(str))
-                        {
-                            Read(br);
-                        }
-                    }
-                }
-
-                if (this.onFinishedReading != null)
-                    this.onFinishedReading.Invoke();
-            }
-            //catch (Exception e)
-            {
-                //Debug.LogError("Exception at : " + this.chunk.gameData.archives["ClientData"].fileNames[this.fileEntry.hash] + " " + this.chunk.coords);
-                //Debug.LogException(e);
+                Read(br);
             }
         }
 
@@ -162,7 +108,7 @@ namespace ProjectWS.Engine.Data.Area
                                     }
                                 }
 
-                                this.subChunks = new List<SubChunk>();
+                                this.subAreas = new List<SubArea>();
 
                                 for (int i = 0; i < blobs.Count; i++)
                                 {
@@ -192,14 +138,8 @@ namespace ProjectWS.Engine.Data.Area
                                         {
                                             using (var decompDataBR = new BinaryReader(decompDataMS))
                                             {
-                                                var subchunk = new SubChunk(decompDataBR, this.chunk, i, this.lod, true);
-                                                this.subChunks.Add(subchunk);
-
-                                                // Calc minmax
-                                                if (subchunk.mesh.minHeight < this.minHeight)
-                                                    this.minHeight = subchunk.mesh.minHeight;
-                                                if (subchunk.mesh.maxHeight > this.maxHeight)
-                                                    this.maxHeight = subchunk.mesh.maxHeight;
+                                                var subchunk = new SubArea(decompDataBR, i, true);
+                                                this.subAreas.Add(subchunk);
                                             }
                                         }
                                     }
@@ -210,20 +150,14 @@ namespace ProjectWS.Engine.Data.Area
 
                             if (this.header.magic == area)
                             {
-                                this.subChunks = new List<SubChunk>();
+                                this.subAreas = new List<SubArea>();
                                 long save = br.BaseStream.Position;
                                 int index = 0;
 
                                 while (br.BaseStream.Position < save + chunkSize)
                                 {
-                                    var subchunk = new SubChunk(br, this.chunk, index++, this.lod, false);
-                                    this.subChunks.Add(subchunk);
-
-                                    // Calc minmax
-                                    if (subchunk.mesh.minHeight < this.minHeight)
-                                        this.minHeight = subchunk.mesh.minHeight;
-                                    if (subchunk.mesh.maxHeight > this.maxHeight)
-                                        this.maxHeight = subchunk.mesh.maxHeight;
+                                    var subchunk = new SubArea(br, index++, false);
+                                    this.subAreas.Add(subchunk);
                                 }
                             }
                         }
@@ -287,12 +221,12 @@ namespace ProjectWS.Engine.Data.Area
             this.propLookup.Add(p.uniqueID, p);
 
             // TODO : Determine which chunks it fits in
-            for (int i = 0; i < this.subChunks.Count; i++)
+            for (int i = 0; i < this.subAreas.Count; i++)
             {
-                if (this.subChunks[i].propUniqueIDs == null)
-                    this.subChunks[i].propUniqueIDs = new List<uint>();
+                if (this.subAreas[i].propUniqueIDs == null)
+                    this.subAreas[i].propUniqueIDs = new List<uint>();
 
-                this.subChunks[i].propUniqueIDs.Add(p.uniqueID);
+                this.subAreas[i].propUniqueIDs.Add(p.uniqueID);
             }
 
 
@@ -301,11 +235,11 @@ namespace ProjectWS.Engine.Data.Area
 
         public void ProcessForExport()
         {
-            foreach (var sc in subChunks)
+            foreach (var sc in subAreas)
             {
                 if (sc.blendMap != null)
                 {
-                    if (sc.blendMap.Length == 65 * 65 * 4 && sc.flags.HasFlag(SubChunk.Flags.hasBlendMapDXT))
+                    if (sc.blendMap.Length == 65 * 65 * 4 && sc.flags.HasFlag(SubArea.Flags.hasBlendMapDXT))
                     {
                         // Convert chunk to dxt
                         BcEncoder encoder = new BcEncoder();
@@ -320,23 +254,23 @@ namespace ProjectWS.Engine.Data.Area
 
         public void Write()
         {
-            if (File.Exists(this.filePath))
-                File.Delete(this.filePath);
+            if (System.IO.File.Exists(this.filePath))
+                System.IO.File.Delete(this.filePath);
 
-            using(var str = File.OpenWrite(this.filePath))
+            using(var str = System.IO.File.OpenWrite(this.filePath))
             {
                 using(BinaryWriter bw = new BinaryWriter(str))
                 {
                     this.header.Write(bw);
-                    if (this.subChunks != null && this.subChunks.Count > 0)
+                    if (this.subAreas != null && this.subAreas.Count > 0)
                     {
                         long chnkStart = bw.BaseStream.Position;
                         bw.Write((uint)1128812107); // CHNK
                         bw.Write((uint)0);          // Size pad
                         long subStart = bw.BaseStream.Position;
-                        for (int i = 0; i < this.subChunks.Count; i++)
+                        for (int i = 0; i < this.subAreas.Count; i++)
                         {
-                            this.subChunks[i].Write(bw);
+                            this.subAreas[i].Write(bw);
                         }
                         long subEnd = bw.BaseStream.Position;
                         uint chnkSize = (uint)(subEnd - subStart);
@@ -378,39 +312,6 @@ namespace ProjectWS.Engine.Data.Area
                     }
                     // TODO : write curts
                     // .. and other stuff
-                }
-            }
-        }
-
-        public void Build(int quadrant)
-        {
-            if (this.lod == 0)
-            {
-                int from = quadrant * (256 / 4);
-                int to = from + (256 / 4);
-                int total = this.subChunks.Count;
-                for (int i = from; i < to; i++)
-                {
-                    if (i < total)
-                    {
-                        this.subChunks[i].Build();
-                    }
-                }
-                this.chunk.lod0Available = true;
-
-                // Update AABB with new heights
-                float hMin = this.minHeight;
-                float hMax = this.maxHeight;
-                float dist = Math.Abs(hMax - hMin);
-                Vector3 center = this.chunk.worldCoords + new Vector3(0, (dist / 2f) + hMin, 0);
-                this.chunk.AABB = new AABB(center + new Vector3(256f, 0, -256f), new Vector3(512f, dist, 512f));
-            }
-            else if (this.lod == 1)
-            {
-                if (quadrant < this.subChunks.Count)
-                {
-                    this.subChunks[quadrant].Build();
-                    this.chunk.lod1Available = true;
                 }
             }
         }

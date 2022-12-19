@@ -27,7 +27,7 @@
 
             if (chunk == null) return;
             if (chunk.area == null) return;
-            if (chunk.area.subChunks == null)
+            if (chunk.area.subAreas == null)
             {
                 chunk.area.onFinishedReading = SubchunkChange;
                 return;
@@ -35,9 +35,9 @@
 
             if (this.world.controller.subchunkIndex >= 0)
             {
-                if (chunk.area.subChunks.Count > this.world.controller.subchunkIndex)
+                if (chunk.area.subAreas.Count > this.world.controller.subchunkIndex)
                 {
-                    var subchunk = chunk.area.subChunks[this.world.controller.subchunkIndex];
+                    var subchunk = chunk.area.subAreas[this.world.controller.subchunkIndex];
                     //var pos = subchunk.centerPosition;
                     //this.world.subchunkGizmo.transform.SetPosition(new Vector3(pos));
                     //this.world.subchunkGizmo.transform.SetScale(Vector3.One * 32.0f);
@@ -60,7 +60,7 @@
             }
         }
 
-        void SwapSkyChunk(Data.Area.SubChunk subchunk)
+        void SwapSkyChunk(FileFormats.Area.SubArea subchunk)
         {
             Debug.Log("------------------------------");
             for (int i = 0; i < 4; i++)

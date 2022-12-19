@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Libs\BCnEnc.Net\BCnEncoder.csproj" />
     <ProjectReference Include="..\MathUtils\MathUtils.csproj" />
   </ItemGroup>
 

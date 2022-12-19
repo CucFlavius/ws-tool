@@ -1,6 +1,4 @@
-﻿using ProjectWS.Engine.Material;
-
-namespace ProjectWS.Engine.Data.Area
+﻿namespace ProjectWS.FileFormats.Area
 {
     public partial class Water
     {
@@ -22,12 +20,11 @@ namespace ProjectWS.Engine.Data.Area
         public uint unk9;
         public uint unk10;
 
-        public Mesh mesh;
-        public WaterMaterial material;
+        public WaterVertex[]? vertices;
+        public uint[]? indexData;
 
         public Water(BinaryReader br)
         {
-            this.mesh = new Mesh();
             this.worldWaterTypeID = br.ReadUInt32();
             this.waterLayerIDs = new uint[4];
             for (int i = 0; i < 4; i++)
@@ -50,32 +47,18 @@ namespace ProjectWS.Engine.Data.Area
             this.unk9 = br.ReadUInt32();
             this.unk10 = br.ReadUInt32();
 
-            this.mesh.indexData = new uint[this.indexCount];
+            this.indexData = new uint[this.indexCount];
             for (int i = 0; i < this.indexCount; i++)
             {
-                this.mesh.indexData[i] = br.ReadUInt32();
+                this.indexData[i] = br.ReadUInt32();
             }
 
-            this.mesh.vertices = new Mesh.WaterVertex[this.vertexCount];
+            this.vertices = new WaterVertex[this.vertexCount];
 
             for (int i = 0; i < this.vertexCount; i++)
             {
-                this.mesh.vertices[i] = new Mesh.WaterVertex(br);
+                this.vertices[i] = new WaterVertex(br);
             }
-
-            this.material = new Material.WaterMaterial(this);
-        }
-
-        public void Build()
-        {
-            this.material.Build();
-            this.mesh.Build();
-        }
-
-        public void Render(Shader shader)
-        {
-            this.material.SetToShader(shader);
-            this.mesh.Draw();
         }
     }
 }

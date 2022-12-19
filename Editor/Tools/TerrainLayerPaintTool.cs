@@ -72,23 +72,20 @@ namespace ProjectWS.Editor.Tools
 
                         var areaPos = chunk.worldCoords.Xz;
 
-                        for (int s = 0; s < chunk?.area?.subChunks?.Count; s++)
+                        for (int s = 0; s < chunk.subChunks.Count; s++)
                         {
-                            var scDist = Vector2.Distance(chunk.area.subChunks[s].centerPosition.Xz, hitPoint.Xz);
+                            var scDist = Vector2.Distance(chunk.subChunks[s].centerPosition.Xz, hitPoint.Xz);
                             // TODO: need to check better if the brush overlaps the subchunks, otherwise might run into gaps again
                             // (do square overlap math between brush square and subchunks squares (check if any of the sc corners are inside br square))
                             // (do ^ same thing to area squares)
                             if (scDist > brushSize * 2)
                                 continue;
 
-                            var sc = chunk.area.subChunks[s];
+                            var sc = chunk.subChunks[s];
                             var subPos = new Vector2(sc.X * 32f, sc.Y * 32f) + areaPos;
 
                             if (sc.X < 0 || sc.X > 15 || sc.Y < 0 || sc.Y > 15)
                                 continue;   // Handle painting adjacent area
-
-                            var subchunkIndex = s;
-                            var subchunk = chunk.area.subChunks[subchunkIndex];
 
                             for (int x = 0; x < 65; x++)
                             {
@@ -108,15 +105,15 @@ namespace ProjectWS.Editor.Tools
                                     // Calculate weights
                                     for (int l = 0; l < 4; l++)
                                     {
-                                        perc[l] = subchunk.blendMap[i + l] / 255f;
+                                        perc[l] = sc.subArea.blendMap[i + l] / 255f;
                                     }
 
                                     float added = offs;// - subchunk.blendMap[i + this.layer];
 
-                                    if (subchunk.blendMap[i + this.layer] + offs >= 255)
-                                        subchunk.blendMap[i + this.layer] = 255;
+                                    if (sc.subArea.blendMap[i + this.layer] + offs >= 255)
+                                        sc.subArea.blendMap[i + this.layer] = 255;
                                     else
-                                        subchunk.blendMap[i + this.layer] += offs;
+                                        sc.subArea.blendMap[i + this.layer] += offs;
 
 
                                     // Redistribute weights
@@ -124,7 +121,7 @@ namespace ProjectWS.Editor.Tools
                                     {
                                         if (k != this.layer)
                                         {
-                                            subchunk.blendMap[i + k] -= (byte)(added * perc[k]);
+                                            sc.subArea.blendMap[i + k] -= (byte)(added * perc[k]);
                                         }
                                     }
 
@@ -139,7 +136,7 @@ namespace ProjectWS.Editor.Tools
                                 }
                             }
 
-                            subchunk.material.UpdateBlendMap(subchunk.blendMap);
+                            sc.terrainMaterial.UpdateBlendMap(sc.subArea.blendMap);
                             /*
 
                             for (int v = 0; v < subchunk.mesh.vertices.Length; v++)

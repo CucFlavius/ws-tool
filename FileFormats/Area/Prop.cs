@@ -1,7 +1,7 @@
 ﻿using MathUtils;
 using ProjectWS.FileFormats.Extensions;
 
-namespace ProjectWS.Engine.Data.Area
+namespace ProjectWS.FileFormats.Area
 {
     public class Prop
     {
@@ -25,7 +25,7 @@ namespace ProjectWS.Engine.Data.Area
         public int unk11;
         public int color2;
         public int unk12;
-        public string path;
+        public string? path;
 
         public bool loadRequested;
 

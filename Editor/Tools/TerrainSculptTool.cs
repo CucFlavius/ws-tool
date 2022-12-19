@@ -83,51 +83,51 @@ namespace ProjectWS.Editor.Tools
 
                         var areaPos = chunk.worldCoords.Xz;
 
-                        for (int s = 0; s < chunk.area?.subChunks?.Count; s++)
+                        for (int s = 0; s < chunk.subChunks.Count; s++)
                         {
-                            var scDist = Vector2.Distance(chunk.area.subChunks[s].centerPosition.Xz, hitPoint.Xz);
+                            var scDist = Vector2.Distance(chunk.subChunks[s].centerPosition.Xz, hitPoint.Xz);
                             // TODO: need to check better if the brush overlaps the subchunks, otherwise might run into gaps again
                             // (do square overlap math between brush square and subchunks squares (check if any of the sc corners are inside br square))
                             // (do ^ same thing to area squares)
                             if (scDist > brushSize * 2)
                                 continue;
 
-                            var sc = chunk.area.subChunks[s];
+                            var sc = chunk.subChunks[s];
                             var subPos = new Vector2(sc.X * 32f, sc.Y * 32f) + areaPos;
 
                             if (sc.X < 0 || sc.X > 15 || sc.Y < 0 || sc.Y > 15)
                                 continue;   // Handle painting adjacent area
 
                             var subchunkIndex = s;
-                            var subchunk = chunk.area.subChunks[subchunkIndex];
-                            for (int v = 0; v < subchunk.mesh.vertices.Length; v++)
+                            var subchunk = chunk.subChunks[subchunkIndex];
+                            for (int v = 0; v < subchunk.terrainMesh.vertices.Length; v++)
                             {
-                                float dist = Vector2.Distance(subchunk.mesh.vertices[v].position.Xz + subPos, hitPoint.Xz);
+                                float dist = Vector2.Distance(subchunk.terrainMesh.vertices[v].position.Xz + subPos, hitPoint.Xz);
                                 float brush = 1.0f - Math.Clamp(dist * (1.0f / brushSize), 0.0f, 1.0f);
 
                                 if (this.mode == Mode.RaiseLower)
                                 {
-                                    subchunk.mesh.vertices[v].position.Y += brush;
+                                    subchunk.terrainMesh.vertices[v].position.Y += brush;
                                 }
                                 else if (this.mode == Mode.Flatten)
                                 {
                                     // float h = ((heightMap[(y + 1) * 19 + x + 1] & 0x7FFF) / 8.0f) - 2048.0f;
-                                    if (subchunk.mesh.vertices[v].position.Y > flat)
+                                    if (subchunk.terrainMesh.vertices[v].position.Y > flat)
                                     {
-                                        subchunk.mesh.vertices[v].position.Y -= brush;
-                                        if (subchunk.mesh.vertices[v].position.Y < flat)
-                                            subchunk.mesh.vertices[v].position.Y = flat;
+                                        subchunk.terrainMesh.vertices[v].position.Y -= brush;
+                                        if (subchunk.terrainMesh.vertices[v].position.Y < flat)
+                                            subchunk.terrainMesh.vertices[v].position.Y = flat;
                                     }
-                                    else if (subchunk.mesh.vertices[v].position.Y < flat)
+                                    else if (subchunk.terrainMesh.vertices[v].position.Y < flat)
                                     {
-                                        subchunk.mesh.vertices[v].position.Y += brush;
-                                        if (subchunk.mesh.vertices[v].position.Y > flat)
-                                            subchunk.mesh.vertices[v].position.Y = flat;
+                                        subchunk.terrainMesh.vertices[v].position.Y += brush;
+                                        if (subchunk.terrainMesh.vertices[v].position.Y > flat)
+                                            subchunk.terrainMesh.vertices[v].position.Y = flat;
                                     }
                                 }
                             }
 
-                            subchunk.mesh.ReBuild();
+                            subchunk.terrainMesh.ReBuild();
                         }
                     }
                 }

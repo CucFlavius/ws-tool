@@ -1,6 +1,6 @@
-﻿namespace ProjectWS.Engine.Data.Area
+﻿namespace ProjectWS.FileFormats.Area
 {
-    public partial class SubChunk
+    public partial class SubArea
     {
         public class SkyCorner
         {

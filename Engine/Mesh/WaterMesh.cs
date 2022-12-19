@@ -6,23 +6,26 @@ namespace ProjectWS.Engine.Mesh
     {
         const int VERTEXSIZE = 104;
 
-        public Data.Area.Water.Mesh.WaterVertex[]? vertices;
-
         public float minHeight;
         public float maxHeight;
 
-        public uint[]? indexData;
         public bool isBuilt;
         public int vertexArrayObject;
+        private FileFormats.Area.Water water;
+
+        public WaterMesh(FileFormats.Area.Water water)
+        {
+            this.water = water;
+        }
 
         public override void Build()
         {
             // Some subchunks don't exist
-            if (this.vertices == null) return;
+            if (this.water.vertices == null || this.water.indexData == null) return;
 
             int _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, this.vertices.Length * VERTEXSIZE, this.vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, this.water.vertices.Length * VERTEXSIZE, this.water.vertices, BufferUsageHint.StaticDraw);
 
             vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(vertexArrayObject);
@@ -49,7 +52,7 @@ namespace ProjectWS.Engine.Mesh
 
             int _elementBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, this.indexData.Length * 4, indexData, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, this.water.indexData.Length * 4, this.water.indexData, BufferUsageHint.StaticDraw);
 
             GL.BindVertexArray(0);
 
@@ -61,7 +64,7 @@ namespace ProjectWS.Engine.Mesh
             if (!this.isBuilt) return;
 
             GL.BindVertexArray(vertexArrayObject);
-            GL.DrawElements(BeginMode.Triangles, this.indexData.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, this.water.indexData.Length, DrawElementsType.UnsignedInt, 0);
         }
 
         public override void DrawInstanced()

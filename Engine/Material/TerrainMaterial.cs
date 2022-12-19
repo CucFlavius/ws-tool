@@ -7,7 +7,7 @@ namespace ProjectWS.Engine.Material
     public class TerrainMaterial : Material
     {
         World.Chunk chunk;
-        Data.Area.SubChunk subChunkData;
+        FileFormats.Area.SubArea subChunkData;
         uint blendMapPtr;
         uint colorMapPtr;
         uint unkMap2Ptr;
@@ -28,7 +28,7 @@ namespace ProjectWS.Engine.Material
 
         TerrainParameters tParams;
 
-        public TerrainMaterial(World.Chunk chunk, Data.Area.SubChunk subChunkData)
+        public TerrainMaterial(World.Chunk chunk, FileFormats.Area.SubArea subChunkData)
         {
             this.chunk = chunk;
             this.tParams = new TerrainParameters();
@@ -43,16 +43,16 @@ namespace ProjectWS.Engine.Material
 
             this.texturePtrs = new Dictionary<string, uint>();
 
-            if (this.subChunkData.blendMapMode == Data.Area.SubChunk.MapMode.DXT1)
+            if (this.subChunkData.blendMapMode == FileFormats.Area.SubArea.MapMode.DXT1)
                 BuildMap(this.subChunkData.blendMap, InternalFormat.CompressedRgbaS3tcDxt1Ext, out blendMapPtr);
-            else if (this.subChunkData.blendMapMode == Data.Area.SubChunk.MapMode.Raw)
+            else if (this.subChunkData.blendMapMode == FileFormats.Area.SubArea.MapMode.Raw)
                 BuildMap(this.subChunkData.blendMap, InternalFormat.Rgba, out blendMapPtr);
 
             BuildMap(this.subChunkData.unknownMap2, InternalFormat.CompressedRgbaS3tcDxt1Ext, out unkMap2Ptr);
 
-            if (this.subChunkData.colorMapMode == Data.Area.SubChunk.MapMode.DXT5)
+            if (this.subChunkData.colorMapMode == FileFormats.Area.SubArea.MapMode.DXT5)
                 BuildMap(this.subChunkData.colorMap, InternalFormat.CompressedRgbaS3tcDxt5Ext, out colorMapPtr);
-            else if (this.subChunkData.colorMapMode == Data.Area.SubChunk.MapMode.Raw)
+            else if (this.subChunkData.colorMapMode == FileFormats.Area.SubArea.MapMode.Raw)
                 BuildMap(this.subChunkData.colorMap, InternalFormat.Rgba, out colorMapPtr);
 
             if (this.subChunkData.worldLayerIDs != null)
