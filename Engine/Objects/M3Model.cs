@@ -1,6 +1,6 @@
 ﻿using MathUtils;
 using ProjectWS.Engine.Material;
-using ProjectWS.Engine.Mesh;
+using ProjectWS.Engine.World;
 
 namespace ProjectWS.Engine.Objects
 {

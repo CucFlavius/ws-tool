@@ -286,5 +286,33 @@ namespace ProjectWS.Engine.Mesh
             }
             return vector3out;
         }
+
+        public override bool MeshIntersectsRay(Ray ray, Vector3 wPos, Quaternion wRot, Vector3 wScale, ref Vector3[] points)
+        {
+            bool haveIntersection = false;
+            int triIdx = 0;
+
+            for (int i = 0; i < this.indexData.Length; i += 3)
+            {
+                uint i0 = this.indexData[i];
+                uint i1 = this.indexData[i + 1];
+                uint i2 = this.indexData[i + 2];
+
+                var v0 = this.vertices[i0].position + wPos;
+                var v1 = this.vertices[i1].position + wPos;
+                var v2 = this.vertices[i2].position + wPos;
+
+                if (this.TriangleIntersectsRay(ray, v0, v1, v2, out points[triIdx]))
+                {
+                    triIdx++;
+                    haveIntersection = true;
+
+                    if (triIdx >= 4)
+                        break;
+                }
+            }
+
+            return haveIntersection;
+        }
     }
 }

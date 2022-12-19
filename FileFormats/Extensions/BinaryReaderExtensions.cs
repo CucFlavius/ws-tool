@@ -12,7 +12,7 @@ namespace ProjectWS.FileFormats.Extensions
 
         public static Vector3 ReadVector3_16Bit(this BinaryReader br)
         {
-            return new Vector3(br.ReadInt16(), br.ReadInt16(), -br.ReadInt16()) / 1024.0f;
+            return new Vector3(br.ReadInt16(), br.ReadInt16(), br.ReadInt16()) / 1024.0f;
         }
 
         public static Vector3 ReadVector3_8BitNormalized(this BinaryReader br)

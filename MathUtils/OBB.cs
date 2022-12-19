@@ -1,4 +1,5 @@
 ﻿using MathUtils;
+using System.Linq.Expressions;
 
 namespace MathUtils
 {
@@ -40,9 +41,10 @@ namespace MathUtils
             Quaternion inverseOrientation = Quaternion.Invert(this.orientation);
             rayOrigin = inverseOrientation * rayOrigin;
             rayDirection = inverseOrientation * rayDirection;
+            rayOrigin /= scale;
 
-            var min = (this.center - ((this.size * scale) * 0.5f));
-            var max = (this.center + ((this.size * scale) * 0.5f));
+            var min = (this.center - ((this.size) * 0.5f));
+            var max = (this.center + ((this.size) * 0.5f));
 
             Vector3 tMin = (min - rayOrigin) / rayDirection;
             Vector3 tMax = (max - rayOrigin) / rayDirection;
@@ -53,26 +55,26 @@ namespace MathUtils
             return new Vector2(tNear, tFar);
         }
 
+        Vector3[] cornerBuffer = new Vector3[8];
         public AABB GetEncapsulatingAABB()
         {
             // Transform the OBB's eight corner vertices into world space
-            Vector3[] vertices = new Vector3[8];
             for (int i = 0; i < 8; i++)
             {
-                vertices[i] = this.orientation * ((this.size * 0.5f) * GetVertexSigns(i)) + this.center;
+                this.cornerBuffer[i] = this.orientation * ((this.size * 0.5f) * GetVertexSigns(i)) + this.center;
             }
 
             // Find the minimum and maximum x, y, and z coordinates
-            Vector3 min = vertices[0];
-            Vector3 max = vertices[0];
+            Vector3 min = this.cornerBuffer[0];
+            Vector3 max = this.cornerBuffer[0];
             for (int i = 1; i < 8; i++)
             {
-                min.X = Math.Min(min.X, vertices[i].X);
-                min.Y = Math.Min(min.Y, vertices[i].Y);
-                min.Z = Math.Min(min.Z, vertices[i].Z);
-                max.X = Math.Max(max.X, vertices[i].X);
-                max.Y = Math.Max(max.Y, vertices[i].Y);
-                max.Z = Math.Max(max.Z, vertices[i].Z);
+                min.X = Math.Min(min.X, this.cornerBuffer[i].X);
+                min.Y = Math.Min(min.Y, this.cornerBuffer[i].Y);
+                min.Z = Math.Min(min.Z, this.cornerBuffer[i].Z);
+                max.X = Math.Max(max.X, this.cornerBuffer[i].X);
+                max.Y = Math.Max(max.Y, this.cornerBuffer[i].Y);
+                max.Z = Math.Max(max.Z, this.cornerBuffer[i].Z);
             }
 
             // Return the AABB as a Bounds object

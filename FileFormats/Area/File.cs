@@ -10,8 +10,6 @@ namespace ProjectWS.FileFormats.Area
     {
         string? filePath;
 
-        public float minHeight;
-        public float maxHeight;
         const uint area = 1634887009;
         const uint AREA = 1095910721;
 
@@ -22,12 +20,8 @@ namespace ProjectWS.FileFormats.Area
         public HashSet<uint>? renderedProps;
         public Curt[]? curts;
 
-        public Action? onFinishedReading;
-
         public File(string filePath)
         {
-            this.minHeight = float.MaxValue;
-            this.maxHeight = float.MinValue;
             this.filePath = filePath;
         }
 

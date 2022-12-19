@@ -224,12 +224,12 @@ namespace StatisticalAnalyzer
 
             foreach (var filePath in areaFiles)
             {
-                /*
-                var area = new ProjectWS.Engine.Data.Area(filePath);
-                area.Read();
-                for (int i = 0; i < area.subChunks.Count; i++)
+                var area = new ProjectWS.FileFormats.Area.File(filePath);
+                using(var str = File.OpenRead(filePath))
+                    area.Read(str);
+                for (int i = 0; i < area.subAreas?.Count; i++)
                 {
-                    var check = area.subChunks[i].
+                    var check = area.subAreas[i].index;
                     //Console.WriteLine(filePath);
 
                     if (!collected.Contains(check))
@@ -237,7 +237,6 @@ namespace StatisticalAnalyzer
                         collected.Add(check);
                     }
                 }
-                */
             }
 
             foreach (var item in collected)

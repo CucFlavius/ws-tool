@@ -6,8 +6,6 @@ namespace ProjectWS.FileFormats.M3
 {
     public partial class Submesh : ArrayData
     {
-        #region Variables 
-
         public uint startIndex;
         public uint startVertex;
         public uint indexCount;
@@ -41,11 +39,6 @@ namespace ProjectWS.FileFormats.M3
         public Vector3 size;
         public Vector3 offset;
         public Vector3 unk18;
-
-        public uint[]? indexData;
-        public byte[]? vertexData;
-
-        #endregion
 
         public override void Read(BinaryReader br, long startOffset)
         {

@@ -10,15 +10,17 @@ namespace ProjectWS.Engine.World
         public bool isOccluded;
         public bool isCulled;
         public Chunk chunk;
+
         public FileFormats.Area.SubArea subArea;
+
         public TerrainMesh terrainMesh;
         public WaterMesh[] waterMeshes;
         public TerrainMaterial terrainMaterial;
         public WaterMaterial[] waterMaterials;
+
         public AABB AABB;
         public AABB cullingAABB;
         public Vector3 centerPosition;
-        int index;
         public int X;
         public int Y;
         public Matrix4 matrix;
@@ -29,7 +31,6 @@ namespace ProjectWS.Engine.World
         {
             this.chunk = chunk;
             this.subArea = subArea;
-            this.index = subArea.index;
 
             this.terrainMesh = new TerrainMesh(this.subArea.heightMap, this);
             this.terrainMaterial = new Material.TerrainMaterial(this.chunk, this.subArea);
@@ -49,14 +50,14 @@ namespace ProjectWS.Engine.World
             }
 
             // Calc minmax
-            if (this.terrainMesh.minHeight < this.chunk.area.minHeight)
-                this.chunk.area.minHeight = this.terrainMesh.minHeight;
-            if (this.terrainMesh.maxHeight > this.chunk.area.maxHeight)
-                this.chunk.area.maxHeight = this.terrainMesh.maxHeight;
+            if (this.terrainMesh.minHeight < this.chunk.minHeight)
+                this.chunk.minHeight = this.terrainMesh.minHeight;
+            if (this.terrainMesh.maxHeight > this.chunk.maxHeight)
+                this.chunk.maxHeight = this.terrainMesh.maxHeight;
 
             // Calc Model Matrix
-            int chunkX = index % 16;
-            int chunkY = index / 16;
+            int chunkX = subArea.index % 16;
+            int chunkY = subArea.index / 16;
             this.X = chunkX;
             this.Y = chunkY;
             this.subCoords = (this.chunk.coords * 16) + new Vector2(chunkX, chunkY);
@@ -70,7 +71,6 @@ namespace ProjectWS.Engine.World
             this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, 16f);
             this.AABB = new AABB(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
             this.cullingAABB = new AABB(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
-
         }
     }
 }

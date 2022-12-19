@@ -25,6 +25,8 @@ namespace ProjectWS.Engine.World
         public bool lod1Available;
         public bool lod1Loading;
         int[] lodQuadrants;
+        public float minHeight;
+        public float maxHeight;
 
         public AABB AABB;
         public FileFormats.Area.File area;
@@ -70,6 +72,8 @@ namespace ProjectWS.Engine.World
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
             this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
             this.subChunks = new List<SubChunk>();
+            this.minHeight = float.MaxValue;
+            this.maxHeight = float.MinValue;
         }
 
         /// <summary>
@@ -94,6 +98,8 @@ namespace ProjectWS.Engine.World
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
             this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
             this.subChunks = new List<SubChunk>();
+            this.minHeight = float.MaxValue;
+            this.maxHeight = float.MinValue;
         }
 
         /// <summary>
@@ -116,6 +122,8 @@ namespace ProjectWS.Engine.World
             this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
             this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
             this.subChunks = new List<SubChunk>();
+            this.minHeight = float.MaxValue;
+            this.maxHeight = float.MinValue;
         }
 
         public void EnqueueTerrainTask(TaskManager.TerrainTask task) => this.terrainTasks.Enqueue(task);

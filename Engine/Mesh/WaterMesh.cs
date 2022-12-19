@@ -1,4 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using MathUtils;
+using OpenTK.Graphics.OpenGL4;
 
 namespace ProjectWS.Engine.Mesh
 {
@@ -68,6 +69,11 @@ namespace ProjectWS.Engine.Mesh
         }
 
         public override void DrawInstanced()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool MeshIntersectsRay(Ray ray, Vector3 wPos, Quaternion wRot, Vector3 wScale, ref Vector3[] points)
         {
             throw new NotImplementedException();
         }

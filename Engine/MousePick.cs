@@ -3,6 +3,7 @@ using ProjectWS.Engine.Components;
 using ProjectWS.Engine.Data;
 using ProjectWS.Engine.Objects.Gizmos;
 using ProjectWS.Engine.Rendering;
+using static ProjectWS.Engine.World.Prop;
 
 namespace ProjectWS.Engine
 {
@@ -17,6 +18,7 @@ namespace ProjectWS.Engine
         public Vector2i areaHit;
         public World.Prop? propHit;
         public World.Prop.Instance? propInstanceHit;
+        public Vector3 propHitPoint;
 
         public enum Mode
         {
@@ -58,6 +60,8 @@ namespace ProjectWS.Engine
             if (this.renderer.world != null)
             {
                 this.renderer.brushParameters.isEnabled = false;
+                Vector3[] triPoints = new Vector3[4];
+
                 foreach (var chunkItem in this.renderer.world.chunks)
                 {
                     if (chunkItem.Value.area != null && chunkItem.Value.lod0Available && chunkItem.Value.area.subAreas != null)
@@ -77,21 +81,10 @@ namespace ProjectWS.Engine
                                     this.terrainSubchunkHit = new Vector2i(sc.X, sc.Y);
                                     this.areaHit = chunkItem.Key;
 
-                                    for (int i = 0; i < sc.terrainMesh.indexData.Length; i += 3)
+                                    if (sc.terrainMesh.MeshIntersectsRay(this.mouseRay, subPos, Quaternion.Identity, Vector3.One, ref triPoints))
                                     {
-                                        uint i0 = sc.terrainMesh.indexData[i];
-                                        uint i1 = sc.terrainMesh.indexData[i + 1];
-                                        uint i2 = sc.terrainMesh.indexData[i + 2];
-
-                                        var v0 = sc.terrainMesh.vertices[i0].position + subPos;
-                                        var v1 = sc.terrainMesh.vertices[i1].position + subPos;
-                                        var v2 = sc.terrainMesh.vertices[i2].position + subPos;
-                                        
-                                        if (RayTriangleIntersect(this.mouseRay.origin, this.mouseRay.direction, v0, v1, v2, out var point))
-                                        {
-                                            this.renderer.brushParameters.isEnabled = true;
-                                            this.terrainHitPoint = point;
-                                        }
+                                        this.renderer.brushParameters.isEnabled = true;
+                                        this.terrainHitPoint = triPoints[0];
                                     }
                                 }
                             }
@@ -110,12 +103,18 @@ namespace ProjectWS.Engine
             if (this.renderer.world != null)
             {
                 this.renderer.brushParameters.isEnabled = false;
+                Vector3[] triPoints = new Vector3[4];
+
+                float propMinDist = float.MaxValue;
+                int instanceIndex = 0;
+                bool hit = false;
 
                 foreach (var propItem in this.renderer.world.props)
                 {
                     //var aabb = propItem.Value.aabb;
 
-                    int instanceIndex = 0;
+                    float instanceMinDist = float.MaxValue;
+                    int instanceCounter = 0;
                     foreach (var instanceItem in propItem.Value.instances)
                     {
                         var instance = instanceItem.Value;
@@ -124,44 +123,70 @@ namespace ProjectWS.Engine
                             Vector2 intersection = instance.obb.IntersectsRay(this.mouseRay, instance.position, instance.scale);
                             if (intersection.X <= intersection.Y)
                             {
-                                this.propHit = propItem.Value;
-                                this.propInstanceHit = instance;
+                                float meshMinDist = float.MaxValue;
 
-                                // Exiting once a prop is found
-                                // TODO : Instead of drawing all labels, check if the prop triangles were hit, and check which hit is closer to the camera
-                                /*
-                                var labelText = $"{propItem.Value.data.fileName}\n" +
-                                    $"UUID:{instance.uuid} Instance:{instanceIndex}\n" +
-                                    $"P:{instance.position}\nR:{instance.rotationEuler}\nS:{instance.scale}";
-                                Debug.DrawLabel3D(labelText, instance.position, Vector4.One, true);
-                                */
-                                DrawOBB(instance.obb, instance.transform, new Vector4(1, 1, 0, 1));
+                                for (int g = 0; g < propItem.Value.geometries?.Length; g++)
+                                {
+                                    var geometry = propItem.Value.geometries[g];
+                                    for (int m = 0; m < geometry?.meshes?.Length; m++)
+                                    {
+                                        if (geometry.meshes == null || geometry.meshes[m] == null) continue;
+                                        
+                                        if (geometry.meshes[m].MeshIntersectsRay(this.mouseRay, instance.position, instance.rotation, instance.scale, ref triPoints))
+                                        {
+                                            for (int i = 0; i < 4; i++)
+                                            {
+                                                var dist = Vector3.DistanceSquared(triPoints[i], this.mouseRay.origin);
+                                                if (dist < meshMinDist)
+                                                {
+                                                    meshMinDist = dist;
+                                                    this.propHitPoint = triPoints[i];
+                                                }
+                                            }
+
+                                            hit = true;
+                                        }
+                                    }
+                                }
+
+                                if (meshMinDist < instanceMinDist)
+                                {
+                                    instanceMinDist = meshMinDist;
+                                    this.propInstanceHit = instance;
+                                }
                             }
-                            /*
-                            Vector2 result = instance.aabb.IntersectsRay(this.mouseRay, instance.position);
-
-                            if (result.X <= result.Y)
-                            {
-                                this.propHit = propItem.Value;
-                                this.propInstanceHit = instance;
-
-                                // Exiting once a prop is found
-                                // TODO : Instead of drawing all labels, check if the prop triangles were hit, and check which hit is closer to the camera
-
-                                var labelText = $"{propItem.Value.data.fileName}\n" +
-                                    $"UUID:{instance.uuid} Instance:{instanceIndex}\n" +
-                                    $"P:{instance.position}\nR:{instance.rotationEuler}\nS:{instance.scale}";
-                                Debug.DrawLabel3D(labelText, instance.position, Vector4.One, true);
-
-                                instance.aabb.Draw(instance.position, instance.scale, new Vector4(0, 1, 1, 1));
-                            }
-                            */
                         }
 
-                        instanceIndex++;
+                        instanceCounter++;
+                    }
+
+                    if (instanceMinDist < propMinDist)
+                    {
+                        propMinDist = instanceMinDist;
+                        this.propHit = propItem.Value;
+                        instanceIndex = instanceCounter;
                     }
                 }
+
+                if (this.propInstanceHit != null && hit)
+                {
+                    /*
+                    var labelText = $"{this.propHit.data.fileName}\n" +
+                        $"UUID:{this.propInstanceHit.uuid} Instance:{instanceIndex}\n" +
+                        $"P:{this.propInstanceHit.position}\nR:{this.propInstanceHit.rotationEuler}\nS:{this.propInstanceHit.scale}";
+                    Debug.DrawLabel3D(labelText, this.propInstanceHit.position, Vector4.One, true);
+                    */
+                    DrawOBB(this.propInstanceHit.obb, this.propInstanceHit.transform, new Vector4(1, 1, 0, 1));
+                    //DrawOBB(this.propInstanceHit.obb, this.propInstanceHit.position, this.propInstanceHit.rotation, this.propInstanceHit.scale, new Vector4(1, 1, 0, 1));
+                    //Debug.DrawWireBox3D(this.propHitPoint, Quaternion.Identity, Vector3.One * 0.5f, Vector4.One);
+                }
             }
+        }
+
+        private void DrawOBB(OBB obb, Vector3 position, Quaternion rotation, Vector3 scale, Vector4 color)
+        {
+            var min = obb.center - (obb.size * 0.5f);
+            Debug.DrawWireBox3D(position + (obb.center / scale), rotation, scale * obb.size, color);
         }
 
         private Vector3 Unproject(Viewport vp, Vector3 mousePos)
@@ -211,46 +236,6 @@ namespace ProjectWS.Engine
             Vector3 start = new Vector3(camPos.X, camPos.Y, camPos.Z);
             Vector3 scaledRay = new Vector3(ray.X * distance, ray.Y * distance, ray.Z * distance);
             return start + scaledRay;
-        }
-
-        bool RayTriangleIntersect(Vector3 rayOrigin, Vector3 rayVector, Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, out Vector3 outIntersectionPoint)
-        {
-            outIntersectionPoint = Vector3.Zero;
-            const float EPSILON = 0.0000001f;
-            Vector3 edge1, edge2, h, s, q;
-            float a, f, u, v;
-            edge1 = vertex1 - vertex0;
-            edge2 = vertex2 - vertex0;
-            h = Vector3.Cross(rayVector, edge2);
-            a = Vector3.Dot(edge1, h);
-
-            if (a > -EPSILON && a < EPSILON)
-                return false;    // This ray is parallel to this triangle.
-
-            f = 1.0f / a;
-            s = rayOrigin - vertex0;
-            u = f * Vector3.Dot(s, h);
-
-            if (u < 0.0f || u > 1.0f)
-                return false;
-
-            q = Vector3.Cross(s, edge1);
-            v = f * Vector3.Dot(rayVector, q);
-
-            if (v < 0.0f || u + v > 1.0f)
-                return false;
-
-            // At this stage we can compute t to find out where the intersection point is on the line.
-            float t = f * Vector3.Dot(edge2, q);
-
-            if (t > EPSILON) // ray intersection
-            {
-                outIntersectionPoint = rayOrigin + rayVector * t;
-                return true;
-            }
-
-            else // This means that there is a line intersection but not a ray intersection.
-                return false;
         }
 
         void DrawAABB(AABB aabb, Vector3 position, Vector3 scale, Vector4 color)
