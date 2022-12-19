@@ -1,5 +1,6 @@
 ﻿using MathUtils;
 using ProjectWS.Engine.Data;
+using ProjectWS.FileFormats.Sky;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -43,7 +44,7 @@ namespace ProjectWS.Editor
             PopulateTreeView(this, sky);
         }
 
-        void PopulateTreeView(SkyEditorPane pane, Sky sky)
+        void PopulateTreeView(SkyEditorPane pane, File sky)
         {
             pane.skyTreeView.Items.Clear();
 
@@ -320,7 +321,7 @@ namespace ProjectWS.Editor
 
         }
 
-        void PopulateSkyDataBlock(SkyEditorPane pane, Sky sky, int time, int index)
+        void PopulateSkyDataBlock(SkyEditorPane pane, File sky, int time, int index)
         {
             var data = sky.skyDataBlock0;
 

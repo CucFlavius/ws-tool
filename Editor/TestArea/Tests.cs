@@ -2,6 +2,8 @@
 using ProjectWS.Editor;
 using ProjectWS.Engine.Data;
 using System;
+using System.IO;
+using System.Windows.Shapes;
 
 namespace ProjectWS.TestArea
 {
@@ -107,8 +109,10 @@ namespace ProjectWS.TestArea
 
         void TestSkyFile()
         {
-            Engine.Data.Sky sky = new Engine.Data.Sky(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\Data\Sky\Cinematics_Arcterra_EXT_TowerMain.sky");
-            sky.Read();
+            var path = @"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\Data\Sky\Cinematics_Arcterra_EXT_TowerMain.sky";
+            FileFormats.Sky.File sky = new FileFormats.Sky.File(path);
+            using (var str = File.OpenRead(path))
+                sky.Read(str);
         }
 
 
@@ -121,8 +125,9 @@ namespace ProjectWS.TestArea
                 coeffs[i] = new float[3];
             }
 
-            Sky sky = new Sky(path);
-            sky.Read();
+            FileFormats.Sky.File sky = new FileFormats.Sky.File(path);
+            using(var str = File.OpenRead(path))
+                sky.Read(str);
 
             for (int i = 0; i < sky.skyDataBlock0.colorAndAngleUnk0.Length; i++)
             {

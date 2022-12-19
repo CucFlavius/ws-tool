@@ -1,5 +1,4 @@
-﻿using ProjectWS.Engine.Data;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Numerics;
 
 namespace StatisticalAnalyzer
@@ -33,8 +32,9 @@ namespace StatisticalAnalyzer
                 coeffs[i] = new float[3];
             }
 
-            Sky sky = new Sky(path);
-            sky.Read();
+            ProjectWS.FileFormats.Sky.File sky = new ProjectWS.FileFormats.Sky.File(path);
+            using(var fs = File.OpenRead(path))
+                sky.Read(fs);
 
             Vector4[] colors = new Vector4[]
             {
@@ -224,9 +224,9 @@ namespace StatisticalAnalyzer
 
             foreach (var filePath in areaFiles)
             {
+                /*
                 var area = new ProjectWS.Engine.Data.Area(filePath);
                 area.Read();
-                /*
                 for (int i = 0; i < area.subChunks.Count; i++)
                 {
                     var check = area.subChunks[i].
@@ -255,8 +255,9 @@ namespace StatisticalAnalyzer
 
             foreach (var filePath in areaFiles)
             {
-                var sky = new ProjectWS.Engine.Data.Sky(filePath);
-                sky.Read();
+                var sky = new ProjectWS.FileFormats.Sky.File(filePath);
+                using(var fs = File.OpenRead(filePath))
+                    sky.Read(fs);
 
                 if (sky.fogSettings.timestamps.Length > 0)
                 {
@@ -293,7 +294,7 @@ namespace StatisticalAnalyzer
 
                 try
                 {
-                    Sho sho = new Sho(metafiles[i]);
+                    ProjectWS.FileFormats.Sho.File sho = new ProjectWS.FileFormats.Sho.File(metafiles[i]);
                     sho.Read();
                     var folder = $"{outputPath}/{fileName}";
 

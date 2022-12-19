@@ -1,7 +1,7 @@
 using ProjectWS.FileFormats.Common;
 using ProjectWS.FileFormats.Extensions;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sky
 {
     public abstract class TimeTrack<T> : ArrayData
     {

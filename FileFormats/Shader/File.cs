@@ -1,15 +1,15 @@
 ﻿using ProjectWS.FileFormats.Common;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sho
 {
-    public class Sho
+    public class File
     {
         public string filePath;
         public bool failedReading;
 
         public Variant[]? variants;
 
-        public Sho(string filePath)
+        public File(string filePath)
         {
             this.filePath = filePath;
             this.failedReading = false;
@@ -17,7 +17,7 @@ namespace ProjectWS.Engine.Data
 
         public void Read()
         {
-            using (Stream str = File.OpenRead(this.filePath))
+            using (Stream str = System.IO.File.OpenRead(this.filePath))
             {
                 Read(str);
             }
@@ -47,8 +47,8 @@ namespace ProjectWS.Engine.Data
             catch (Exception e)
             {
                 this.failedReading = true;
-                Debug.LogError($"SHO : Failed Reading File {this.filePath}");
-                Debug.LogException(e);
+                Console.WriteLine($"SHO : Failed Reading File {this.filePath}");
+                Console.WriteLine(e.Message);
             }
         }
     }

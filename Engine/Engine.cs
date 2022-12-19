@@ -1,6 +1,5 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using ProjectWS.Engine.Data;
 
 namespace ProjectWS.Engine
 {
@@ -31,7 +30,7 @@ namespace ProjectWS.Engine
         public Dictionary<uint, World.World> worlds;
         public Data.GameData data;
         public Input.Input input;
-        public Dictionary<uint, Sky> skyData;
+        public Dictionary<uint, FileFormats.Sky.File> skyData;
         public List<Rendering.Renderer> renderers;
 
         /// <summary>
@@ -45,7 +44,7 @@ namespace ProjectWS.Engine
             this.renderers = new List<Rendering.Renderer>();
             this.input = new Input.Input(this);
             this.worlds = new Dictionary<uint, World.World>();
-            this.skyData = new Dictionary<uint, Sky>();
+            this.skyData = new Dictionary<uint, FileFormats.Sky.File>();
 
             // Load engine resources
             //this.resourceManager.textureResources.Add(ResourceManager.EngineTextures.white, new Data.ResourceManager.TextureResource(ResourceManager.EngineTextures.white, this.resourceManager, null));
@@ -150,14 +149,14 @@ namespace ProjectWS.Engine
             */
         }
 
-        public Sky GetSky(uint ID)
+        public FileFormats.Sky.File GetSky(uint ID)
         {
             if (this.skyData.ContainsKey(ID))
                 return this.skyData[ID];
 
             var worldSkyRecord = this.data.database.worldSky.Get(ID);
-            Sky sky = new Sky(worldSkyRecord.assetPath, this.data);
-            sky.Read();
+            FileFormats.Sky.File sky = new FileFormats.Sky.File(worldSkyRecord.assetPath);
+            sky.Read(this.data.GetFileData(worldSkyRecord.assetPath));
             this.skyData.Add(ID, sky);
             return sky;
         }

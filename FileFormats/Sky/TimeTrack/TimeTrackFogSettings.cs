@@ -1,8 +1,8 @@
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sky
 {
-    public class TimeTrackInt : TimeTrack<int>
+    public class TimeTrackFogSettings : TimeTrack<FogSettings>
     {
-        public TimeTrackInt(BinaryReader br, long startOffset)
+        public TimeTrackFogSettings(BinaryReader br, long startOffset)
         {
             long save = ReadTimeTrackCommon(br, startOffset);
 
@@ -11,7 +11,7 @@ namespace ProjectWS.Engine.Data
                 // Read actual data
                 for (uint i = 0; i < this.elements; i++)
                 {
-                    this.data[i] = br.ReadInt32();
+                    this.data[i] = new FogSettings(br);
                 }
             }
 

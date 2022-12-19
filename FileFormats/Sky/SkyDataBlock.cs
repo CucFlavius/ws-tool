@@ -1,6 +1,6 @@
 ﻿using MathUtils;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sky
 {
     public class SHGroup
     {

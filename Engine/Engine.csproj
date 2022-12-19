@@ -18,6 +18,7 @@
     <ProjectReference Include="..\FileFormats\FileFormats.csproj" />
     <ProjectReference Include="..\FontGenerator\FontGenerator.csproj" />
     <ProjectReference Include="..\Libs\BCnEnc.Net\BCnEncoder.csproj" />
+    <ProjectReference Include="..\MathUtils\MathUtils.csproj" />
   </ItemGroup>
 
 </Project>

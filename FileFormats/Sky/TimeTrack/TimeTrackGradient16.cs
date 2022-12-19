@@ -1,8 +1,8 @@
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sky
 {
-    public class TimeTrackAngleAndColor : TimeTrack<AngleAndColor>
+    public class TimeTrackGradient16 : TimeTrack<Gradient16>
     {
-        public TimeTrackAngleAndColor(BinaryReader br, long startOffset)
+        public TimeTrackGradient16(BinaryReader br, long startOffset)
         {
             long save = ReadTimeTrackCommon(br, startOffset);
 
@@ -11,7 +11,7 @@ namespace ProjectWS.Engine.Data
                 // Read actual data
                 for (uint i = 0; i < this.elements; i++)
                 {
-                    this.data[i] = new AngleAndColor(br);
+                    this.data[i] = new Gradient16(br);
                 }
             }
 

@@ -1,6 +1,6 @@
 ﻿using ProjectWS.FileFormats.Common;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sho
 {
     public class Variant : ArrayData
     {

@@ -1,10 +1,8 @@
-using MathUtils;
-
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sky
 {
-    public class TimeTrackVector4 : TimeTrack<Vector4>
+    public class TimeTrackAngleABAndColor : TimeTrack<AngleABAndColor>
     {
-        public TimeTrackVector4(BinaryReader br, long startOffset)
+        public TimeTrackAngleABAndColor(BinaryReader br, long startOffset)
         {
             long save = ReadTimeTrackCommon(br, startOffset);
 
@@ -13,7 +11,7 @@ namespace ProjectWS.Engine.Data
                 // Read actual data
                 for (uint i = 0; i < this.elements; i++)
                 {
-                    this.data[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+                    this.data[i] = new AngleABAndColor(br);
                 }
             }
 

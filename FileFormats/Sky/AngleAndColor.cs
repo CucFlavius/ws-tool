@@ -1,7 +1,7 @@
 ﻿using MathUtils;
 using ProjectWS.FileFormats.Extensions;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sky
 {
     public class AngleAndColor
     {

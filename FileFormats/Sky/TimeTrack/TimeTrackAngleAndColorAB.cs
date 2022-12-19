@@ -1,8 +1,8 @@
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sky
 {
-    public class TimeTrackUnkBlock : TimeTrack<SHCoefficients>
+    public class TimeTrackAngleAndColorAB : TimeTrack<AngleAndColorAB>
     {
-        public TimeTrackUnkBlock(BinaryReader br, long startOffset)
+        public TimeTrackAngleAndColorAB(BinaryReader br, long startOffset)
         {
             long save = ReadTimeTrackCommon(br, startOffset);
 
@@ -11,7 +11,7 @@ namespace ProjectWS.Engine.Data
                 // Read actual data
                 for (uint i = 0; i < this.elements; i++)
                 {
-                    this.data[i] = new SHCoefficients(br);
+                    this.data[i] = new AngleAndColorAB(br);
                 }
             }
 

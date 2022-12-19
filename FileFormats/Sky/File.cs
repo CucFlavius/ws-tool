@@ -1,14 +1,12 @@
 ﻿using MathUtils;
 using ProjectWS.FileFormats.Common;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.FileFormats.Sky
 {
-    public partial class Sky
+    public partial class File
     {
         public string filePath;
-        public GameData gameData;
         public bool failedReading;
-        public DataSource source;
 
         const int headerSize = 1216;
 
@@ -48,37 +46,10 @@ namespace ProjectWS.Engine.Data
         public UnkData[] unkData;
         public string lutFile;
 
-        public Sky(string filePath, Data.GameData gameData)
-        {
-            this.filePath = filePath;
-            this.gameData = gameData;
-            this.failedReading = false;
-            this.source = DataSource.GameData;
-        }
-
-        public Sky(string filePath)
+        public File(string filePath)
         {
             this.filePath = filePath;
             this.failedReading = false;
-            this.source = DataSource.Extracted;
-        }
-
-        public void Read()
-        {
-            if (this.source == DataSource.GameData)
-            {
-                using (MemoryStream str = this.gameData.GetFileData(this.filePath))
-                {
-                    Read(str);
-                }
-            }
-            else if (this.source == DataSource.Extracted)
-            {
-                using (Stream str = File.OpenRead(this.filePath))
-                {
-                    Read(str);
-                }
-            }
         }
 
         public void Read(Stream str)
@@ -97,7 +68,7 @@ namespace ProjectWS.Engine.Data
                     if (magic != 0x58534B59)    // XSKY
                     {
                         this.failedReading = true;
-                        Debug.LogWarning($"This is not an SKY file, 0x{magic:X} != XSKY, {this.filePath}");
+                        Console.WriteLine($"This is not an SKY file, 0x{magic:X} != XSKY, {this.filePath}");
                         return;
                     }
 
@@ -142,8 +113,8 @@ namespace ProjectWS.Engine.Data
             catch (Exception e)
             {
                 this.failedReading = true;
-                Debug.LogError($"SKY : Failed Reading File {this.filePath}");
-                Debug.LogException(e);
+                Console.WriteLine($"SKY : Failed Reading File {this.filePath}");
+                Console.WriteLine(e.Message);
             }
         }
     }
