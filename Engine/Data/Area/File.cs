@@ -4,9 +4,9 @@ using MathUtils;
 using ProjectWS.FileFormats.Extensions;
 using System.IO.Compression;
 
-namespace ProjectWS.Engine.Data
+namespace ProjectWS.Engine.Data.Area
 {
-    public partial class Area
+    public class Area
     {
         Block.FileEntry? fileEntry;
         string? filePath;

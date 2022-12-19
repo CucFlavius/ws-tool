@@ -1,6 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using MathUtils;
-using ProjectWS.Engine.World;
+﻿using MathUtils;
+using OpenTK.Graphics.OpenGL4;
 using System.Runtime.InteropServices;
 
 namespace ProjectWS.Engine.Mesh
@@ -10,7 +9,6 @@ namespace ProjectWS.Engine.Mesh
         const int VERTEXCOUNT = 361;
         const int VERTEXSIZE = 48;
 
-        Chunk chunk;
         Data.Area.SubChunk subChunk;
 
         [StructLayout(LayoutKind.Sequential)]
@@ -24,34 +22,17 @@ namespace ProjectWS.Engine.Mesh
 
         public TerrainVertex[] vertices;
 
-        //public float minHeight;
-        //public float maxHeight;
+        public float minHeight;
+        public float maxHeight;
 
-        public int index;
-        public int X;
-        public int Y;
         public uint[] indexData;
         public bool isBuilt;
         public int _vertexArrayObject;
         public int _vertexBufferObject;
-        public Matrix4 matrix;
-        public AABB aabb;
-        public AABB cullingAABB;
-        public Vector3 centerPosition;
-        public volatile bool isVisible;
-        public bool isOccluded;
-        public bool isCulled;
-        public float distanceToCam;
-        //public Rect screenRect;
-        public bool rectBehindCamera;
-        public Vector2 subCoords;
-        public float minHeight;
-        public float maxHeight;
 
-        public AreaMesh(ushort[] heightMap, Data.Area.SubChunk subChunk, Chunk chunk, int index)
+        public AreaMesh(ushort[] heightMap, Data.Area.SubChunk subChunk)
         {
             if (heightMap == null) return;
-            this.chunk = chunk;
             this.subChunk = subChunk;
             this.minHeight = float.MaxValue;
             this.maxHeight = float.MinValue;
@@ -61,7 +42,7 @@ namespace ProjectWS.Engine.Mesh
                 // LoD 0 //
                 this.vertices = new TerrainVertex[VERTEXCOUNT];
 
-                int idx = 0;
+                int index = 0;
                 for (int y = -1; y < 18; ++y)
                 {
                     for (int x = -1; x < 18; ++x)
@@ -75,7 +56,7 @@ namespace ProjectWS.Engine.Mesh
                             this.maxHeight = h;
 
                         // Positions //
-                        this.vertices[idx].position = new Vector3(x * 2, h, y * 2);
+                        this.vertices[index].position = new Vector3(x * 2, h, y * 2);
 
                         // Normals //
                         if (y > 0 && x > 0 && y <= 17 && y <= 17)
@@ -190,24 +171,6 @@ namespace ProjectWS.Engine.Mesh
             {
                 // LoD 1 //
             }
-
-            // Calc Model Matrix
-            int chunkX = index % 16;
-            int chunkY = index / 16;
-            this.X = chunkX;
-            this.Y = chunkY;
-            this.subCoords = (chunk.coords * 16) + new Vector2(chunkX, chunkY);
-            Vector3 subchunkRelativePosition = new Vector3(chunkX * 32f, 0, chunkY * 32f);
-
-            this.matrix = Matrix4.CreateTranslation(subchunkRelativePosition);
-            this.matrix *= chunk.worldMatrix;
-
-            // Calc AABB
-            float hMin = this.minHeight;
-            float hMax = this.maxHeight;
-            this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, 16f);
-            this.aabb = new AABB(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
-            this.cullingAABB = new AABB(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
         }
 
         public override void Build()
@@ -243,7 +206,7 @@ namespace ProjectWS.Engine.Mesh
 
         public void ReBuild()
         {
-            this.chunk.modified = true;
+            this.subChunk.chunk.modified = true;
 
             int index = 0;
             for (int y = -1; y < 18; ++y)
@@ -286,10 +249,10 @@ namespace ProjectWS.Engine.Mesh
             }
 
             // Update bounds
-            Vector3 subchunkRelativePosition = new Vector3(this.X * 32f, 0, this.Y * 32f);
-            this.centerPosition = this.chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((this.maxHeight - this.minHeight) / 2f) + this.minHeight, 16f);
-            this.aabb = new AABB(this.centerPosition, new Vector3(32f, this.maxHeight - this.minHeight, 32f));            // Exact bounds
-            this.cullingAABB = new AABB(this.centerPosition, new Vector3(64f, (this.maxHeight - this.minHeight) * 2, 64f));
+            Vector3 subchunkRelativePosition = new Vector3(this.subChunk.X * 32f, 0, this.subChunk.Y * 32f);
+            this.subChunk.centerPosition = this.subChunk.chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((this.maxHeight - this.minHeight) / 2f) + this.minHeight, 16f);
+            this.subChunk.AABB = new AABB(this.subChunk.centerPosition, new Vector3(32f, this.maxHeight - this.minHeight, 32f));            // Exact bounds
+            this.subChunk.cullingAABB = new AABB(this.subChunk.centerPosition, new Vector3(64f, (this.maxHeight - this.minHeight) * 2, 64f));
 
             // Upload to GPU
             // https://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer
@@ -305,6 +268,11 @@ namespace ProjectWS.Engine.Mesh
             GL.DrawElements(BeginMode.Triangles, indexData.Length, DrawElementsType.UnsignedInt, 0);
         }
 
+        public override void DrawInstanced()
+        {
+            throw new NotImplementedException();
+        }
+
         TerrainVertex[] Trim19x19to17x17(TerrainVertex[] vector3in)
         {
             TerrainVertex[] vector3out = new TerrainVertex[17 * 17];
@@ -316,11 +284,6 @@ namespace ProjectWS.Engine.Mesh
                 }
             }
             return vector3out;
-        }
-
-        public override void DrawInstanced()
-        {
-            throw new NotImplementedException();
         }
     }
 }

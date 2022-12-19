@@ -154,7 +154,7 @@ namespace ProjectWS.Engine.World
             string x = coords.X.ToString("X").ToLower();
             string y = coords.Y.ToString("X").ToLower();
             chunk.areaFilePath = $"{mapDir}\\{worldName}.{y}{x}.area";
-            var area = new Area(chunk, 0);
+            var area = new Data.Area.Area(chunk, 0);
             area.Create();
             area.AddProp("Art\\Dev\\gray_sphere.m3", new Vector3(256, -995, 254), Quaternion.Identity, 5.0f);
             area.Write();

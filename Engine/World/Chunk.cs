@@ -26,8 +26,8 @@ namespace ProjectWS.Engine.World
         int[] lodQuadrants;
 
         public AABB AABB;
-        public Data.Area area;
-        public Data.Area areaLow;
+        public Data.Area.Area area;
+        public Data.Area.Area areaLow;
 
         const float LABEL_DISTANCE = 300f;
 
@@ -330,7 +330,7 @@ namespace ProjectWS.Engine.World
             {
                 this.lod0Loading = true;
 
-                this.area = new Data.Area(this, 0);
+                this.area = new Data.Area.Area(this, 0);
                 this.terrainTasks.Enqueue(new TaskManager.TerrainTask(this, 0, TaskManager.Task.JobType.Read));
             }
         }
