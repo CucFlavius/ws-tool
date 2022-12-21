@@ -75,17 +75,15 @@ namespace ProjectWS.Editor.Tools
                         for (int s = 0; s < chunk.subChunks.Count; s++)
                         {
                             var scDist = Vector2.Distance(chunk.subChunks[s].centerPosition.Xz, hitPoint.Xz);
-                            // TODO: need to check better if the brush overlaps the subchunks, otherwise might run into gaps again
-                            // (do square overlap math between brush square and subchunks squares (check if any of the sc corners are inside br square))
-                            // (do ^ same thing to area squares)
-                            if (scDist > brushSize * 2)
+
+                            if (scDist > brushSize + 32f)
                                 continue;
 
                             var sc = chunk.subChunks[s];
                             var subPos = new Vector2(sc.X * 32f, sc.Y * 32f) + areaPos;
 
                             if (sc.X < 0 || sc.X > 15 || sc.Y < 0 || sc.Y > 15)
-                                continue;   // Handle painting adjacent area
+                                continue;
 
                             for (int x = 0; x < 65; x++)
                             {

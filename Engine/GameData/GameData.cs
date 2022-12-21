@@ -87,8 +87,11 @@ namespace ProjectWS.Engine.Data
             return null;
         }
 
-        public MemoryStream GetFileData(Data.Block.FileEntry fileEntry, string archiveName = CLIENTDATA)
+        public MemoryStream? GetFileData(Data.Block.FileEntry fileEntry, string archiveName = CLIENTDATA)
         {
+            if (fileEntry == null)
+                return null;
+
             var archive = this.archives[archiveName];
             var aarcEntry = archive.data.aarcEntries[fileEntry.hash];
             var blockHeader = archive.data.blockHeaders[aarcEntry.blockIndex];

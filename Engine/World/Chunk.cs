@@ -403,6 +403,13 @@ namespace ProjectWS.Engine.World
             {
                 int from = quadrant * (256 / 4);
                 int to = from + (256 / 4);
+
+                if (this.area.subAreas == null)
+                {
+                    Debug.LogError("Area.Build() subAreas == null");
+                    return;
+                }
+
                 int total = this.area.subAreas.Count;
                 for (int i = from; i < to; i++)
                 {
@@ -433,8 +440,20 @@ namespace ProjectWS.Engine.World
 
         internal void ReadArea(FileFormats.Area.File area)
         {
-            using (Stream? str = this.gameData.GetFileData(areaFileEntry))
-                area.Read(str);
+            if (this.areaFileEntry != null)
+            {
+                using (Stream? str = this.gameData.GetFileData(this.areaFileEntry))
+                {
+                    area.Read(str);
+                }
+            }
+            else if (this.areaFilePath != null)
+            {
+                using(var fs = File.OpenRead(this.areaFilePath))
+                {
+                    area.Read(fs);
+                }
+            }
 
             // Create subchunks
             for (int i = 0; i < area.subAreas?.Count; i++)
