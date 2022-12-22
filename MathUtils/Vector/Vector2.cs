@@ -507,6 +507,11 @@ namespace MathUtils
             return result;
         }
 
+        public static float ManhattanDistance(in Vector2 vec1, in Vector2 vec2)
+        {
+            return Math.Abs(vec1.X - vec2.X) + Math.Abs(vec1.Y - vec2.Y);
+        }
+
         /// <summary>
         /// Compute the euclidean distance between two vectors.
         /// </summary>

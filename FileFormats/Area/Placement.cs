@@ -1,4 +1,6 @@
-﻿namespace ProjectWS.FileFormats.Area
+﻿using System.Text.Json.Serialization;
+
+namespace ProjectWS.FileFormats.Area
 {
     public struct Placement
     {
@@ -9,7 +11,9 @@
         public ushort maxY;
 
         public ushort size;     // 1 2 4 8 16 32 ...
+        [JsonIgnore]
         public float sizef;
+        [JsonIgnore]
         public int[] subChunkIndices;
 
         public Placement(ushort minX, ushort minY, ushort maxX, ushort maxY)

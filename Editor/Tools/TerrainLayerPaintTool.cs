@@ -75,6 +75,7 @@ namespace ProjectWS.Editor.Tools
                         for (int s = 0; s < chunk.subChunks.Count; s++)
                         {
                             var scDist = Vector2.Distance(chunk.subChunks[s].centerPosition.Xz, hitPoint.Xz);
+                            //float scDist = Vector2.ManhattanDistance(chunk.subChunks[s].centerPosition.Xz, hitPoint.Xz);
 
                             if (scDist > brushSize + 32f)
                                 continue;
@@ -89,7 +90,9 @@ namespace ProjectWS.Editor.Tools
                             {
                                 for (int y = 0; y < 65; y++)
                                 {
-                                    float dist = Vector2.Distance(hitPoint.Xz - subPos, new Vector2(x / 65f * 32f, y / 65f * 32f));
+                                    float dist = Vector2.Distance(hitPoint.Xz - subPos, new Vector2(x, y) / 65f * 32f);
+                                    //float dist = Vector2.ManhattanDistance(hitPoint.Xz - subPos, new Vector2(x, y) / 65f * 32f);
+
                                     float brush = 1.0f - Math.Clamp(dist * (1.0f / brushSize), 0.0f, 1.0f);
 
                                     int i = (y * 65 + x) * 4;

@@ -23,6 +23,7 @@ SOFTWARE.
 using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
 namespace MathUtils
@@ -36,6 +37,7 @@ namespace MathUtils
         /// <summary>
         /// The X, Y and Z components of this instance.
         /// </summary>
+        [JsonIgnore]
         public Vector3 Xyz;
 
         /// <summary>
@@ -239,11 +241,13 @@ namespace MathUtils
         /// Gets the length (magnitude) of the quaternion.
         /// </summary>
         /// <seealso cref="LengthSquared"/>
+        [JsonIgnore]
         public float Length => MathF.Sqrt((W * W) + Xyz.LengthSquared);
 
         /// <summary>
         /// Gets the square of the quaternion length (magnitude).
         /// </summary>
+        [JsonIgnore]
         public float LengthSquared => (W * W) + Xyz.LengthSquared;
 
         /// <summary>

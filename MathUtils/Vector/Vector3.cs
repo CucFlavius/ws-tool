@@ -25,6 +25,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
 namespace MathUtils
@@ -164,6 +165,7 @@ namespace MathUtils
         /// </summary>
         /// <see cref="LengthFast"/>
         /// <seealso cref="LengthSquared"/>
+        [JsonIgnore]
         public float Length => MathF.Sqrt((X * X) + (Y * Y) + (Z * Z));
 
         /// <summary>
@@ -175,6 +177,7 @@ namespace MathUtils
         /// </remarks>
         /// <see cref="Length"/>
         /// <seealso cref="LengthSquared"/>
+        [JsonIgnore]
         public float LengthFast => 1.0f / MathHelper.InverseSqrtFast((X * X) + (Y * Y) + (Z * Z));
 
         /// <summary>
@@ -186,6 +189,7 @@ namespace MathUtils
         /// </remarks>
         /// <see cref="Length"/>
         /// <seealso cref="LengthFast"/>
+        [JsonIgnore]
         public float LengthSquared => (X * X) + (Y * Y) + (Z * Z);
 
         /// <summary>
@@ -1233,7 +1237,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector2 with the X and Y components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector2 Xy
         {
             get => Unsafe.As<Vector3, Vector2>(ref this);
@@ -1247,7 +1251,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector2 with the X and Z components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector2 Xz
         {
             get => new Vector2(X, Z);
@@ -1261,7 +1265,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector2 with the Y and X components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector2 Yx
         {
             get => new Vector2(Y, X);
@@ -1275,7 +1279,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector2 with the Y and Z components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector2 Yz
         {
             get => new Vector2(Y, Z);
@@ -1289,7 +1293,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector2 with the Z and X components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector2 Zx
         {
             get => new Vector2(Z, X);
@@ -1303,7 +1307,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector2 with the Z and Y components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector2 Zy
         {
             get => new Vector2(Z, Y);
@@ -1317,7 +1321,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector3 with the X, Z, and Y components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector3 Xzy
         {
             get => new Vector3(X, Z, Y);
@@ -1332,7 +1336,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector3 with the Y, X, and Z components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector3 Yxz
         {
             get => new Vector3(Y, X, Z);
@@ -1347,7 +1351,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector3 with the Y, Z, and X components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector3 Yzx
         {
             get => new Vector3(Y, Z, X);
@@ -1362,7 +1366,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector3 with the Z, X, and Y components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector3 Zxy
         {
             get => new Vector3(Z, X, Y);
@@ -1377,7 +1381,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector3 with the Z, Y, and X components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector3 Zyx
         {
             get => new Vector3(Z, Y, X);

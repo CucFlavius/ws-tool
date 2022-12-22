@@ -8,6 +8,7 @@ namespace ProjectWS.Engine.Rendering
     {
         public MousePick? mousePick;
         public World.World? world;
+        private Engine engine;
         public ShaderParams.FogParameters? fogParameters;
         public ShaderParams.TerrainEditorParameters? tEditorParameters;
         public ShaderParams.SunParameters? sunParameters;
@@ -24,6 +25,7 @@ namespace ProjectWS.Engine.Rendering
 
         public WorldRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
+            this.engine = engine;
             Debug.Log("Create World Renderer " + ID);
             this.ID = ID;
             this.input = input;
@@ -61,7 +63,7 @@ namespace ProjectWS.Engine.Rendering
             this.fontShader = new Shader("shaders/font_vert.glsl", "shaders/font_frag.glsl");
             this.lightPassShader = new Shader("shaders/light_pass_vert.glsl", "shaders/light_pass_frag.glsl");
 
-            this.mousePick = new MousePick(this);
+            this.mousePick = new MousePick(this, this.engine);
 
             this.textRenderer?.Initialize();
             this.immRenderer?.Initialize(this.lineShader);

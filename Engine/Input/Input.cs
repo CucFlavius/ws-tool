@@ -19,9 +19,16 @@ namespace ProjectWS.Engine.Input
         bool LMBPrevious;
         bool RMBPrevious;
         bool MMBPrevious;
-        public int LMBClicked = -1;
-        public int RMBClicked = -1;
-        public int MMBClicked = -1;
+        public ClickState LMBClicked = ClickState.None;
+        public ClickState RMBClicked = ClickState.None;
+        public ClickState MMBClicked = ClickState.None;
+
+        public enum ClickState
+        {
+            None = 0,
+            MouseButtonDown = 1,
+            MouseButtonUp = 2,
+        }
 
         public Input(Engine engine)
         {
@@ -51,25 +58,43 @@ namespace ProjectWS.Engine.Input
             if (this.LMB != this.LMBPrevious)
             {
                 if (this.LMB)
-                    this.LMBClicked = -1;
+                    this.LMBClicked = ClickState.MouseButtonDown;
+                else
+                    this.LMBClicked = ClickState.MouseButtonUp;
 
                 this.LMBPrevious = this.LMB;
+            }
+            else
+            {
+                this.LMBClicked = ClickState.None;
             }
 
             if (this.RMB != this.RMBPrevious)
             {
                 if (this.RMB)
-                    this.RMBClicked = -1;
+                    this.RMBClicked = ClickState.MouseButtonDown;
+                else
+                    this.RMBClicked = ClickState.MouseButtonUp;
 
                 this.RMBPrevious = this.RMB;
+            }
+            else
+            {
+                this.RMBClicked = ClickState.None;
             }
 
             if (this.MMB != this.MMBPrevious)
             {
                 if (this.MMB)
-                    this.MMBClicked = -1;
+                    this.MMBClicked = ClickState.MouseButtonDown;
+                else
+                    this.MMBClicked = ClickState.MouseButtonUp;
 
                 this.MMBPrevious = this.MMB;
+            }
+            else
+            {
+                this.MMBClicked = ClickState.None;
             }
         }
 

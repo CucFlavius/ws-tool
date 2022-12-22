@@ -1,5 +1,6 @@
 ﻿using MathUtils;
 using ProjectWS.FileFormats.Extensions;
+using System.Text.Json.Serialization;
 
 namespace ProjectWS.FileFormats.Area
 {
@@ -27,6 +28,7 @@ namespace ProjectWS.FileFormats.Area
         public int unk12;
         public string? path;
 
+        [JsonIgnore]
         public bool loadRequested;
 
         public Prop() { }

@@ -86,6 +86,7 @@ namespace ProjectWS.Editor.Tools
                         for (int s = 0; s < chunk.subChunks.Count; s++)
                         {
                             var scDist = Vector2.Distance(chunk.subChunks[s].centerPosition.Xz, hitPoint.Xz);
+                            //float scDist = Vector2.ManhattanDistance(chunk.subChunks[s].centerPosition.Xz, hitPoint.Xz);
 
                             if (scDist > brushSize + 32f)
                                 continue;
@@ -101,6 +102,7 @@ namespace ProjectWS.Editor.Tools
                             for (int v = 0; v < subchunk.terrainMesh.vertices.Length; v++)
                             {
                                 float dist = Vector2.Distance(subchunk.terrainMesh.vertices[v].position.Xz + subPos, hitPoint.Xz);
+                                //float dist = Vector2.ManhattanDistance(subchunk.terrainMesh.vertices[v].position.Xz + subPos, hitPoint.Xz);
                                 float brush = 1.0f - Math.Clamp(dist * (1.0f / brushSize), 0.0f, 1.0f);
 
                                 if (this.mode == Mode.RaiseLower)

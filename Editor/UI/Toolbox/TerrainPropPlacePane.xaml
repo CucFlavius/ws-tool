@@ -8,7 +8,8 @@
              d:DesignHeight="1000" d:DesignWidth="400">
     <Grid>
         <StackPanel Orientation="Vertical">
-            <Button>Prop Place</Button>
+            <TextBlock Margin="10,10" Foreground="WhiteSmoke" Name="textBlock_SelectedProp">Selected Prop</TextBlock>
+            <TextBlock Margin="10,10" Foreground="WhiteSmoke" Name="textBlock_PropDebugDetails">Info</TextBlock>
         </StackPanel>
     </Grid>
 </UserControl>

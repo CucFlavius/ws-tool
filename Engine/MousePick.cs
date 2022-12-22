@@ -11,6 +11,7 @@ namespace ProjectWS.Engine
     {
         public Mode mode = Mode.Disabled;
         private WorldRenderer renderer;
+        private Engine engine;
         public Ray mouseRay;
 
         public Vector3 terrainHitPoint;
@@ -27,9 +28,10 @@ namespace ProjectWS.Engine
             Prop,
         }
 
-        public MousePick(WorldRenderer renderer)
+        public MousePick(WorldRenderer renderer, Engine engine)
         {
             this.renderer = renderer;
+            this.engine = engine;
         }
 
         public void Update()
@@ -50,7 +52,7 @@ namespace ProjectWS.Engine
 
             if (this.mode == Mode.Terrain)
                 TerrainPick();
-            else if (this.mode == Mode.Prop)
+            else if (this.mode == Mode.Prop && this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonDown)
                 PropPick();
         }
 
@@ -176,7 +178,7 @@ namespace ProjectWS.Engine
                         $"P:{this.propInstanceHit.position}\nR:{this.propInstanceHit.rotationEuler}\nS:{this.propInstanceHit.scale}";
                     Debug.DrawLabel3D(labelText, this.propInstanceHit.position, Vector4.One, true);
                     */
-                    DrawOBB(this.propInstanceHit.obb, this.propInstanceHit.transform, new Vector4(1, 1, 0, 1));
+                    //DrawOBB(this.propInstanceHit.obb, this.propInstanceHit.transform, new Vector4(1, 1, 0, 1));
                     //DrawOBB(this.propInstanceHit.obb, this.propInstanceHit.position, this.propInstanceHit.rotation, this.propInstanceHit.scale, new Vector4(1, 1, 0, 1));
                     //Debug.DrawWireBox3D(this.propHitPoint, Quaternion.Identity, Vector3.One * 0.5f, Vector4.One);
                 }

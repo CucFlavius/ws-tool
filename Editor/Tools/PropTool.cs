@@ -1,5 +1,7 @@
 ﻿using MathUtils;
 using ProjectWS.Engine.Rendering;
+using ProjectWS.Engine.World;
+using SharpFont.MultipleMasters;
 
 namespace ProjectWS.Editor.Tools
 {
@@ -8,6 +10,8 @@ namespace ProjectWS.Editor.Tools
         readonly Engine.Engine? engine;
         public readonly WorldRenderer? worldRenderer;
         readonly Editor? editor;
+        Prop currentProp;
+        Prop.Instance currentPropInstance;
 
         public PropTool(Engine.Engine engine, Editor editor, WorldRenderer world)
         {
@@ -43,7 +47,32 @@ namespace ProjectWS.Editor.Tools
                 var propHit = this.worldRenderer.mousePick.propHit;
                 var propInstanceHit = this.worldRenderer.mousePick.propInstanceHit;
 
+                if (propHit != null && propInstanceHit != null)
+                {
+                    if (propHit != this.currentProp && propInstanceHit != this.currentPropInstance)
+                    {
+                        this.currentProp = propHit;
+                        this.currentPropInstance = propInstanceHit;
+                        this.editor.toolboxPane?.terrainPropPlacePane.OnPropSelectionChanged(this.worldRenderer.world, propHit, propInstanceHit);
+                    }
+                    /*
+                    var labelText = $"{this.propHit.data.fileName}\n" +
+                        $"UUID:{this.propInstanceHit.uuid} Instance:{instanceIndex}\n" +
+                        $"P:{this.propInstanceHit.position}\nR:{this.propInstanceHit.rotationEuler}\nS:{this.propInstanceHit.scale}";
+                    Debug.DrawLabel3D(labelText, this.propInstanceHit.position, Vector4.One, true);
+                    */
+                    DrawOBB(propInstanceHit.obb, propInstanceHit.transform, new Vector4(1, 1, 0, 1));
+                }
             }
+        }
+
+        internal void DrawOBB(OBB obb, Matrix4 transform, Vector4 color)
+        {
+            var positionOffsetMat = Matrix4.CreateTranslation(obb.center);
+            var scaleMat = Matrix4.CreateScale(obb.size);
+            var boxMat = scaleMat * positionOffsetMat * transform;
+
+            Debug.DrawWireBox3D(boxMat, color);
         }
     }
 }

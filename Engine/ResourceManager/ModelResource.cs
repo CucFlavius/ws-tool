@@ -56,7 +56,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
             }
             else
             {
-                this.world.LoadProp(m3, uuid, position, rotation, scale);
+                this.world.LoadProp(this.m3, uuid, position, rotation, scale);
             }
         }
 
