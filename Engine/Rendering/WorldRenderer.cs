@@ -15,6 +15,7 @@ namespace ProjectWS.Engine.Rendering
         public ShaderParams.EnvironmentParameters? envParameters;
         public ShaderParams.BrushParameters? brushParameters;
         public TextRenderer? textRenderer;
+        private IconRenderer iconRenderer;
         public ImmediateRenderer? immRenderer;
 
         public static int drawCalls;
@@ -44,8 +45,10 @@ namespace ProjectWS.Engine.Rendering
 
             // Initialize immediate mode debug renderers
             this.textRenderer = new TextRenderer();
+            this.iconRenderer = new IconRenderer();
             this.immRenderer = new ImmediateRenderer();
             Debug.textRenderer = this.textRenderer;
+            Debug.iconRenderer = this.iconRenderer;
             Debug.immRenderer = this.immRenderer;
         }
 
@@ -61,11 +64,13 @@ namespace ProjectWS.Engine.Rendering
             this.waterShader = new Shader("shaders/water_vert.glsl", "shaders/water_frag.glsl");
             this.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
             this.fontShader = new Shader("shaders/font_vert.glsl", "shaders/font_frag.glsl");
+            this.iconShader = new Shader("shaders/icon_vert.glsl", "shaders/icon_frag.glsl");
             this.lightPassShader = new Shader("shaders/light_pass_vert.glsl", "shaders/light_pass_frag.glsl");
 
             this.mousePick = new MousePick(this, this.engine);
 
             this.textRenderer?.Initialize();
+            this.iconRenderer?.Initialize();
             this.immRenderer?.Initialize(this.lineShader);
             BuildGBufferQuad();
         }
@@ -135,6 +140,10 @@ namespace ProjectWS.Engine.Rendering
 
                 // Render Text
                 this.textRenderer?.Render(this, this.viewports[v]);
+                // Render Icons
+                this.iconRenderer?.Render(this, this.viewports[v]);
+
+                GL.Enable(EnableCap.DepthTest);
 
                 // Render immediate mode
                 this.immRenderer?.Render(this, this.viewports[v]);

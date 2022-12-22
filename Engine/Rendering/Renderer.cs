@@ -25,6 +25,7 @@ namespace ProjectWS.Engine.Rendering
         public Shader lineShader;
         public Shader infiniteGridShader;
         public Shader fontShader;
+        public Shader iconShader;
         public Shader lightPassShader;
 
         public List<Viewport>? viewports;

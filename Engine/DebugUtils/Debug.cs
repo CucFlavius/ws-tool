@@ -18,6 +18,7 @@ namespace ProjectWS
         const ConsoleColor EXCEPTION_COLOR = ConsoleColor.Red;
 
         public static TextRenderer? textRenderer;
+        public static IconRenderer? iconRenderer;
         public static ImmediateRenderer? immRenderer;
 
         public static void Log(string text, ConsoleColor color = LOG_COLOR)
@@ -113,6 +114,11 @@ namespace ProjectWS
         public static void DrawLabel3D(string text, Vector3 position,  Vector4 color, bool shadow)
         {
             textRenderer?.DrawLabel3D(text, position, color, shadow);
+        }
+
+        public static void DrawIcon3D(IconRenderer.Icon3D.Type type, Vector3 position, Vector4 color)
+        {
+            iconRenderer?.DrawIcon3D(type, position, color);
         }
    
         /// <summary>

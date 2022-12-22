@@ -35,6 +35,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{7F2A
 	ProjectSection(SolutionItems) = preProject
 		Editor\bin\Debug\net6.0-windows\Shaders\font_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\font_frag.glsl
 		Editor\bin\Debug\net6.0-windows\Shaders\font_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\font_vert.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\icon_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\icon_frag.glsl
+		Editor\bin\Debug\net6.0-windows\Shaders\icon_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\icon_vert.glsl
 		Editor\bin\Debug\net6.0-windows\Shaders\infinite_grid_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\infinite_grid_frag.glsl
 		Editor\bin\Debug\net6.0-windows\Shaders\infinite_grid_vert.glsl = Editor\bin\Debug\net6.0-windows\Shaders\infinite_grid_vert.glsl
 		Editor\bin\Debug\net6.0-windows\Shaders\light_pass_frag.glsl = Editor\bin\Debug\net6.0-windows\Shaders\light_pass_frag.glsl
@@ -63,9 +65,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontGenerator", "FontGenera
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatisticalAnalyzer", "StatisticalAnalyzer\StatisticalAnalyzer.csproj", "{FE8DC1EB-78C3-4322-842F-A3B628828D47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileFormats", "FileFormats\FileFormats.csproj", "{F829DB47-769C-4B26-9B15-CA40530B62F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileFormats", "FileFormats\FileFormats.csproj", "{F829DB47-769C-4B26-9B15-CA40530B62F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathUtils", "MathUtils\MathUtils.csproj", "{6DE16D86-78BA-440D-BF47-7541A650E8B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MathUtils", "MathUtils\MathUtils.csproj", "{6DE16D86-78BA-440D-BF47-7541A650E8B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

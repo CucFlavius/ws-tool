@@ -46,12 +46,6 @@ namespace ProjectWS.Engine
             this.worlds = new Dictionary<uint, World.World>();
             this.skyData = new Dictionary<uint, FileFormats.Sky.File>();
 
-            // Load engine resources
-            //this.resourceManager.textureResources.Add(ResourceManager.EngineTextures.white, new Data.ResourceManager.TextureResource(ResourceManager.EngineTextures.white, this.resourceManager, null));
-            //this.taskManager.textureThread.Enqueue(new TaskManager.TextureTask(ResourceManager.EngineTextures.white, TaskManager.Task.JobType.Read, this.resourceManager));
-            //this.resourceManager.textureResources.Add(ResourceManager.EngineTextures.brushGradient, new Data.ResourceManager.TextureResource(ResourceManager.EngineTextures.brushGradient, this.resourceManager, null));
-            //this.taskManager.textureThread.Enqueue(new TaskManager.TextureTask(ResourceManager.EngineTextures.brushGradient, TaskManager.Task.JobType.Read, this.resourceManager));
-
             this.running = true;
         }
 
@@ -84,6 +78,7 @@ namespace ProjectWS.Engine
                     this.renderers[i].infiniteGridShader?.Load();
                     this.renderers[i].waterShader?.Load();
                     this.renderers[i].fontShader?.Load();
+                    this.renderers[i].iconShader?.Load();
                     this.renderers[i].lightPassShader?.Load();
                 }
             }

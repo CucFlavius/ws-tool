@@ -117,26 +117,6 @@ namespace ProjectWS.Engine.Rendering
         private void RenderBoxes(Renderer renderer, Viewport viewport)
         {
             if (this.boxIndices == null) return;
-            /*
-            int idx = 0;
-            for (int i = 0; i < this.boxRenderQueue?.Count; i++)
-            {
-                if (this.boxRenderQueue.TryDequeue(out Box box))
-                {
-                    //this.boxInstances[idx] = box.matrix;
-                    this.lineShader?.SetMat4($"instances[{i}]", box.matrix);
-                    idx++;
-                }
-            }
-
-            this.lineShader?.SetColor4("lineColor", Vector4.One);
-
-            GL.BindVertexArray(this.boxVAO);
-            GL.DrawElementsInstanced(PrimitiveType.Lines, this.boxIndices.Length, DrawElementsType.UnsignedInt, IntPtr.Zero, BOX_INSTANCE_COUNT);
-            GL.BindVertexArray(0);
-
-            drawCalls++;
-            */
 
             for (int i = 0; i < this.boxRenderQueue?.Count; i++)
             {

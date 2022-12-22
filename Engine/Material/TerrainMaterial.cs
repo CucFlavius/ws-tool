@@ -87,8 +87,6 @@ namespace ProjectWS.Engine.Material
                 }
             }
 
-            this.chunk.gameData.resourceManager.AssignTexture(ResourceManager.EngineTextures.brushGradient, this, $"brushGradient");
-
             this.isBuilt = true;
         }
 

@@ -5,6 +5,7 @@ using MathUtils;
 using System;
 using System.IO;
 using System.Text;
+using System.Xml.Linq;
 
 namespace ProjectWS.Engine
 {
@@ -163,6 +164,11 @@ namespace ProjectWS.Engine
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        internal void SetVec2(string name, float x, float y)
+        {
+            GL.Uniform2(GL.GetUniformLocation(Handle, name), x, y);
         }
     }
 }
