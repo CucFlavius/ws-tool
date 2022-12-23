@@ -205,7 +205,7 @@ namespace ProjectWS.FileFormats.Area
 
             p.uniqueID = 55419076;
 
-            p.color0 = Color4.White;// -8421505;
+            p.color0 = Color.White;// -8421505;
             p.color1 = -1;
             p.color2 = -1;
 

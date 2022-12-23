@@ -20,7 +20,7 @@ namespace ProjectWS.FileFormats.Area
         public int unk7;
         public int unk8;
         public int unk9;
-        public Color4 color0;
+        public Color color0;
         public int color1;
         public int unk10;
         public int unk11;

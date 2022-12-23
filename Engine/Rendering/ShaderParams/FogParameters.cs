@@ -24,7 +24,7 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
             isEnabled = true;
         }
 
-        public FogParameters(Color4 color, float linearStart, float linearEnd, float density, int equation)
+        public FogParameters(Color color, float linearStart, float linearEnd, float density, int equation)
         {
             this.color = new Vector3(color.R, color.G, color.B);
             this.linearStart = linearStart;

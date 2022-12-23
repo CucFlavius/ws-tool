@@ -21,7 +21,7 @@ namespace ProjectWS.Engine.Rendering
         public static int drawCalls;
         public static int propDrawCalls;
 
-        Color4 envColor = new Color4(0.1f, 0.1f, 0.1f, 1.0f);
+        Color envColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
         public static Matrix4 decompressMat = Matrix4.CreateScale(1.0f / 1024.0f);
 
         public WorldRenderer(Engine engine, int ID, Input.Input input) : base(engine)

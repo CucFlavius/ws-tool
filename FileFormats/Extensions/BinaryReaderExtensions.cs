@@ -35,9 +35,9 @@ namespace ProjectWS.FileFormats.Extensions
             return q;
         }
 
-        public static Color4 ReadColor32(this BinaryReader br)
+        public static Color ReadColor32(this BinaryReader br)
         {
-            return new Color4(br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f);
+            return new Color(br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f, br.ReadByte() / 255f);
         }
 
         public static Vector4 ReadColor(this BinaryReader br)

@@ -27,8 +27,8 @@ namespace ProjectWS.FileFormats.M3
         public short unk11;
         public short unk12;
         public short unk13;
-        public Color4 color0;
-        public Color4 color1;
+        public Color color0;
+        public Color color1;
         public byte unk16;
         public byte unk17;
 

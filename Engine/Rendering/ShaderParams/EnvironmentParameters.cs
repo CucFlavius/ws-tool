@@ -15,7 +15,7 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
             this.isEnabled = true;
         }
 
-        public EnvironmentParameters(Color4 ambientColor)
+        public EnvironmentParameters(Color ambientColor)
         {
             this.ambientColor = new Vector3(ambientColor.R, ambientColor.G, ambientColor.B);
             this.isEnabled = true;

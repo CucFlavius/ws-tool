@@ -431,7 +431,7 @@ namespace ProjectWS.Editor
                 this.subWindow.Closing += (sender, e) => { this.subWindow.Visibility = Visibility.Hidden; e.Cancel = true; };
                 this.subWindow.Owner = Program.mainWindow;
                 this.subWindow.timeSlider.ValueChanged += ChangeTime;
-                this.subWindow.Background = new SolidColorBrush(Color.FromRgb(0, 0, 0));
+                this.subWindow.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 0, 0));
             }
             this.subWindow.Title = text;
             this.subWindow.Show();

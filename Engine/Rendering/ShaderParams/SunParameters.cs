@@ -19,7 +19,7 @@ namespace ProjectWS.Engine.Rendering.ShaderParams
             this.isEnabled = true;
         }
 
-        public SunParameters(Color4 color, Vector3 direction, float intensity)
+        public SunParameters(Color color, Vector3 direction, float intensity)
         {
             this.color = new Vector3(color.R, color.G, color.B);
             this.direction = direction;
