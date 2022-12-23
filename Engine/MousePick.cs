@@ -200,7 +200,7 @@ namespace ProjectWS.Engine
             }
         }
 
-        private void DrawOBB(OBB obb, Vector3 position, Quaternion rotation, Vector3 scale, Vector4 color)
+        private void DrawOBB(OBB obb, Vector3 position, Quaternion rotation, Vector3 scale, Color color)
         {
             var min = obb.center - (obb.size * 0.5f);
             Debug.DrawWireBox3D(position + (obb.center / scale), rotation, scale * obb.size, color);
@@ -255,7 +255,7 @@ namespace ProjectWS.Engine
             return start + scaledRay;
         }
 
-        void DrawAABB(AABB aabb, Vector3 position, Vector3 scale, Vector4 color)
+        void DrawAABB(AABB aabb, Vector3 position, Vector3 scale, Color color)
         {
             var positionOffsetMat = Matrix4.CreateTranslation(new Vector3(position.X, aabb.center.Y + position.Y, position.Z));
             var scaleMat = Matrix4.CreateScale(aabb.size * scale);
@@ -264,7 +264,7 @@ namespace ProjectWS.Engine
             Debug.DrawWireBox3D(boxMat, color);
         }
 
-        internal void DrawOBB(OBB obb, Matrix4 transform, Vector4 color)
+        internal void DrawOBB(OBB obb, Matrix4 transform, Color color)
         {
             var positionOffsetMat = Matrix4.CreateTranslation(obb.center);
             var scaleMat = Matrix4.CreateScale(obb.size);

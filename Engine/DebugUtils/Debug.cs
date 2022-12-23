@@ -127,12 +127,12 @@ namespace ProjectWS
         /// <param name="position">World space position</param>
         /// <param name="rotation">Rotation</param>
         /// <param name="size">Size</param>
-        public static void DrawWireBox3D(Vector3 position, Quaternion rotation, Vector3 size, Vector4 color)
+        public static void DrawWireBox3D(Vector3 position, Quaternion rotation, Vector3 size, Color color)
         {
             immRenderer?.DrawWireBox3D(position, rotation, size, color);
         }
 
-        public static void DrawWireBox3D(Matrix4 matrix, Vector4 color)
+        public static void DrawWireBox3D(Matrix4 matrix, Color color)
         {
             immRenderer?.DrawWireBox3D(matrix, color);
         }

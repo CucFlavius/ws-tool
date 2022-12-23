@@ -2,6 +2,10 @@
 using ProjectWS.Engine.Rendering;
 using ProjectWS.Engine.World;
 using SharpFont.MultipleMasters;
+using System.Windows.Media;
+using System;
+using ProjectWS.Editor.UI.Toolbox;
+using System.Windows.Media.Imaging;
 
 namespace ProjectWS.Editor.Tools
 {
@@ -53,27 +57,52 @@ namespace ProjectWS.Editor.Tools
                     {
                         this.currentProp = propHit;
                         this.currentPropInstance = propInstanceHit;
-                        this.editor.toolboxPane?.terrainPropPlacePane.OnPropSelectionChanged(this.worldRenderer.world, propHit, propInstanceHit);
+                        OnPropSelectionChanged(this.worldRenderer.world, propHit, propInstanceHit);
                     }
-                    /*
-                    var labelText = $"{this.propHit.data.fileName}\n" +
-                        $"UUID:{this.propInstanceHit.uuid} Instance:{instanceIndex}\n" +
-                        $"P:{this.propInstanceHit.position}\nR:{this.propInstanceHit.rotationEuler}\nS:{this.propInstanceHit.scale}";
-                    Debug.DrawLabel3D(labelText, this.propInstanceHit.position, Vector4.One, true);
-                    */
-                    DrawOBB(propInstanceHit.obb, propInstanceHit.transform, new Vector4(1, 1, 0, 1));
-                    //DrawOBB(propInstanceHit.obb, propInstanceHit.transform, ((Vector4)propInstanceHit.areaprop.color0));
+
+                    if (propInstanceHit.obb != null && propInstanceHit.areaprop != null)
+                        DrawOBB(propInstanceHit.obb, propInstanceHit.transform, Color32.Yellow);
                 }
             }
         }
 
-        internal void DrawOBB(OBB obb, Matrix4 transform, Vector4 color)
+        internal void DrawOBB(OBB obb, Matrix4 transform, Color32 color)
         {
             var positionOffsetMat = Matrix4.CreateTranslation(obb.center);
             var scaleMat = Matrix4.CreateScale(obb.size);
             var boxMat = scaleMat * positionOffsetMat * transform;
 
             Debug.DrawWireBox3D(boxMat, color);
+        }
+
+        public void OnPropSelectionChanged(World world, Prop prop, Prop.Instance propInstance)
+        {
+            if (this.editor == null) return;
+            if (this.editor.toolboxPane == null) return;
+
+            TerrainPropPlacePane toolPane = this.editor.toolboxPane.terrainPropPlacePane;
+
+            if (prop.data != null)
+            {
+                toolPane.textBlock_SelectedProp.Text = prop.data.fileName;
+            }
+
+            if (propInstance.areaprop != null)
+            {
+                toolPane.propertyGrid_prop.SelectedObject = propInstance.areaprop;
+                toolPane.propertyGrid_prop.PropertyValueChanged += (obj, args) => 
+                {
+                    propInstance.position = propInstance.areaprop.position;
+                    propInstance.rotation = propInstance.areaprop.rotation;
+                    propInstance.scale = propInstance.areaprop.scale * Vector3.One;
+
+                    Matrix4 mat = Matrix4.Identity;
+                    propInstance.transform = mat.TRS(propInstance.position, propInstance.rotation, propInstance.scale);
+                };
+            }
+
+            //string jsonString = JsonSerializer.Serialize(propInstance.areaprop, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true });
+            //this.textBlock_PropDebugDetails.Text = jsonString;
         }
     }
 }

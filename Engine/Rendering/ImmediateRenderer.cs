@@ -20,9 +20,9 @@ namespace ProjectWS.Engine.Rendering
             public Quaternion rotation { get; set; }
             public Vector3 size { get; set; }
             public Matrix4 matrix { get; set; }
-            public Vector4 color { get; set; }
+            public Color color { get; set; }
 
-            public Box(Vector3 position, Quaternion rotation, Vector3 size, Vector4 color)
+            public Box(Vector3 position, Quaternion rotation, Vector3 size, Color color)
             {
                 this.position = position;
                 this.rotation = rotation;
@@ -33,7 +33,7 @@ namespace ProjectWS.Engine.Rendering
                 this.matrix = this.matrix.TRS(position, rotation, size);
             }
 
-            public Box(Matrix4 matrix, Vector4 color)
+            public Box(Matrix4 matrix, Color color)
             {
                 this.matrix = matrix;
                 this.color = color;
@@ -124,7 +124,7 @@ namespace ProjectWS.Engine.Rendering
                 {
                     var mat = box.matrix;
                     this.lineShader?.SetMat4("model", ref mat);
-                    this.lineShader?.SetColor4("lineColor", box.color);
+                    this.lineShader?.SetColor("lineColor", box.color);
 
                     GL.BindVertexArray(this.boxVAO);
                     GL.DrawElements(BeginMode.Lines, this.boxIndices.Length, DrawElementsType.UnsignedInt, 0);
@@ -141,12 +141,12 @@ namespace ProjectWS.Engine.Rendering
         /// <param name="position">World space position</param>
         /// <param name="rotation">Rotation</param>
         /// <param name="size">Size</param>
-        internal void DrawWireBox3D(Vector3 position, Quaternion rotation, Vector3 size, Vector4 color)
+        internal void DrawWireBox3D(Vector3 position, Quaternion rotation, Vector3 size, Color color)
         {
             this.boxRenderQueue?.Enqueue(new Box(position, rotation, size, color));
         }
 
-        internal void DrawWireBox3D(Matrix4 matrix, Vector4 color)
+        internal void DrawWireBox3D(Matrix4 matrix, Color color)
         {
             this.boxRenderQueue?.Enqueue(new Box(matrix, color));
         }

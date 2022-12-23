@@ -88,6 +88,11 @@ namespace ProjectWS.Engine
             GL.DeleteShader(VertexShader);
         }
 
+        public void SetColor(string name, Color value)
+        {
+            GL.Uniform4(GL.GetUniformLocation(Handle, name), value.R, value.G, value.B, value.A);
+        }
+
         public void SetColor4(string name, Vector4 value)
         {
             GL.Uniform4(GL.GetUniformLocation(Handle, name), value.X, value.Y, value.Z, value.W);

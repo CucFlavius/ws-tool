@@ -58,9 +58,15 @@ namespace ProjectWS.Engine.Input
             if (this.LMB != this.LMBPrevious)
             {
                 if (this.LMB)
+                {
+                    if (this.mousePosPerControl[this.engine.focusedRendererID].X >= 0 &&
+                        this.mousePosPerControl[this.engine.focusedRendererID].Y >= 0)
                     this.LMBClicked = ClickState.MouseButtonDown;
+                }
                 else
+                {
                     this.LMBClicked = ClickState.MouseButtonUp;
+                }
 
                 this.LMBPrevious = this.LMB;
             }

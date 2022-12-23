@@ -228,7 +228,7 @@ namespace ProjectWS.Engine.World
             }
         }
         */
-        internal void LoadProp(FileFormats.M3.File data, FileFormats.Area.Prop areaprop)
+        internal void LoadProp(FileFormats.M3.File data, FileFormats.Area.AreaProp areaprop)
         {
             if (this.props.ContainsKey(data.filePath))
             {
@@ -629,17 +629,17 @@ namespace ProjectWS.Engine.World
                                         if (!areaprop.loadRequested)
                                         {
                                             areaprop.loadRequested = true;
-                                            if (areaprop.modelType == FileFormats.Area.Prop.ModelType.M3)
+                                            if (areaprop.modelType == FileFormats.Area.AreaProp.ModelType.M3)
                                             {
                                                 // Load M3 Model //
                                                 this.gameData.resourceManager.LoadM3Model(areaprop.path);
                                                 this.gameData.resourceManager.modelResources[areaprop.path].TryBuildObject(areaprop);
                                             }
-                                            else if (areaprop.modelType == FileFormats.Area.Prop.ModelType.I3)
+                                            else if (areaprop.modelType == FileFormats.Area.AreaProp.ModelType.I3)
                                             {
                                                 // Load I3 Model //
                                             }
-                                            else if (areaprop.modelType == FileFormats.Area.Prop.ModelType.DGN)
+                                            else if (areaprop.modelType == FileFormats.Area.AreaProp.ModelType.DGN)
                                             {
                                                 // Load DGN File //
                                             }

@@ -65,7 +65,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
             }
         }
         */
-        internal void TryBuildObject(Prop areaprop)
+        internal void TryBuildObject(AreaProp areaprop)
         {
             if (this.state != Manager.ResourceState.IsReady)
             {
@@ -81,7 +81,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
 
         public struct ModelReference
         {
-            public Prop? areaprop { get; set; }
+            public AreaProp? areaprop { get; set; }
             public Vector3 position { get; set; }
             public Quaternion rotation { get; set; }
             public Vector3 scale { get; set; }
@@ -96,7 +96,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
                 this.scale = scale;
             }
 
-            public ModelReference(Prop areaprop)
+            public ModelReference(AreaProp areaprop)
             {
                 this.areaprop = areaprop;
                 this.position = areaprop.position;

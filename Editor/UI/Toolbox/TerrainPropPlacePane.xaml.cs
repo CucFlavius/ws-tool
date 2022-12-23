@@ -2,6 +2,8 @@
 using System.Windows.Controls;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System;
+using System.Windows.Media;
 
 namespace ProjectWS.Editor.UI.Toolbox
 {
@@ -13,14 +15,6 @@ namespace ProjectWS.Editor.UI.Toolbox
         public TerrainPropPlacePane()
         {
             InitializeComponent();
-        }
-
-        public void OnPropSelectionChanged(World world, Prop prop, Prop.Instance propInstance)
-        {
-            this.textBlock_SelectedProp.Text = prop.data.fileName;
-
-            string jsonString = JsonSerializer.Serialize(propInstance.areaprop, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true });
-            this.textBlock_PropDebugDetails.Text = jsonString;
         }
     }
 }

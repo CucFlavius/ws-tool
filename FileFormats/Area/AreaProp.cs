@@ -4,36 +4,42 @@ using System.Text.Json.Serialization;
 
 namespace ProjectWS.FileFormats.Area
 {
-    public class Prop
+    public class AreaProp
     {
-        public uint uniqueID;
-        public uint someID;
-        public int unk0;
-        public int unk1;
-        public ModelType modelType;
+        public uint uniqueID { get; }
+        public uint someID { get; set; }
+        public int unk0 { get; set; }
+        public int unk1 { get; set; }
+        public ModelType modelType { get; }
         public int nameOffset;
         public int unkOffset;
-        public float scale;
-        public Quaternion rotation;
-        public Vector3 position;
-        public Placement placement;
-        public int unk7;
-        public int unk8;
-        public int unk9;
-        public Color color0;
-        public int color1;
-        public int unk10;
-        public int unk11;
-        public int color2;
-        public int unk12;
-        public string? path;
+        public float scale { get; set; }
+        public Quaternion rotation { get; set; }
+        public Vector3 position { get; set; }
+        public Placement placement { get; }
+        public int unk7 { get; set; }
+        public int unk8 { get; set; }
+        public int unk9 { get; set; }
+        public Color32 color0 { get; set; }
+        public Color32 color1 { get; set; }
+        public int unk10 { get; set; }
+        public int unk11 { get; set; }
+        public Color32 color2 { get; set; }
+        public int unk12 { get; set; }
+        public string? path { get; }
 
         [JsonIgnore]
         public bool loadRequested;
 
-        public Prop() { }
+        public AreaProp(uint uuid, string path)
+        {
+            this.uniqueID = uuid;
+            this.path = path;
 
-        public Prop(BinaryReader br, long chunkStart)
+            this.placement = new Placement(0, 0, 3000, 3000);
+        }
+
+        public AreaProp(BinaryReader br, long chunkStart)
         {
             this.uniqueID = br.ReadUInt32();
             this.someID = br.ReadUInt32();
@@ -50,10 +56,10 @@ namespace ProjectWS.FileFormats.Area
             this.unk8 = br.ReadInt32();
             this.unk9 = br.ReadInt32();
             this.color0 = br.ReadColor32();
-            this.color1 = br.ReadInt32();
+            this.color1 = br.ReadColor32();
             this.unk10 = br.ReadInt32();
             this.unk11 = br.ReadInt32();
-            this.color2 = br.ReadInt32();
+            this.color2 = br.ReadColor32();
             this.unk12 = br.ReadInt32();
 
             this.loadRequested = false;
@@ -116,10 +122,16 @@ namespace ProjectWS.FileFormats.Area
             bw.Write(this.color0.G);
             bw.Write(this.color0.B);
             bw.Write(this.color0.A);
-            bw.Write(this.color1);
+            bw.Write(this.color1.R);
+            bw.Write(this.color1.G);
+            bw.Write(this.color1.B);
+            bw.Write(this.color1.A);
             bw.Write(this.unk10);
             bw.Write(this.unk11);
-            bw.Write(this.color2);
+            bw.Write(this.color2.R);
+            bw.Write(this.color2.G);
+            bw.Write(this.color2.B);
+            bw.Write(this.color2.A);
             bw.Write(this.unk12);
         }
 

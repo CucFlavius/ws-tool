@@ -15,8 +15,8 @@ namespace ProjectWS.FileFormats.Area
 
         public Header header;
         public List<SubArea>? subAreas;    // Variable size, not always 16*16
-        public List<Prop>? props;
-        public Dictionary<uint, Prop>? propLookup;
+        public List<AreaProp>? props;
+        public Dictionary<uint, AreaProp>? propLookup;
         public HashSet<uint>? renderedProps;
         public Curt[]? curts;
 
@@ -37,8 +37,8 @@ namespace ProjectWS.FileFormats.Area
                 idx++;
             }
 
-            this.props = new List<Prop>();
-            this.propLookup = new Dictionary<uint, Prop>();
+            this.props = new List<AreaProp>();
+            this.propLookup = new Dictionary<uint, AreaProp>();
             //this.curts = new Curt[0];
             ProcessForExport();
         }
@@ -160,11 +160,11 @@ namespace ProjectWS.FileFormats.Area
                         {
                             long chunkStart = br.BaseStream.Position;
                             int propCount = br.ReadInt32();
-                            this.props = new List<Prop>();
-                            this.propLookup = new Dictionary<uint, Prop>();
+                            this.props = new List<AreaProp>();
+                            this.propLookup = new Dictionary<uint, AreaProp>();
                             for (int i = 0; i < propCount; i++)
                             {
-                                this.props.Add(new Prop(br, chunkStart));
+                                this.props.Add(new AreaProp(br, chunkStart));
                                 this.propLookup.Add(this.props[i].uniqueID, this.props[i]);
                             }
                             //File.WriteAllText($"D:/Props_{this.chunk.coords}.json", JsonConvert.SerializeObject(this.props, Formatting.Indented));
@@ -192,30 +192,25 @@ namespace ProjectWS.FileFormats.Area
         public uint AddProp(string path, Vector3 position, Quaternion rotation, float scale)
         {
             if (this.props == null)
-                this.props = new List<Prop>();
+                this.props = new List<AreaProp>();
 
             if (this.propLookup == null)
-                this.propLookup = new Dictionary<uint, Prop>();
+                this.propLookup = new Dictionary<uint, AreaProp>();
 
-            Prop p = new Prop();
-            p.path = path;
+            AreaProp p = new AreaProp(55419076, path);
             p.position = position;
             p.rotation = rotation;
             p.scale = scale;
 
-            p.uniqueID = 55419076;
-
             p.color0 = Color.White;// -8421505;
-            p.color1 = -1;
-            p.color2 = -1;
-
-            p.placement = new Placement(0, 0, 3000, 3000);
+            p.color1 = Color.White;
+            p.color2 = Color.White;
 
             this.props.Add(p);
             this.propLookup.Add(p.uniqueID, p);
 
             // TODO : Determine which chunks it fits in
-            for (int i = 0; i < this.subAreas.Count; i++)
+            for (int i = 0; i < this.subAreas?.Count; i++)
             {
                 if (this.subAreas[i].propUniqueIDs == null)
                     this.subAreas[i].propUniqueIDs = new List<uint>();
