@@ -19,17 +19,8 @@ namespace ProjectWS.Editor.UI.Toolbox
         {
             this.textBlock_SelectedProp.Text = prop.data.fileName;
 
-            foreach (System.Collections.Generic.KeyValuePair<MathUtils.Vector2i, Chunk> chunkItem in world.activeChunks)
-            {
-                if (chunkItem.Value != null && chunkItem.Value.area != null && chunkItem.Value.area.propLookup != null)
-                {
-                    if (chunkItem.Value.area.propLookup.TryGetValue(propInstance.uuid, out FileFormats.Area.Prop? areaProp))
-                    {
-                        string jsonString = JsonSerializer.Serialize(areaProp, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true });
-                        this.textBlock_PropDebugDetails.Text = jsonString;
-                    }
-                }
-            }
+            string jsonString = JsonSerializer.Serialize(propInstance.areaprop, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true });
+            this.textBlock_PropDebugDetails.Text = jsonString;
         }
     }
 }

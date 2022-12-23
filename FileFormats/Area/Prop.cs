@@ -20,7 +20,7 @@ namespace ProjectWS.FileFormats.Area
         public int unk7;
         public int unk8;
         public int unk9;
-        public int color0;
+        public Color4 color0;
         public int color1;
         public int unk10;
         public int unk11;
@@ -49,7 +49,7 @@ namespace ProjectWS.FileFormats.Area
             this.unk7 = br.ReadInt32();
             this.unk8 = br.ReadInt32();
             this.unk9 = br.ReadInt32();
-            this.color0 = br.ReadInt32();
+            this.color0 = br.ReadColor32();
             this.color1 = br.ReadInt32();
             this.unk10 = br.ReadInt32();
             this.unk11 = br.ReadInt32();
@@ -112,7 +112,10 @@ namespace ProjectWS.FileFormats.Area
             bw.Write(this.unk7);
             bw.Write(this.unk8);
             bw.Write(this.unk9);
-            bw.Write(this.color0);
+            bw.Write(this.color0.R);
+            bw.Write(this.color0.G);
+            bw.Write(this.color0.B);
+            bw.Write(this.color0.A);
             bw.Write(this.color1);
             bw.Write(this.unk10);
             bw.Write(this.unk11);

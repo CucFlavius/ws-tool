@@ -102,6 +102,7 @@ namespace ProjectWS.Engine.Rendering
                 GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
                 GL.Disable(EnableCap.DepthTest);
                 renderer.iconShader.SetFloat("viewportAspect", vp.aspect);
+                renderer.iconShader.SetVec3("cameraPos", vp.mainCamera.transform.GetPosition());
                 vp.mainCamera.SetToShader(renderer.iconShader);
             }
 

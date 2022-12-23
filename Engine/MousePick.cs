@@ -109,7 +109,6 @@ namespace ProjectWS.Engine
 
                 float propMinDist = float.MaxValue;
                 int instanceIndex = 0;
-                bool hit = false;
 
                 foreach (var propItem in this.renderer.world.props)
                 {
@@ -126,28 +125,57 @@ namespace ProjectWS.Engine
                             if (intersection.X <= intersection.Y)
                             {
                                 float meshMinDist = float.MaxValue;
-
-                                for (int g = 0; g < propItem.Value.geometries?.Length; g++)
+                                if (propItem.Value.hasMeshes)
                                 {
-                                    var geometry = propItem.Value.geometries[g];
-                                    for (int m = 0; m < geometry?.meshes?.Length; m++)
+
+                                    for (int g = 0; g < propItem.Value.geometries?.Length; g++)
                                     {
-                                        if (geometry.meshes == null || geometry.meshes[m] == null) continue;
-                                        
-                                        if (geometry.meshes[m].MeshIntersectsRay(this.mouseRay, instance.position, instance.rotation, instance.scale, ref triPoints))
+                                        var geometry = propItem.Value.geometries[g];
+                                        for (int m = 0; m < geometry?.meshes?.Length; m++)
                                         {
-                                            for (int i = 0; i < 4; i++)
+                                            // Mesh pick
+                                            if (geometry.meshes == null || geometry.meshes[m] == null) continue;
+
+                                            if (geometry.meshes[m].MeshIntersectsRay(this.mouseRay, instance.position, instance.rotation, instance.scale, ref triPoints))
                                             {
-                                                var dist = Vector3.DistanceSquared(triPoints[i], this.mouseRay.origin);
-                                                if (dist < meshMinDist)
+                                                for (int i = 0; i < 4; i++)
                                                 {
-                                                    meshMinDist = dist;
-                                                    this.propHitPoint = triPoints[i];
+                                                    var dist = Vector3.DistanceSquared(triPoints[i], this.mouseRay.origin);
+                                                    if (dist < meshMinDist)
+                                                    {
+                                                        meshMinDist = dist;
+                                                        this.propHitPoint = triPoints[i];
+                                                    }
                                                 }
                                             }
-
-                                            hit = true;
                                         }
+                                    }
+                                }
+                                else
+                                {
+                                    // Icon pick
+
+                                    // Define the sphere
+                                    Vector3 center = instance.position;
+                                    float radius = 2.5f;
+
+                                    // Calculate the vector from the origin of the ray to the center of the sphere
+                                    Vector3 oc = center - this.mouseRay.origin;
+
+                                    // Calculate the projection of oc onto the direction of the ray
+                                    float t = Vector3.Dot(oc, this.mouseRay.direction);
+
+                                    // Calculate the distance between the center of the sphere and the projection
+                                    float d = (oc - t * this.mouseRay.direction).Length;
+
+                                    // Check for intersection
+                                    if (d <= radius)
+                                    {
+                                        this.propHitPoint = instance.position;
+                                        this.propInstanceHit = instance;
+                                        this.propHit = propItem.Value;
+
+                                        return; // Icons have hit priority
                                     }
                                 }
 
@@ -168,19 +196,6 @@ namespace ProjectWS.Engine
                         this.propHit = propItem.Value;
                         instanceIndex = instanceCounter;
                     }
-                }
-
-                if (this.propInstanceHit != null && hit)
-                {
-                    /*
-                    var labelText = $"{this.propHit.data.fileName}\n" +
-                        $"UUID:{this.propInstanceHit.uuid} Instance:{instanceIndex}\n" +
-                        $"P:{this.propInstanceHit.position}\nR:{this.propInstanceHit.rotationEuler}\nS:{this.propInstanceHit.scale}";
-                    Debug.DrawLabel3D(labelText, this.propInstanceHit.position, Vector4.One, true);
-                    */
-                    //DrawOBB(this.propInstanceHit.obb, this.propInstanceHit.transform, new Vector4(1, 1, 0, 1));
-                    //DrawOBB(this.propInstanceHit.obb, this.propInstanceHit.position, this.propInstanceHit.rotation, this.propInstanceHit.scale, new Vector4(1, 1, 0, 1));
-                    //Debug.DrawWireBox3D(this.propHitPoint, Quaternion.Identity, Vector3.One * 0.5f, Vector4.One);
                 }
             }
         }

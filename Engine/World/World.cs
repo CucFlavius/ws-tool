@@ -1,6 +1,8 @@
 ﻿using MathUtils;
 using OpenTK.Graphics.OpenGL4;
 using ProjectWS.Engine.Data;
+using ProjectWS.Engine.Rendering;
+using System;
 
 namespace ProjectWS.Engine.World
 {
@@ -36,7 +38,6 @@ namespace ProjectWS.Engine.World
         // Prop
         List<string> loadedProps;
         public Dictionary<string, Prop> props;
-        //HashSet<uint> culledUUIDs;
 
         // Controller
         public Controller controller;
@@ -48,9 +49,6 @@ namespace ProjectWS.Engine.World
         float cullingFrametime;
         volatile bool cullTaskProcess;
         volatile bool cullTaskUpdate;
-
-        // Tests
-        //public BoxGizmo subchunkGizmo;
 
         #endregion
 
@@ -66,7 +64,6 @@ namespace ProjectWS.Engine.World
             this.controller.onSubchunkPositionChange = OnSubchunkPositionChange;
             this.controller.onWorldPositionChange = OnWorldPositionChange;
             this.cullingStopwatch = new System.Diagnostics.Stopwatch();
-            //this.culledUUIDs = new HashSet<uint>();
             this.environment = new Environment(this);
 
             this.engine = engine;
@@ -91,15 +88,6 @@ namespace ProjectWS.Engine.World
                     }
                 }
             }
-
-            //this.subchunkGizmo = new BoxGizmo(new Vector4(1, 1, 0, 1));
-            //if (this.renderer != null)
-            //{
-                //if (this.renderer.gizmos != null)
-                //    this.renderer.gizmos.Add(this.subchunkGizmo);
-                //if (this.renderer.engine != null)
-                //    this.renderer.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.subchunkGizmo));
-            //}
         }
 
         public void CreateNew(string worldName)
@@ -226,7 +214,7 @@ namespace ProjectWS.Engine.World
             this.controller.chunkPosition = Utilities.WorldToChunkCoords(this.controller.worldPosition);
             Debug.Log($"Start: chunk {this.controller.chunkPosition} | world {this.controller.worldPosition}");
         }
-
+        /*
         public void LoadProp(FileFormats.M3.File data, uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
         {
             if (this.props.ContainsKey(data.filePath))
@@ -237,6 +225,19 @@ namespace ProjectWS.Engine.World
             {
                 this.loadedProps.Add(data.filePath);
                 this.props.Add(data.filePath, new Prop(uuid, data, position, rotation, scale, this.engine));
+            }
+        }
+        */
+        internal void LoadProp(FileFormats.M3.File data, FileFormats.Area.Prop areaprop)
+        {
+            if (this.props.ContainsKey(data.filePath))
+            {
+                this.props[data.filePath].AddInstance(areaprop);
+            }
+            else
+            {
+                this.loadedProps.Add(data.filePath);
+                this.props.Add(data.filePath, new Prop(data, areaprop, this.engine));
             }
         }
 
@@ -293,8 +294,16 @@ namespace ProjectWS.Engine.World
             {
                 for (int k = 0; k < item.Value.renderableInstances.Count; k++)
                 {
-                    Matrix4 model = item.Value.renderableInstances[k];
-                    item.Value.Render(shader, model);
+                    if (item.Value.hasMeshes)
+                    {
+                        Matrix4 model = item.Value.renderableInstances[k];
+                        item.Value.Render(shader, model);
+                    }
+                    else
+                    {
+                        // TODO : check if it's actually a light m3 or just some other thing like a camera or whatever
+                        Debug.DrawIcon3D(IconRenderer.Icon3D.Type.Light, item.Value.renderableInstances[k].ExtractPosition(), Vector4.One);
+                    }
                 }
             }
         }
@@ -624,7 +633,7 @@ namespace ProjectWS.Engine.World
                                             {
                                                 // Load M3 Model //
                                                 this.gameData.resourceManager.LoadM3Model(areaprop.path);
-                                                this.gameData.resourceManager.modelResources[areaprop.path].TryBuildObject(areaprop.uniqueID, areaprop.position, areaprop.rotation, areaprop.scale * Vector3.One);
+                                                this.gameData.resourceManager.modelResources[areaprop.path].TryBuildObject(areaprop);
                                             }
                                             else if (areaprop.modelType == FileFormats.Area.Prop.ModelType.I3)
                                             {

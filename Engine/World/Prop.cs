@@ -2,12 +2,15 @@
 using ProjectWS.Engine.Data;
 using ProjectWS.Engine.Material;
 using ProjectWS.Engine.Rendering;
+using System;
 using System.Collections.Concurrent;
 
 namespace ProjectWS.Engine.World
 {
     public class Prop
     {
+        public FileFormats.Area.Prop? areaprop;
+
         // Instance Buffers //
         public ConcurrentDictionary<uint, Instance> instances;
         public List<Matrix4> renderableInstances;
@@ -22,12 +25,26 @@ namespace ProjectWS.Engine.World
         public AABB aabb;
         public bool culled;                             // Determined if renderableInstances.Count == 0
         private bool isBuilt;
+        public bool hasMeshes;
         Engine engine;
-
+        /*
         public Prop(uint uuid, FileFormats.M3.File data, Vector3 position, Quaternion rotation, Vector3 scale, Engine engine)
         {
             this.engine = engine;
             this.data = data;
+            Setup(data);
+
+            if (this.data == null) return;
+            if (this.data.geometries == null) return;
+            if (this.data.geometries.Length <= 0) return;
+            if (this.data.geometries[0].submeshes == null) return;
+
+            AddInstance(uuid, position, rotation, scale);
+            Build();
+        }
+        */
+        private void Setup(FileFormats.M3.File data)
+        {
             if (data.bounds != null)
             {
                 this.aabb = data.bounds[0].bbA;
@@ -42,14 +59,21 @@ namespace ProjectWS.Engine.World
             this.renderableUUIDs = new HashSet<uint>();
             this.instances = new ConcurrentDictionary<uint, Instance>();
             this.uniqueInstanceIDs = new List<uint>();
-            //this.block = new MaterialPropertyBlock();
-            //this.block.Clear();
+        }
+
+        public Prop(FileFormats.M3.File data, FileFormats.Area.Prop areaprop, Engine engine)
+        {
+            this.data = data;
+            this.areaprop = areaprop;
+            this.engine = engine;
+            Setup(data);
+
             if (this.data == null) return;
             if (this.data.geometries == null) return;
             if (this.data.geometries.Length <= 0) return;
             if (this.data.geometries[0].submeshes == null) return;
 
-            AddInstance(uuid, position, rotation, scale);
+            AddInstance(areaprop);
             Build();
         }
 
@@ -68,11 +92,14 @@ namespace ProjectWS.Engine.World
             {
                 this.geometries[i] = new M3Geometry(this.data.geometries[i]);
                 this.geometries[i].Build(this.data.modelID);
+
+                if (this.geometries[i].meshes?.Length > 0)
+                    this.hasMeshes = true;
             }
 
             this.isBuilt = true;
         }
-
+        /*
         public void AddInstance(uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
         {
             if (this.cullingResults.ContainsKey(uuid)) return;
@@ -87,6 +114,20 @@ namespace ProjectWS.Engine.World
             this.instances.TryAdd(uuid, instance);
             this.uniqueInstanceIDs.Add(uuid);
             this.cullingResults.Add(uuid, false);
+        }
+        */
+        internal void AddInstance(FileFormats.Area.Prop areaprop)
+        {
+            this.areaprop = areaprop;
+            //AddInstance(areaprop.uniqueID, areaprop.position, areaprop.rotation, areaprop.scale * Vector3.One);
+
+            var instance = new Instance(areaprop);
+            instance.obb = new OBB(this.aabb, areaprop.rotation);
+            instance.aabb = instance.obb.GetEncapsulatingAABB();
+
+            this.instances.TryAdd(areaprop.uniqueID, instance);
+            this.uniqueInstanceIDs.Add(areaprop.uniqueID);
+            this.cullingResults[areaprop.uniqueID] = false;
         }
 
         public void Render(Shader shader, Matrix4 model)
@@ -120,6 +161,7 @@ namespace ProjectWS.Engine.World
 
         public class Instance
         {
+            public FileFormats.Area.Prop areaprop;
             public Matrix4 transform;
             public Vector3 position;
             public Quaternion rotation;
@@ -153,6 +195,23 @@ namespace ProjectWS.Engine.World
                 this.rotation = rotation;
                 this.scale = scale;
                 rotation.ToEulerAngles(out this.rotationEuler);
+                // Convert to Degree
+                this.rotationEuler *= (float)(180f / Math.PI);
+            }
+
+            public Instance(FileFormats.Area.Prop areaprop)
+            {
+                this.areaprop = areaprop;
+
+                Matrix4 mat = Matrix4.Identity;
+                this.transform = mat.TRS(areaprop.position, areaprop.rotation, areaprop.scale * Vector3.One);
+
+                this.uuid = areaprop.uniqueID;
+                this.type = Type.WorldProp;
+                this.position = areaprop.position;
+                this.rotation = areaprop.rotation;
+                this.scale = areaprop.scale * Vector3.One;
+                areaprop.rotation.ToEulerAngles(out this.rotationEuler);
                 // Convert to Degree
                 this.rotationEuler *= (float)(180f / Math.PI);
             }

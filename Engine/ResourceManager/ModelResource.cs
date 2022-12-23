@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using OpenTK;
 using MathUtils;
+using ProjectWS.FileFormats.Area;
+using System;
 
 namespace ProjectWS.Engine.Data.ResourceManager
 {
@@ -42,16 +44,19 @@ namespace ProjectWS.Engine.Data.ResourceManager
             for (int i = 0; i < modelReferences.Count; i++)
             {
                 var item = this.modelReferences[i];
-                this.world.LoadProp(this.m3, item.uuid, item.position, item.rotation, item.scale);
+                //if (item.areaprop != null)
+                    this.world.LoadProp(this.m3, item.areaprop);
+                //else
+                //    this.world.LoadProp(this.m3, item.uuid, item.position, item.rotation, item.scale);
             }
         }
-
+        /*
         public void TryBuildObject(uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
         {
             if (this.state != Manager.ResourceState.IsReady)
             {
                 // Unavailable //
-                this.modelReferences.Add(new ModelReference() { uuid = uuid, position = position, rotation = rotation, scale = scale });
+                this.modelReferences.Add(new ModelReference(uuid, position, rotation, scale));
                 referenceCount++;
             }
             else
@@ -59,13 +64,46 @@ namespace ProjectWS.Engine.Data.ResourceManager
                 this.world.LoadProp(this.m3, uuid, position, rotation, scale);
             }
         }
+        */
+        internal void TryBuildObject(Prop areaprop)
+        {
+            if (this.state != Manager.ResourceState.IsReady)
+            {
+                // Unavailable //
+                this.modelReferences.Add(new ModelReference(areaprop));
+                referenceCount++;
+            }
+            else
+            {
+                this.world.LoadProp(this.m3, areaprop);
+            }
+        }
 
         public struct ModelReference
         {
-            public Vector3 position;
-            public Quaternion rotation;
-            public Vector3 scale;
-            public uint uuid;
+            public Prop? areaprop { get; set; }
+            public Vector3 position { get; set; }
+            public Quaternion rotation { get; set; }
+            public Vector3 scale { get; set; }
+            public uint uuid { get; set; }
+
+            public ModelReference(uint uuid, Vector3 position, Quaternion rotation, Vector3 scale)
+            {
+                this.areaprop = null;
+                this.uuid = uuid;
+                this.position = position;
+                this.rotation = rotation;
+                this.scale = scale;
+            }
+
+            public ModelReference(Prop areaprop)
+            {
+                this.areaprop = areaprop;
+                this.position = areaprop.position;
+                this.rotation = areaprop.rotation;
+                this.scale = areaprop.scale * Vector3.One;
+                this.uuid = areaprop.uniqueID;
+            }
         }
     }
 }

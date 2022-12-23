@@ -62,8 +62,7 @@ namespace ProjectWS.Editor.Tools
                     Debug.DrawLabel3D(labelText, this.propInstanceHit.position, Vector4.One, true);
                     */
                     DrawOBB(propInstanceHit.obb, propInstanceHit.transform, new Vector4(1, 1, 0, 1));
-
-                    Debug.DrawIcon3D(IconRenderer.Icon3D.Type.Light, propInstanceHit.position, Vector4.One);
+                    //DrawOBB(propInstanceHit.obb, propInstanceHit.transform, ((Vector4)propInstanceHit.areaprop.color0));
                 }
             }
         }
