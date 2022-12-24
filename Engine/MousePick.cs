@@ -109,6 +109,7 @@ namespace ProjectWS.Engine
 
                 float propMinDist = float.MaxValue;
                 int instanceIndex = 0;
+                bool hit = false;
 
                 foreach (var propItem in this.renderer.world.props)
                 {
@@ -145,6 +146,7 @@ namespace ProjectWS.Engine
                                                     {
                                                         meshMinDist = dist;
                                                         this.propHitPoint = triPoints[i];
+                                                        hit = true;
                                                     }
                                                 }
                                             }
@@ -196,6 +198,12 @@ namespace ProjectWS.Engine
                         this.propHit = propItem.Value;
                         instanceIndex = instanceCounter;
                     }
+                }
+
+                if (!hit)
+                {
+                    this.propHit = null;
+                    this.propInstanceHit = null;
                 }
             }
         }

@@ -10,9 +10,9 @@ namespace ProjectWS.Editor.Tools
         readonly Engine.Engine? engine;
         public readonly WorldRenderer? worldRenderer;
         readonly Editor? editor;
-        Prop currentProp;
-        Prop.Instance currentPropInstance;
-        PropProperty selectedPropProperty;
+        Prop? currentProp;
+        Prop.Instance? currentPropInstance;
+        PropProperty? selectedPropProperty;
 
         public PropTool(Engine.Engine engine, Editor editor, WorldRenderer world)
         {
@@ -73,6 +73,12 @@ namespace ProjectWS.Editor.Tools
                     if (propInstanceHit.obb != null && propInstanceHit.areaprop != null)
                         DrawOBB(propInstanceHit.obb, propInstanceHit.transform, Color32.Yellow);
                 }
+                else
+                {
+                    this.currentProp = null;
+                    this.currentPropInstance = null;
+                    OnPropSelectionChanged(this.worldRenderer.world, propHit, propInstanceHit);
+                }
             }
         }
 
@@ -85,23 +91,32 @@ namespace ProjectWS.Editor.Tools
             Debug.DrawWireBox3D(boxMat, color);
         }
 
-        public void OnPropSelectionChanged(World world, Prop prop, Prop.Instance propInstance)
+        public void OnPropSelectionChanged(World world, Prop? prop, Prop.Instance? propInstance)
         {
             if (this.editor == null) return;
             if (this.editor.toolboxPane == null) return;
 
             TerrainPropPlacePane toolPane = this.editor.toolboxPane.terrainPropPlacePane;
 
-            if (prop.data != null)
+            if (prop != null && propInstance != null)
             {
-                toolPane.textBlock_SelectedProp.Text = prop.data.fileName;
+                if (prop.data != null)
+                {
+                    toolPane.textBlock_SelectedProp.Text = prop.data.fileName;
+                }
+
+                if (propInstance.areaprop != null)
+                {
+                    this.selectedPropProperty = new PropProperty(propInstance.areaprop);
+
+                    toolPane.propertyGrid_prop.SelectedObject = this.selectedPropProperty;
+                }
             }
-
-            if (propInstance.areaprop != null)
+            else
             {
-                this.selectedPropProperty = new PropProperty(propInstance.areaprop);
-
-                toolPane.propertyGrid_prop.SelectedObject = this.selectedPropProperty;
+                toolPane.textBlock_SelectedProp.Text = string.Empty;
+                this.selectedPropProperty = null;
+                toolPane.propertyGrid_prop.SelectedObject = null;
             }
         }
     }
