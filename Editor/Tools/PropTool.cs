@@ -1,21 +1,18 @@
 ﻿using MathUtils;
+using ProjectWS.Editor.UI.Toolbox;
 using ProjectWS.Engine.Rendering;
 using ProjectWS.Engine.World;
-using SharpFont.MultipleMasters;
-using System.Windows.Media;
-using System;
-using ProjectWS.Editor.UI.Toolbox;
-using System.Windows.Media.Imaging;
 
 namespace ProjectWS.Editor.Tools
 {
-    public class PropTool : Tool
+    public partial class PropTool : Tool
     {
         readonly Engine.Engine? engine;
         public readonly WorldRenderer? worldRenderer;
         readonly Editor? editor;
         Prop currentProp;
         Prop.Instance currentPropInstance;
+        PropProperty selectedPropProperty;
 
         public PropTool(Engine.Engine engine, Editor editor, WorldRenderer world)
         {
@@ -24,6 +21,19 @@ namespace ProjectWS.Editor.Tools
             this.engine = engine;
             this.worldRenderer = world;
             this.isEnabled = false;
+        }
+
+        public override void OnTooboxPaneLoaded()
+        {
+            if (this.editor?.toolboxPane != null)
+            {
+                TerrainPropPlacePane toolPane = this.editor.toolboxPane.terrainPropPlacePane;
+
+                toolPane.propertyGrid_prop.PropertyValueChanged += (obj, args) =>
+                {
+                    this.selectedPropProperty.Refresh(ref this.currentPropInstance);
+                };
+            }
         }
 
         public override void Enable()
@@ -89,20 +99,10 @@ namespace ProjectWS.Editor.Tools
 
             if (propInstance.areaprop != null)
             {
-                toolPane.propertyGrid_prop.SelectedObject = propInstance.areaprop;
-                toolPane.propertyGrid_prop.PropertyValueChanged += (obj, args) => 
-                {
-                    propInstance.position = propInstance.areaprop.position;
-                    propInstance.rotation = propInstance.areaprop.rotation;
-                    propInstance.scale = propInstance.areaprop.scale * Vector3.One;
+                this.selectedPropProperty = new PropProperty(propInstance.areaprop);
 
-                    Matrix4 mat = Matrix4.Identity;
-                    propInstance.transform = mat.TRS(propInstance.position, propInstance.rotation, propInstance.scale);
-                };
+                toolPane.propertyGrid_prop.SelectedObject = this.selectedPropProperty;
             }
-
-            //string jsonString = JsonSerializer.Serialize(propInstance.areaprop, new JsonSerializerOptions { WriteIndented = true, IncludeFields = true });
-            //this.textBlock_PropDebugDetails.Text = jsonString;
         }
     }
 }

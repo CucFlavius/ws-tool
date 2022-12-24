@@ -133,5 +133,10 @@ namespace ProjectWS.Editor.Tools
                 }
             }
         }
+
+        public override void OnTooboxPaneLoaded()
+        {
+            
+        }
     }
 }

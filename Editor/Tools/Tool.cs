@@ -1,4 +1,5 @@
 ﻿using MathUtils;
+using ProjectWS.Engine.Database.Definitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,5 +23,7 @@ namespace ProjectWS.Editor.Tools
         public abstract void Enable();
         public abstract void Disable();
         public abstract void Update(float deltaTime);
+
+        public abstract void OnTooboxPaneLoaded();
     }
 }

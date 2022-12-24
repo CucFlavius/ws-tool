@@ -16,5 +16,10 @@ namespace ProjectWS.Editor.UI.Toolbox
         {
             InitializeComponent();
         }
+
+        private void propertyGrid_prop_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+
+        }
     }
 }

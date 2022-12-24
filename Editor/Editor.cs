@@ -400,6 +400,14 @@ namespace ProjectWS.Editor
                 this.layoutAnchorablePane = new LayoutAnchorablePane(this.toolboxLayoutAnchorable);
                 window.LayoutAnchorablePaneGroup.Children.Add(this.layoutAnchorablePane);
             }
+
+            for (int i = 0; i < this.tools?.Count; i++)
+            {
+                if (this.tools[i] is PropTool)
+                {
+                    this.tools[i].OnTooboxPaneLoaded();
+                }
+            }
         }
 
         void OpenTkControl_OnRender(TimeSpan delta, int ID, int frameBuffer)

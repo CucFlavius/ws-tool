@@ -55,6 +55,10 @@ namespace MathUtils
         /// </summary>
         public float Z;
 
+        public float x { get { return X; } set { this.X = x; } }
+        public float y { get { return Y; } set { this.Y = y; } }
+        public float z { get { return Z; } set { this.Z = z; } }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Vector3"/> struct.
         /// </summary>
