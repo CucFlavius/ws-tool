@@ -21,9 +21,12 @@ namespace ProjectWS.Engine
         public string cacheLocation;
         public int focusedRendererID;
         public int total_mem_kb;
-        public int cur_avail_mem_kb;
         public int total_mem_mb;
-        public int cur_avail_mem_mb;
+        public int cur_avail_mem_kb;
+        public int initial_avail_mem_kb;
+        public int memory_usage_kb;
+        public int memory_usage_mb;
+        public bool firstFrame = true;
 
         public TaskManager.Manager taskManager;
         public Data.ResourceManager.Manager resourceManager;
@@ -83,6 +86,17 @@ namespace ProjectWS.Engine
                 }
             }
 
+            if (this.firstFrame)
+            {
+                // Save total mem
+                this.total_mem_kb = GL.GetInteger((GetPName)GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX);
+                this.total_mem_mb = (int)((float)this.total_mem_kb / 1024f);
+
+                // Save gpu mem
+                this.initial_avail_mem_kb = GL.GetInteger((GetPName)GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX);
+                this.firstFrame = false;
+            }
+
             for (int i = 0; i < this.renderers.Count; i++)
             {
                 this.renderers[i].Update(deltaTime);
@@ -100,10 +114,9 @@ namespace ProjectWS.Engine
 
         void CalculateGPUMemory()
         {
-            this.total_mem_kb = GL.GetInteger((GetPName)GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX);
-            this.cur_avail_mem_kb =  GL.GetInteger((GetPName)GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX);
-            this.total_mem_mb = (int)((float)this.total_mem_kb / 1024f);
-            this.cur_avail_mem_mb = (int)((float)this.cur_avail_mem_kb / 1024f);
+            this.cur_avail_mem_kb = GL.GetInteger((GetPName)GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX);
+            this.memory_usage_kb = (this.total_mem_kb - this.cur_avail_mem_kb) - (this.total_mem_kb - this.initial_avail_mem_kb);
+            this.memory_usage_mb = (int)((float)this.memory_usage_kb / 1024f);
         }
 
         public void Render(int renderer, int frameBuffer)
@@ -125,23 +138,6 @@ namespace ProjectWS.Engine
             
             if (this.taskManager != null)
                 this.taskManager.Destructor();
-        }
-
-        public void RenderStats()
-        {
-            /*
-            string gameFPSString = (1f / this.frameTime).ToString("0.00");
-            string gameFrameTimeString = (this.frameTime * 1000).ToString("000");
-            GUI.Label(new Rect(Screen.width - 300, 60, 300, 20), $"{"Render FPS : ",30}{gameFPSString} ({gameFrameTimeString} ms)");
-
-            if (this.worlds.Count > 0)
-            {
-                string cullingFPSString = (1f / (float)this.worlds[0].cullingFrametime).ToString("0.00");
-                string cullingFrameTimeString = (this.worlds[0].cullingFrametime * 1000).ToString("000");
-                GUI.Label(new Rect(Screen.width - 300, 80, 300, 20), $"{"Culling FPS : ", 30}{cullingFPSString} ({cullingFrameTimeString} ms)");
-                GUI.Label(new Rect(Screen.width - 300, 100, 300, 20), $"{"Props Rendered : ", 30}{this.worlds[0].propsRendered}");
-            }
-            */
         }
 
         public FileFormats.Sky.File GetSky(uint ID)

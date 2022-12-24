@@ -88,7 +88,7 @@ namespace ProjectWS.Editor
                 }
 
                 if (Program.app != null && this.fps != null)
-                    Program.app.MainWindow.Title = $"FPS:{this.fps.Get()} DrawCalls:{WorldRenderer.drawCalls} PropDrawCalls:{WorldRenderer.propDrawCalls} VRam Usage:{this.engine.total_mem_mb - this.engine.cur_avail_mem_mb}MB/{this.engine.total_mem_mb}MB";
+                    Program.app.MainWindow.Title = $"FPS:{this.fps.Get()} DrawCalls:{WorldRenderer.drawCalls} PropDrawCalls:{WorldRenderer.propDrawCalls} VRam Usage:{this.engine.memory_usage_mb}MB/{this.engine.total_mem_mb}MB";
             }
         }
 
@@ -414,12 +414,10 @@ namespace ProjectWS.Editor
         {
             // Find which control is focused, and only update if ID matches
             // This is so that Update is only called one time, not for every render control call
-            if (ID == this.engine.focusedRendererID)
+            if (ID == this.engine?.focusedRendererID)
             {
                 Update();
             }
-
-            
 
             Render(ID, frameBuffer);
         }

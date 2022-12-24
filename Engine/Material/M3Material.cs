@@ -28,6 +28,7 @@ namespace ProjectWS.Engine.Material
             this.isBuilding = true;
 
             this.texturePtrs = new Dictionary<string, uint>();
+
             for (int i = 0; i < this.matData.materialDescriptions.Length; i++)
             {
                 short textureA = this.matData.materialDescriptions[i].textureSelectorA;
