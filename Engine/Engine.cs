@@ -1,5 +1,6 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using ProjectWS.Engine.Data;
 
 namespace ProjectWS.Engine
 {
@@ -41,6 +42,7 @@ namespace ProjectWS.Engine
         /// </summary>
         public Engine()
         {
+            DataManager.engineRef = this;
             SettingsSerializer.Load();
             this.taskManager = new TaskManager.Manager(this);
             this.resourceManager = new Data.ResourceManager.Manager(this);
@@ -55,6 +57,7 @@ namespace ProjectWS.Engine
         public void LoadGameData(string installLocation, Action<Data.GameData> onLoaded)
         {
             this.data = new Data.GameData(this, installLocation, onLoaded);
+            this.taskManager.otherThread.Enqueue(new TaskManager.ArchiveTask(this.data, TaskManager.Task.JobType.Read, this.taskManager));
         }
 
         public void SetCacheLocation(string cacheLocation) => this.cacheLocation = cacheLocation;

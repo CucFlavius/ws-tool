@@ -61,24 +61,16 @@ namespace ProjectWS.Editor.Tools
                 var propHit = this.worldRenderer.mousePick.propHit;
                 var propInstanceHit = this.worldRenderer.mousePick.propInstanceHit;
 
-                if (propHit != null && propInstanceHit != null)
+                if (propHit != this.currentProp || propInstanceHit != this.currentPropInstance)
                 {
-                    if (propHit != this.currentProp && propInstanceHit != this.currentPropInstance)
-                    {
-                        this.currentProp = propHit;
-                        this.currentPropInstance = propInstanceHit;
-                        OnPropSelectionChanged(this.worldRenderer.world, propHit, propInstanceHit);
-                    }
-
-                    if (propInstanceHit.obb != null && propInstanceHit.areaprop != null)
-                        DrawOBB(propInstanceHit.obb, propInstanceHit.transform, Color32.Yellow);
-                }
-                else
-                {
-                    this.currentProp = null;
-                    this.currentPropInstance = null;
+                    this.currentProp = propHit;
+                    this.currentPropInstance = propInstanceHit;
                     OnPropSelectionChanged(this.worldRenderer.world, propHit, propInstanceHit);
                 }
+
+                if (propHit != null && propInstanceHit != null)
+                    if (propInstanceHit.obb != null && propInstanceHit.areaprop != null)
+                        DrawOBB(propInstanceHit.obb, propInstanceHit.transform, Color32.Yellow);
             }
         }
 

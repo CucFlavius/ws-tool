@@ -10,6 +10,13 @@ namespace ProjectWS.FileFormats.Tex
         public sbyte hasReplacement;    // 0 - 1
         public sbyte replacement;       // 0 - 255
 
+        public LayerInfo()
+        {
+            this.quality = 0;
+            this.hasReplacement = 0;
+            this.replacement = 0;
+        }
+
         public LayerInfo(BinaryReader br)
         {
             this.quality = br.ReadSByte();

@@ -22,7 +22,7 @@ namespace ProjectWS.Engine
             if (File.Exists("Settings.json"))
             {
                 string? jsonString = File.ReadAllText("Settings.json");
-                if (jsonString != null)
+                if (jsonString != null && jsonString != String.Empty)
                 {
                     Engine.settings = JsonSerializer.Deserialize<Settings>(jsonString);
                 }

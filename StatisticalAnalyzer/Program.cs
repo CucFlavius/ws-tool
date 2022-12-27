@@ -9,11 +9,11 @@ namespace StatisticalAnalyzer
         static void Main(string[] args)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            CheckM3Files(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Art\");
+            //CheckM3Files(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Art\");
             //CheckAreaFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Map");
             //ExtractShaders(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Shaders", @"G:\Reverse Engineering\WildStar\DecompiledShaders");
             //CheckSkyFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Sky");
-
+            CheckTexFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Art\");
             //var area = new ProjectWS.Engine.Data.Area(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Map\BattlegroundHallsoftheBloodsworn\BattlegroundHallsoftheBloodsworn.3f3d.area");
             //area.Read();
 
@@ -215,6 +215,30 @@ namespace StatisticalAnalyzer
                 Console.WriteLine(item);
             }
         }
+
+        static void CheckTexFiles(string location)
+        {
+            string[] texFiles = Directory.GetFiles(location, "*.tex", SearchOption.AllDirectories);
+
+            HashSet<long> collected = new HashSet<long>();
+
+            foreach (var filePath in texFiles)
+            {
+                var tex = new ProjectWS.FileFormats.Tex.File(filePath);
+                using (var str = File.OpenRead(filePath))
+                {
+                    if (str.Length == 0) continue;
+                    //tex.Read(str);
+                    using (BinaryReader br = new BinaryReader(str))
+                    {
+                        var header = new ProjectWS.FileFormats.Tex.Header(br);
+                        if (header.unk != 0)
+                            Console.WriteLine(header.unk + " " + filePath);
+                    }
+                }
+            }
+        }
+
 
         static void CheckAreaFiles(string location)
         {

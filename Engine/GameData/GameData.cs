@@ -12,16 +12,16 @@ namespace ProjectWS.Engine.Data
         public const string CLIENTDATA = "ClientData";
 
         public Engine engine;
-        public ResourceManager.Manager resourceManager;
-        public string gamePath;
+        public ResourceManager.Manager? resourceManager;
+        public string? gamePath;
         public string dataFolderPath;
         public bool dataAvailable;
         public bool databaseAvailable;
-        public Dictionary<string, Archive> archives;
-        public Action<Data.GameData> onLoaded;
-        public Database.Tables database;
+        public Dictionary<string, Archive>? archives;
+        public Action<Data.GameData>? onLoaded;
+        public Database.Tables? database;
 
-        public GameData(Engine engine, string gamePath = null, Action<Data.GameData> onLoaded = null)
+        public GameData(Engine engine, string? gamePath = null, Action<Data.GameData>? onLoaded = null)
         {
             this.resourceManager = engine.resourceManager;
             this.dataAvailable = false;
@@ -32,7 +32,7 @@ namespace ProjectWS.Engine.Data
             if (gamePath == null)
             {
                 // Try to auto detect where the game is installed
-                string gameExePath = FindInstallationUsingRegistry();
+                string? gameExePath = FindInstallationUsingRegistry();
                 if (gameExePath == null)
                 {
                     this.dataAvailable = false;
@@ -53,25 +53,25 @@ namespace ProjectWS.Engine.Data
 
             this.gamePath = gamePath;
             this.dataFolderPath = $"{gamePath}\\Patch\\";
-
-            engine.taskManager.otherThread.Enqueue(new TaskManager.ArchiveTask(this, TaskManager.Task.JobType.Read, engine.taskManager));
         }
 
-        public void Read()
+        public void Read(bool loadDatabase = true, Action<int>? progress = null)
         {
             this.archives = new Dictionary<string, Archive>();
 
             this.archives.Add(CLIENTDATA, new Archive(this.dataFolderPath, CLIENTDATA));
-            this.archives[CLIENTDATA].Read();
+            this.archives[CLIENTDATA].Read(progress);
 
             this.dataAvailable = true;
 
             // Load database
-            this.database = new Database.Tables(this.engine, this);
+            if (loadDatabase)
+                this.database = new Database.Tables(this.engine, this);
         }
 
-        string FindInstallationUsingRegistry()
+        string? FindInstallationUsingRegistry()
         {
+#if WINDOWS
             var key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\WildStar");
             if (key != null)
             {
@@ -84,6 +84,7 @@ namespace ProjectWS.Engine.Data
                 }
             }
             Debug.LogWarning("Can't find registry key for WS install location.");
+#endif
             return null;
         }
 

@@ -10,6 +10,7 @@
 using AvalonDock;
 using AvalonDock.Layout;
 using OpenTK.Wpf;
+using ProjectWS.Editor.UI;
 using ProjectWS.Engine;
 using System.Windows;
 using System.Windows.Input;
@@ -135,10 +136,15 @@ namespace ProjectWS.Editor
 			this.editor.Save();
 		}
 
-		private void Toolbox_Click(object sender, RoutedEventArgs e)
+		private void menuItem_Toolbox_Click(object sender, RoutedEventArgs e)
 		{
 			if (!this.editor.layoutAnchorablePane.Children.Contains(this.editor.toolboxLayoutAnchorable))
 				this.editor.layoutAnchorablePane.Children.Add(this.editor.toolboxLayoutAnchorable);
 		}
+
+		private void menuItem_DataManager_Click(object sender, RoutedEventArgs e)
+		{
+			this.editor.OpenDataManager();
+        }
 	}
 }

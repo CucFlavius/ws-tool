@@ -1,6 +1,9 @@
 ﻿using BCnEncoder.Decoder;
 using BCnEncoder.Shared;
+using Microsoft.Toolkit.HighPerformance;
 using ProjectWS.FileFormats.Extensions;
+using System.Runtime.InteropServices;
+using System;
 
 namespace ProjectWS.FileFormats.Area
 {
@@ -215,9 +218,10 @@ namespace ProjectWS.FileFormats.Area
                 this.blendMapMode = MapMode.Raw;
                 var blendMapDXT = br.ReadBytes(2312);
                 BcDecoder decoder = new BcDecoder();
-                var tex = new BCnTextureData(CompressionFormat.Bc1, 65, 65, blendMapDXT);
-                var decoded = decoder.Decode(tex);
-                this.blendMap = decoded.MipLevels[0].Data;
+
+                //var tex = new BCnTextureData(CompressionFormat.Bc1, 65, 65, blendMapDXT);
+                var decoded = decoder.DecodeRaw(blendMapDXT, 65, 65, CompressionFormat.Bc1);
+                this.blendMap = MemoryMarshal.Cast<ColorRgba32, byte>(decoded).ToArray();
             }
 
             // Unknown Map DXT1 //

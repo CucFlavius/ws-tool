@@ -235,7 +235,7 @@ namespace ProjectWS.FileFormats.Area
                         encoder.OutputOptions.GenerateMipMaps = false;
                         encoder.OutputOptions.Quality = CompressionQuality.Balanced;
                         encoder.OutputOptions.Format = CompressionFormat.Bc1;
-                        sc.blendMap = encoder.EncodeBytesToRawBytes(sc.blendMap, 65, 65, CompressionFormat.Rgba32, 0, out int _, out int _);
+                        sc.blendMap = encoder.EncodeToRawBytes(sc.blendMap, 65, 65, PixelFormat.Rgba32, 0, out int _, out int _);
                     }
                 }
             }

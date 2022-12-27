@@ -1,6 +1,10 @@
+using BCnEncoder.Shared;
+using ProjectWS.FileFormats.M3;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System.Diagnostics;
+using System.Linq;
 
 namespace ProjectWS.FileFormats.Tex
 {
@@ -47,9 +51,22 @@ namespace ProjectWS.FileFormats.Tex
                                 Jpeg.Decoder lt = new Jpeg.Decoder();
                                 for (int i = 0; i < this.header.imageSizesCount; i++)
                                 {
-                                    jpegMips[i] = br.ReadBytes((int)this.header.imageSizes[i]);
-                                    rgbaMips[i] = lt.DecompressMip(this.header, ((int)this.header.imageSizesCount - 1) - i, jpegMips[i]);
-                                    this.mipData.Add(rgbaMips[i]);
+                                    // Hack (only doing biggest mip, rest are generated)
+                                    if (i == this.header.imageSizesCount - 1)
+                                    {
+                                        jpegMips[i] = br.ReadBytes((int)this.header.imageSizes[i]);
+                                        rgbaMips[i] = lt.DecompressMip(this.header, ((int)this.header.imageSizesCount - 1) - i, jpegMips[i]);
+                                        this.mipData.Add(rgbaMips[i]);
+                                    }
+                                    else
+                                    {
+                                        br.BaseStream.Position += this.header.imageSizes[i];
+                                        this.mipData.Add(new byte[0]);
+                                    }
+
+                                    //jpegMips[i] = br.ReadBytes((int)this.header.imageSizes[i]);
+                                    //rgbaMips[i] = lt.DecompressMip(this.header, ((int)this.header.imageSizesCount - 1) - i, jpegMips[i]);
+                                    //this.mipData.Add(rgbaMips[i]);
                                 }
                             }
                             break;
@@ -77,17 +94,12 @@ namespace ProjectWS.FileFormats.Tex
                         case TextureType.DXT1:
                             {
                                 int[] DXTSizes = CalculateDXTSizes(this.header.mipCount, this.header.width, this.header.height, 8);
-                                // skip to mip0
-                                //int distance = 0;
+
                                 for (int d = 0; d < this.header.mipCount; d++)
                                 {
-                                    //distance += DXTSizes[d];
                                     byte[] buffer = br.ReadBytes(DXTSizes[d]);
                                     this.mipData.Add(buffer);
                                 }
-                                //br.BaseStream.Seek(distance, SeekOrigin.Current);
-                                //int remainingSize = (int)(br.BaseStream.Length - br.BaseStream.Position);
-                                //this.rawData = br.ReadBytes(remainingSize);
                             }
                             break;
                         case TextureType.DXT3:
@@ -95,15 +107,11 @@ namespace ProjectWS.FileFormats.Tex
                         case TextureType.DXT5:
                             {
                                 int[] DXTSizes = CalculateDXTSizes(this.header.mipCount, this.header.width, this.header.height, 16);
-                                //this.rawData = new byte[br.BaseStream.Length - br.BaseStream.Position];
 
-                                //int reverseOffset = 0;
                                 for (int d = 0; d < this.header.mipCount; d++)
                                 {
                                     byte[] buffer = br.ReadBytes(DXTSizes[d]);
                                     this.mipData.Add(buffer);
-                                    //reverseOffset += buffer.Length;
-                                    //System.Buffer.BlockCopy(buffer, 0, this.rawData, this.rawData.Length - reverseOffset, buffer.Length);
                                 }
                             }
                             break;
@@ -117,6 +125,24 @@ namespace ProjectWS.FileFormats.Tex
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
+            }
+        }
+
+        public void ConvertMipDataToDXT()
+        {
+            if (this.mipData == null || this.header == null)
+                return;
+
+            byte[] data = this.mipData[this.mipData.Count - 1];
+
+            BCnEncoder.Encoder.BcEncoder enc = new BCnEncoder.Encoder.BcEncoder(BCnEncoder.Shared.CompressionFormat.Bc3);
+
+            ReadOnlySpan<byte> decoded = data.AsSpan();
+            byte[][] mips = enc.EncodeToRawBytes(decoded, this.header.width, this.header.height, BCnEncoder.Encoder.PixelFormat.Rgba32);
+
+            for (int i = 0; i < mips.Length; i++)
+            {
+                this.mipData[i] = mips[mips.Length - 1 - i];
             }
         }
 
@@ -137,18 +163,26 @@ namespace ProjectWS.FileFormats.Tex
                 Directory.CreateDirectory(directory);
 
             // Change to ARGB
+            /*
             this.header.isCompressed = 0;
             this.header.format = 0;
             var currentTextureType = this.header.textureType;
+            this.header.imageSizesCount = 0;
+            this.header.layerInfos = new LayerInfo[] { new LayerInfo(), new LayerInfo(), new LayerInfo(), new LayerInfo() };
+            */
+            // Change to DXT5
+            this.header.isCompressed = 0;
+            this.header.format = 15;
+            var currentTextureType = this.header.textureType;
+            this.header.imageSizesCount = 0;
+            //this.header.mipCount = 1;
+            this.header.layerInfos = new LayerInfo[] { new LayerInfo(), new LayerInfo(), new LayerInfo(), new LayerInfo() };
 
-            using(var str = System.IO.File.OpenWrite(filePath))
+            using (var str = System.IO.File.OpenWrite(filePath))
             {
                 using(var bw = new BinaryWriter(str))
                 {
                     this.header.Write(bw, this.mipData);
-
-                    if (this.header.version > 0)
-                        bw.BaseStream.Position = 112;
 
                     switch (currentTextureType)
                     {

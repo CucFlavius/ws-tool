@@ -56,6 +56,7 @@ namespace ProjectWS.FileFormats.Tex
                 {
                     this.imageSizes[s] = br.ReadUInt32();
                 }
+                br.BaseStream.Position += (13 - this.imageSizesCount) * 4;
                 this.unk = br.ReadInt32();
             }
 
@@ -132,10 +133,25 @@ namespace ProjectWS.FileFormats.Tex
                     this.layerInfos[i].Write(bw);
                 }
                 bw.Write(this.imageSizesCount);
-                for (int i = 0; i < this.imageSizes?.Length; i++)
+
+                if (this.imageSizesCount == 0)
                 {
-                    //bw.Write(this.imageSizes[i]);
-                    bw.Write(mipData[i].Length);
+                    for (int i = 0; i < 13; i++)
+                    {
+                        bw.Write((int)0);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < this.imageSizesCount; i++)
+                    {
+                        //bw.Write(this.imageSizes[i]);
+                        bw.Write(mipData[i].Length);
+                    }
+                    for (int i = 0; i < 13 - this.imageSizesCount; i++)
+                    {
+                        bw.Write((int)0);
+                    }
                 }
                 bw.Write(this.unk);
             }

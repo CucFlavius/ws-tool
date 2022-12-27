@@ -28,7 +28,8 @@ namespace ProjectWS.Engine.TaskManager
                 case JobType.Write:
                     break;
                 case JobType.Build:
-                    this.tables.data.onLoaded(this.tables.data);
+                    if (this.tables.data.onLoaded != null)
+                        this.tables.data.onLoaded(this.tables.data);
                     break;
                 case JobType.Destroy:
                     break;

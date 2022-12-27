@@ -25,7 +25,7 @@ namespace ProjectWS.Engine.Data
             this.fileList = new Dictionary<string, Block.FileEntry>();
         }
 
-        public void Read()
+        public void Read(Action<int>? progress = null)
         {
             if (!File.Exists(this.index.filePath))
             {
@@ -42,7 +42,8 @@ namespace ProjectWS.Engine.Data
             }
 
             this.index.Read();
-            this.data.Read();
+            progress?.Invoke(0);
+            this.data.Read(progress);
         }
 
         public struct Header
@@ -170,7 +171,7 @@ namespace ProjectWS.Engine.Data
                 this.filePath = $"{archive.dataPath}\\{archive.name}.archive";
             }
             
-            public void Read()
+            public void Read(Action<int>? progress = null)
             {
                 try
                 {
@@ -193,6 +194,8 @@ namespace ProjectWS.Engine.Data
                                 }
                             }
 
+                            progress?.Invoke(0);
+
                             // AARC Block
                             br.BaseStream.Position = (long)this.blockHeaders[this.aarcBlockIndex].blockOffset;
                             this.aarc = new AARC(br);
@@ -206,6 +209,8 @@ namespace ProjectWS.Engine.Data
                                 if (!this.aarcEntries.ContainsKey(entry.hash))
                                     this.aarcEntries.Add(entry.hash, entry);
                             }
+
+                            progress?.Invoke(0);
                         }
                     }
                 }

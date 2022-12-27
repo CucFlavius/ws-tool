@@ -23,7 +23,10 @@
                 <MenuItem Command="Paste" />
             </MenuItem>
             <MenuItem Header="View">
-                <MenuItem Name="Toolbox" Header="Toolbox" Click="Toolbox_Click" IsEnabled="True"/>
+                <MenuItem Name="menuItem_Toolbox" Header="Toolbox" Click="menuItem_Toolbox_Click" IsEnabled="True"/>
+            </MenuItem>
+            <MenuItem Header="Window">
+                <MenuItem Name="menuItem_DataManager" Header="Data Manager" Click="menuItem_DataManager_Click"  IsEnabled="True"/>
             </MenuItem>
         </Menu>
         <DockingManager x:Name="dockManager"

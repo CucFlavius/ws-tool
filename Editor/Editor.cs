@@ -2,6 +2,7 @@
 using MathUtils;
 using OpenTK.Wpf;
 using ProjectWS.Editor.Tools;
+using ProjectWS.Editor.UI;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,8 @@ namespace ProjectWS.Editor
 
         public LayoutAnchorablePane layoutAnchorablePane;
         public LayoutAnchorable toolboxLayoutAnchorable;
+
+        public DataManagerWindow dataManagerWindow;
 
         FPSCounter? fps;
         NamedPipeClientStream? pipeClient;
@@ -436,7 +439,7 @@ namespace ProjectWS.Editor
 
         internal void Save()
         {
-            foreach (var wItem in this.engine.worlds)
+            foreach (var wItem in this.engine?.worlds)
             {
                 foreach (var cItem in wItem.Value.chunks)
                 {
@@ -456,6 +459,13 @@ namespace ProjectWS.Editor
                 bw.Write(data);
             }
             //pipeClient.Close();
+        }
+
+        internal void OpenDataManager()
+        {
+            this.dataManagerWindow = new DataManagerWindow(this);
+            this.dataManagerWindow.Owner = Program.mainWindow;
+            this.dataManagerWindow.Show();
         }
     }
 }

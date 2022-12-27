@@ -7,6 +7,7 @@ namespace ProjectWS.Engine
     {
         public Window? window { get; set; }
         public WorldRenderer? wRenderer { get; set; }
+        public DataManager? dataManager { get; set; }
 
         public class WorldRenderer
         {
@@ -50,10 +51,23 @@ namespace ProjectWS.Engine
             }
         }
 
+        public class DataManager
+        {
+            public string? gameClientPath { get; set; }
+            public string? assetDatabasePath { get; set; }
+
+            public DataManager()
+            {
+                this.gameClientPath = String.Empty;
+                this.assetDatabasePath = String.Empty;
+            }
+        }
+
         public Settings()
         {
             this.wRenderer = new WorldRenderer();
             this.window = new Window();
+            this.dataManager = new DataManager();
         }
     }
 }
