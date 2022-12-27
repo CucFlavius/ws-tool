@@ -11,6 +11,7 @@ namespace ProjectWS.Engine.Data.DataProcess
     {
         public Engine? engineRef;
         public BackgroundWorker? workerRef;
+        public AssetDatabase? assetDB;
         public string? gameClientPath;
         public string? assetDBFolder;
         public GameData? gameData;

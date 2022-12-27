@@ -1,11 +1,11 @@
 ﻿namespace ProjectWS.Engine.Data.DataProcess
 {
-    internal class PExtractProps : Process
+    internal class PExtractArt : Process
     {
         int count = 0;
         const string TEX = ".tex";
 
-        public PExtractProps(SharedProcessData spd) : base(spd)
+        public PExtractArt(SharedProcessData spd) : base(spd)
         {
 
         }
@@ -16,14 +16,25 @@
 
             if (this.sharedProcessData?.gameData != null && this.sharedProcessData?.assetDBFolder != null)
             {
-                var dir = $"{Data.Archive.rootBlockName}\\Art\\Character\\Chua";
-                Dictionary<string, Block.FileEntry> propFiles = new Dictionary<string, Block.FileEntry>();
-                PropScan(dir, this.sharedProcessData.assetDBFolder, ref propFiles);
+                Dictionary<string, Block.FileEntry> scannedFiles = new Dictionary<string, Block.FileEntry>();
+                FileScan($"{Data.Archive.rootBlockName}\\Sky", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Camera", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Dev", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\FX", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\LevelDesign", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Light", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Prop", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Sky", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\SoundEmitters", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Structure", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Terrain", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Texture_Library", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Water", this.sharedProcessData.assetDBFolder, ref scannedFiles);
 
-                count = propFiles.Count;
+                count = scannedFiles.Count;
 
                 int idx = 0;
-                Parallel.ForEach(propFiles, new ParallelOptions() { MaxDegreeOfParallelism = 10 }, entry =>
+                Parallel.ForEach(scannedFiles, new ParallelOptions() { MaxDegreeOfParallelism = 10 }, entry =>
                 {
                     bool copy = true;
                     if (Path.GetExtension(entry.Key).ToLower() == TEX)
@@ -37,7 +48,6 @@
 
                                 if (tex.header?.format == 0 && tex.header?.isCompressed == 1) // if jpeg
                                 {
-                                    Console.WriteLine("Converting to DXT : " + entry.Key);
                                     tex.ConvertMipDataToDXT();
                                     tex.Write(entry.Key);
                                     LogProgress(idx++);
@@ -46,7 +56,7 @@
                             }
                         }
                     }
-                    /*
+
                     if (copy)
                     {
                         using (var fs = new System.IO.FileStream(entry.Key, FileMode.Create, System.IO.FileAccess.Write))
@@ -56,12 +66,12 @@
                             LogProgress(idx++);
                         }
                     }
-                    */
+
                 });
             }
         }
 
-        private void PropScan(string gameDir, string assetDir, ref Dictionary<string, Block.FileEntry> propFiles)
+        private void FileScan(string gameDir, string assetDir, ref Dictionary<string, Block.FileEntry> propFiles)
         {
             if (this.sharedProcessData?.gameData == null) return;
 
@@ -81,13 +91,13 @@
 
             foreach (var folder in folderList)
             {
-                PropScan($"{gameDir}\\{folder}", assetDir, ref propFiles);
+                FileScan($"{gameDir}\\{folder}", assetDir, ref propFiles);
             }
         }
 
         public override string Info()
         {
-            return "Extracting Props.";
+            return "Extracting Art.";
         }
 
         public override int Total()
