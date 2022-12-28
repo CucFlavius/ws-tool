@@ -8,6 +8,7 @@ namespace ProjectWS.Engine
         public Window? window { get; set; }
         public WorldRenderer? wRenderer { get; set; }
         public DataManager? dataManager { get; set; }
+        public ProjectManager? projectManager { get; set; }
 
         public class WorldRenderer
         {
@@ -63,11 +64,22 @@ namespace ProjectWS.Engine
             }
         }
 
+        public class ProjectManager
+        {
+            public string? previousLoadedProject { get; set; }
+
+            public ProjectManager()
+            {
+                previousLoadedProject = string.Empty;
+            }
+        }
+
         public Settings()
         {
             this.wRenderer = new WorldRenderer();
             this.window = new Window();
             this.dataManager = new DataManager();
+            this.projectManager = new ProjectManager();
         }
     }
 }

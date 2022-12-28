@@ -20,9 +20,6 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="70" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="20"></RowDefinition>
-                </Grid.RowDefinitions>
                 <Label Content="Game Client" Grid.Column="0" Margin="0,0,2,0"/>
                 <TextBox VerticalAlignment="Center" Name="TextBox_gameClientPath" Grid.Column="1" Margin="0,0,2,0" TextChanged="TextBox_gameClientPath_TextChanged"/>
                 <Button Name="Button_gameClientPathBrowse" Content="Browse..." Grid.Column="2" Click="Button_gameClientPathBrowse_Click"/>
@@ -36,9 +33,6 @@
                     <ColumnDefinition Width="70" />
                     <ColumnDefinition Width="70" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="20"></RowDefinition>
-                </Grid.RowDefinitions>
                 <Label Content="Asset Database" Grid.Column="0" Margin="0,0,2,0"/>
                 <TextBox VerticalAlignment="Center" Name="TextBox_assetDatabasePath" Grid.Column="1" Margin="0,0,2,0" TextChanged="TextBox_assetDatabasePath_TextChanged"/>
                 <Button Name="Button_assetDatabasePathBrowse"  Content="Browse..." Grid.Column="2" Click="Button_assetDatabasePathBrowse_Click" Margin="0,0,2,0"/>

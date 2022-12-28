@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <UseWPF>true</UseWPF>
     <StartupObject>ProjectWS.Editor.Program</StartupObject>
     <RootNamespace>ProjectWS.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
@@ -32,6 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="UI\Renderers\MapRendererPane.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="UI\Toolbox\TerrainColorPaintPane.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

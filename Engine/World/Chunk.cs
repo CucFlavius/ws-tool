@@ -370,27 +370,35 @@ namespace ProjectWS.Engine.World
             // Chunk //
 
             // Frustum Culling //
-            this.isVisible = camera.frustum.VolumeVsFrustum(this.AABB.center + (this.AABB.extents / 2), this.AABB.extents.X, this.AABB.extents.Y, this.AABB.extents.Z);
+            if (camera == null) return;
 
-            // SubChunks //
-            if (this.isVisible)
+            if (camera is PerspectiveCamera)
             {
-                if (this.lod0Available)
+                var pCamera = camera as PerspectiveCamera;
+                if (pCamera == null) return;
+
+                this.isVisible = pCamera.frustum.VolumeVsFrustum(this.AABB.center + (this.AABB.extents / 2), this.AABB.extents.X, this.AABB.extents.Y, this.AABB.extents.Z);
+
+                // SubChunks //
+                if (this.isVisible)
                 {
-                    for (int i = 0; i < this.subChunks?.Count; i++)
+                    if (this.lod0Available)
                     {
-                        // Reset occlusion //
-                        this.subChunks[i].isOccluded = false;
-
-                        // Distance Culling //
-                        this.subChunks[i].distanceToCam = Math.Abs(Vector3.Distance(this.subChunks[i].centerPosition, camera.transform.GetPosition()));
-                        this.subChunks[i].isCulled = this.subChunks[i].distanceToCam > 1024f;  // 1024 being the distance between 2 chunks
-
-                        // Frustum Culling //
-                        if (!this.subChunks[i].isCulled)
+                        for (int i = 0; i < this.subChunks?.Count; i++)
                         {
-                            var aabb = this.subChunks[i].AABB;
-                            this.subChunks[i].isCulled = !camera.frustum.VolumeVsFrustum(aabb.center + (aabb.extents / 2), aabb.extents.X, aabb.extents.Y, aabb.extents.Z);
+                            // Reset occlusion //
+                            this.subChunks[i].isOccluded = false;
+
+                            // Distance Culling //
+                            this.subChunks[i].distanceToCam = Math.Abs(Vector3.Distance(this.subChunks[i].centerPosition, camera.transform.GetPosition()));
+                            this.subChunks[i].isCulled = this.subChunks[i].distanceToCam > 1024f;  // 1024 being the distance between 2 chunks
+
+                            // Frustum Culling //
+                            if (!this.subChunks[i].isCulled)
+                            {
+                                var aabb = this.subChunks[i].AABB;
+                                this.subChunks[i].isCulled = !pCamera.frustum.VolumeVsFrustum(aabb.center + (aabb.extents / 2), aabb.extents.X, aabb.extents.Y, aabb.extents.Z);
+                            }
                         }
                     }
                 }

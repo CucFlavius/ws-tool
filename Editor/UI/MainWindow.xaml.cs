@@ -83,6 +83,12 @@ namespace ProjectWS.Editor
                     if (modelRendererPane != null)
                         focusedControl = modelRendererPane.GetOpenTKControl();
                 }
+                if (activeContent.Content is MapRendererPane)
+                {
+                    var modelRendererPane = activeContent.Content as MapRendererPane;
+                    if (modelRendererPane != null)
+                        focusedControl = modelRendererPane.GetOpenTKControl();
+                }
 
                 if (focusedControl != null && this.editor != null)
 				{
@@ -131,11 +137,6 @@ namespace ProjectWS.Editor
 			SettingsSerializer.Save();
         }
 
-		private void MenuFileSave_Click(object sender, RoutedEventArgs e)
-		{
-			this.editor.Save();
-		}
-
 		private void menuItem_Toolbox_Click(object sender, RoutedEventArgs e)
 		{
 			if (!this.editor.layoutAnchorablePane.Children.Contains(this.editor.toolboxLayoutAnchorable))
@@ -146,5 +147,30 @@ namespace ProjectWS.Editor
 		{
 			this.editor.OpenDataManager();
         }
+
+		private void menuItm_newProject_Click(object sender, RoutedEventArgs e)
+		{
+			this.editor.NewProject();
+		}
+
+		private void menuItm_save_Click(object sender, RoutedEventArgs e)
+		{
+            this.editor.Save();
+        }
+
+		private void menuItm_loadProject_Click(object sender, RoutedEventArgs e)
+		{
+			this.editor.LoadProject();
+		}
+
+		private void button_WorldManager_Click(object sender, RoutedEventArgs e)
+		{
+			this.editor.OpenWorldManager();
+		}
+
+		private void menuItem_WorldManager_Click(object sender, RoutedEventArgs e)
+		{
+			this.editor.OpenWorldManager();
+		}
 	}
 }

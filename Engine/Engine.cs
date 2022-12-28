@@ -86,6 +86,7 @@ namespace ProjectWS.Engine
                     this.renderers[i].fontShader?.Load();
                     this.renderers[i].iconShader?.Load();
                     this.renderers[i].lightPassShader?.Load();
+                    this.renderers[i].mapTileShader?.Load();
                 }
             }
 

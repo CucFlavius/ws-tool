@@ -3,15 +3,16 @@ using OpenTK.Graphics.OpenGL4;
 //using OpenTK.Mathematics;
 using SharpFont;
 using System.Reflection;
+using static FontGenerator.FreeType;
 
 namespace FontGenerator
 {
     public class FreeType
     {
-        public Dictionary<uint, Character> _characters = new Dictionary<uint, Character>();
-        static int _vbo;
-        static int _vao;
-        static bool init = false;
+        Dictionary<uint, Character> characters;
+        int _vbo;
+        int _vao;
+        bool init = false;
 
         public struct Character
         {
@@ -23,7 +24,9 @@ namespace FontGenerator
 
         public void Init()
         {
-            if (init) return;
+            //if (init) return;
+
+            this.characters = new Dictionary<uint, Character>();
 
             // initialize library
             Library lib = new Library();
@@ -62,7 +65,7 @@ namespace FontGenerator
                     ch.Size = new Vector2(bitmap.Width, bitmap.Rows);
                     ch.Bearing = new Vector2(glyph.BitmapLeft, glyph.BitmapTop);
                     ch.Advance = (int)glyph.Advance.X.Value;
-                    _characters.Add(c, ch);
+                    characters.Add(c, ch);
                 }
                 catch (Exception ex)
                 {
@@ -105,6 +108,8 @@ namespace FontGenerator
 
         public void RenderText(string text, float x, float y, float scale, Vector2 dir, bool centered)
         {
+            if (!init) return;
+
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindVertexArray(_vao);
 
@@ -112,8 +117,8 @@ namespace FontGenerator
             Matrix4 rotateM = Matrix4.CreateRotationZ(angle_rad);
             Matrix4 transOriginM = Matrix4.CreateTranslation(new Vector3(x, y, 0f));
 
-            Character ch = _characters['A'];
-            Character templateChar = _characters['A'];
+            Character ch = characters['A'];
+            Character templateChar = characters['A'];
 
             // Calculate size
             float textLength = 0;
@@ -130,9 +135,9 @@ namespace FontGenerator
                         continue;
                     }
 
-                    if (_characters.ContainsKey(c) == false)
+                    if (characters.ContainsKey(c) == false)
                         continue;
-                    ch = _characters[c];
+                    ch = characters[c];
 
                     textLength += (ch.Size.X + ch.Bearing.X) * scale;
                 }
@@ -154,9 +159,9 @@ namespace FontGenerator
                     continue;
                 }
 
-                if (_characters.ContainsKey(c) == false)
+                if (characters.ContainsKey(c) == false)
                     continue;
-                ch = _characters[c];
+                ch = characters[c];
 
                 float w = ch.Size.X * scale;
                 float h = ch.Size.Y * scale;//-

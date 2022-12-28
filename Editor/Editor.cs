@@ -3,12 +3,12 @@ using MathUtils;
 using OpenTK.Wpf;
 using ProjectWS.Editor.Tools;
 using ProjectWS.Editor.UI;
+using ProjectWS.Engine.Project;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
-using System.Security.Principal;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -31,6 +31,8 @@ namespace ProjectWS.Editor
         public Dictionary<int, GLWpfControl>? controls;
         public Dictionary<int, WorldRendererPane>? worldRendererPanes;
         public Dictionary<int, ModelRendererPane>? modelRendererPanes;
+        public Dictionary<int, MapRendererPane>? mapRendererPanes;
+        public GLWpfControl? mapRendererControl;
 
         public SkyEditorPane? skyEditorPane;
         public UI.Toolbox.ToolboxPane? toolboxPane;
@@ -40,9 +42,9 @@ namespace ProjectWS.Editor
         public LayoutAnchorable toolboxLayoutAnchorable;
 
         public DataManagerWindow dataManagerWindow;
+        public WorldManagerWindow worldManagerWindow;
 
         FPSCounter? fps;
-        NamedPipeClientStream? pipeClient;
 
         Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key> opentkKeyMap = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key>()
         {
@@ -66,12 +68,23 @@ namespace ProjectWS.Editor
 
         void Start()
         {
+            // Create Engine
             this.engine = new Engine.Engine();
+
+            // Initialize Input
             InputInitialize();
+
+            // Load asset database (if it exists)
+            Engine.Data.DataManager.LoadAssetDatabase(Engine.Engine.settings.dataManager.assetDatabasePath);
+
+            // Auto load previous open project on startup
+            Engine.Project.ProjectManager.LoadProject(Engine.Engine.settings.projectManager.previousLoadedProject);
 
             // Create tests
             this.tests = new TestArea.Tests(this.engine, this);
             this.tests.Start();
+
+            // Create framerate counter
             this.fps = new FPSCounter();
         }
 
@@ -353,6 +366,31 @@ namespace ProjectWS.Editor
                 rendererPane.changeRenderMode = renderer.SetShadingOverride;
                 this.modelRendererPanes?.Add(ID, rendererPane);
             }
+            else if (type == 2)
+            {
+                var rendererPane = new MapRendererPane();
+                openTkControl = rendererPane.GetOpenTKControl();
+                rendererGrid = rendererPane.GetRendererGrid();
+                this.controls?.Add(ID, openTkControl);
+
+                var layoutDoc = new LayoutDocument();
+                layoutDoc.Title = name;
+                layoutDoc.ContentId = "Renderer_" + ID + "_" + name;
+                layoutDoc.Content = rendererPane;
+
+                var testRenderPane = new LayoutDocumentPane(layoutDoc);
+
+                window.LayoutDocumentPaneGroup.Children.Add(testRenderPane);
+
+                var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
+                openTkControl.Start(settings);
+
+                renderer = new MapRenderer(this.engine, ID, this.engine.input);
+                //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
+                this.engine.renderers.Add(renderer);
+
+                this.mapRendererPanes?.Add(ID,rendererPane);
+            }
             else
             {
                 Debug.Log("Unsupported renderer type : " + type);
@@ -366,21 +404,7 @@ namespace ProjectWS.Editor
             
             return renderer;
         }
-        /*
-        public void CreateSkyEditorPane(MainWindow window)
-        {
-            this.skyEditorPane = new SkyEditorPane();
-            this.skyEditorPane.engine = this.engine;
-            var layoutAnchorable = new LayoutAnchorable();
-            layoutAnchorable.Title = "Sky Editor";
-            layoutAnchorable.ContentId = "SkyEditorPane";
-            layoutAnchorable.Content = this.skyEditorPane;
 
-            LayoutAnchorablePane layoutAnchorablePane = new LayoutAnchorablePane(layoutAnchorable);
-
-            window.LayoutAnchorablePaneGroup.Children.Add(layoutAnchorablePane);
-        }
-        */
         public void CreateToolboxPane(MainWindow window)
         {
             if (this.toolboxPane == null)
@@ -439,6 +463,9 @@ namespace ProjectWS.Editor
 
         internal void Save()
         {
+            ProjectManager.SaveProject();
+
+            /*
             foreach (var wItem in this.engine?.worlds)
             {
                 foreach (var cItem in wItem.Value.chunks)
@@ -458,6 +485,7 @@ namespace ProjectWS.Editor
                 bw.Write(data.Length);
                 bw.Write(data);
             }
+            */
             //pipeClient.Close();
         }
 
@@ -466,6 +494,52 @@ namespace ProjectWS.Editor
             this.dataManagerWindow = new DataManagerWindow(this);
             this.dataManagerWindow.Owner = Program.mainWindow;
             this.dataManagerWindow.Show();
+        }
+
+        internal void LoadProject()
+        {
+            var dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.DefaultExt = "wsProject";
+            dialog.Filter = $"Project Files (*.{ProjectManager.PROJECT_EXTENSION})|*.{ProjectManager.PROJECT_EXTENSION}";
+
+            System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                ProjectManager.LoadProject(Path.GetFullPath(dialog.FileName));
+            }
+        }
+
+        internal void NewProject()
+        {
+            var dialog = new System.Windows.Forms.SaveFileDialog();
+            dialog.DefaultExt = ProjectManager.PROJECT_EXTENSION;
+            dialog.Filter = $"Project Files (*.{ProjectManager.PROJECT_EXTENSION})|*.{ProjectManager.PROJECT_EXTENSION}";
+
+            System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                ProjectManager.CreateProject(Path.GetFullPath(dialog.FileName));
+            }
+        }
+
+        internal void OpenWorldManager()
+        {
+            var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Map", this.engine.renderers.Count, 2);
+            /*
+            this.worldManagerWindow = new WorldManagerWindow(this);
+            this.worldManagerWindow.Owner = Program.mainWindow;
+            this.worldManagerWindow.Show();
+
+            // Make map renderer
+            if (this.mapRendererControl == null)
+            {
+                this.mapRendererControl = this.worldManagerWindow.GLWpfControl;
+                var mapRenderer = new MapRenderer(this.engine, 10000, this.engine.input);
+                this.engine.renderers.Add(mapRenderer);
+                var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
+                this.mapRendererControl.Start(settings);
+            }
+            */
         }
     }
 }

@@ -27,14 +27,15 @@ namespace ProjectWS.Engine.Rendering
         public Shader fontShader;
         public Shader iconShader;
         public Shader lightPassShader;
+        public Shader mapTileShader;
 
         public List<Viewport>? viewports;
         public List<Objects.GameObject>? gizmos;
         public ShadingOverride shadingOverride;
         public ViewMode viewportMode;
 
-        public int quadVAO = 0;
-        public int quadVBO;
+        public int gbufferQuadVAO = 0;
+        public int gbufferQuadVBO;
 
         // Frame buffers
         public int gBuffer;
@@ -140,7 +141,7 @@ namespace ProjectWS.Engine.Rendering
 
         public void BuildGBufferQuad()
         {
-            if (this.quadVAO == 0)
+            if (this.gbufferQuadVAO == 0)
             {
                 float[] quadVertices = new float[]{
                     // positions        // texture Coords
@@ -150,10 +151,10 @@ namespace ProjectWS.Engine.Rendering
                      1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
                 };
                 // setup plane VAO
-                this.quadVAO = GL.GenVertexArray();
-                this.quadVBO = GL.GenBuffer();
-                GL.BindVertexArray(this.quadVAO);
-                GL.BindBuffer(BufferTarget.ArrayBuffer, this.quadVBO);
+                this.gbufferQuadVAO = GL.GenVertexArray();
+                this.gbufferQuadVBO = GL.GenBuffer();
+                GL.BindVertexArray(this.gbufferQuadVAO);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, this.gbufferQuadVBO);
                 GL.BufferData(BufferTarget.ArrayBuffer, 4 * quadVertices.Length, quadVertices, BufferUsageHint.StaticDraw);
                 GL.EnableVertexAttribArray(0);
                 GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
@@ -195,11 +196,15 @@ namespace ProjectWS.Engine.Rendering
 
                 if (this is ModelRenderer)
                 {
-                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, Camera.CameraMode.Orbit));
+                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, CameraController.Mode.Orbit));
                 }
                 else if (this is WorldRenderer)
                 {
-                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, Camera.CameraMode.Fly));
+                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, CameraController.Mode.Fly));
+                }
+                else if (this is MapRenderer)
+                {
+                    this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width, this.height, true, CameraController.Mode.OrthoTop));
                 }
 
                 // Restore camera controller
@@ -213,8 +218,8 @@ namespace ProjectWS.Engine.Rendering
                 ClearViewports();
 
                 // Side by side
-                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true, Camera.CameraMode.Fly));
-                this.viewports.Add(new Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false, Camera.CameraMode.OrthoTop));
+                this.viewports.Add(new Viewport(this, this.input, this.x, this.y, this.width / 2, this.height, true, CameraController.Mode.Fly));
+                this.viewports.Add(new Viewport(this, this.input, this.width / 2, this.y, this.width / 2, this.height, false, CameraController.Mode.OrthoTop));
 
                 // Restore camera controller
                 RestoreCameraController(camPos);
@@ -291,7 +296,7 @@ namespace ProjectWS.Engine.Rendering
         // -----------------------------------------
         public void RenderQuad()
         {
-            GL.BindVertexArray(this.quadVAO);
+            GL.BindVertexArray(this.gbufferQuadVAO);
             GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
             GL.BindVertexArray(0);
         }
