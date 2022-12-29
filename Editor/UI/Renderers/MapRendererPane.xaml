@@ -3,10 +3,194 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:glControl="clr-namespace:OpenTK.Wpf;assembly=GLWpfControl"
+             xmlns:glControl="clr-namespace:OpenTK.Wpf;assembly=GLWpfControl" xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Name="RendererGrid" Background="#1f1f1f">
-        <glControl:GLWpfControl Name="GLWpfControl" Focusable="True"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="34"/>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ToolBarTray Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,0,0,0">
+            <ToolBar HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,0">
+                <Button x:Name = "button_CutChunk" 
+                        Width="30" Height="30" Padding="0,0,0,0"
+                        Click="button_CutChunk_Click"
+                        ToolTip="Cut Chunk">
+                    <Grid>
+                        <fa:IconBlock Icon="Cut"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                    </Grid>
+                </Button>
+                <Button x:Name = "button_CopyChunk" 
+                        Width="30" Height="30" Padding="0,0,0,0"
+                        Click="button_CopyChunk_Click"
+                        ToolTip="Copy Chunk">
+                    <Grid>
+                        <fa:IconBlock Icon="Copy"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                    </Grid>
+                </Button>
+                <Button x:Name = "button_PasteChunk" 
+                        Width="30" Height="30" Padding="0,0,0,0"
+                        Click="button_PasteChunk_Click"
+                        ToolTip="Paste Chunk">
+                    <Grid>
+                        <fa:IconBlock Icon="Paste"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                    </Grid>
+                </Button>
+
+                <Button x:Name = "button_AddChunk" 
+                        Width="30" Height="30" Padding="0,0,0,0"
+                        Click="button_AddChunk_Click"
+                        ToolTip="Create New Chunk">
+                    <Grid>
+                        <fa:IconBlock Icon="Cube"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                        <fa:IconBlock Icon="Circle" IconFont="Solid"
+                                      Foreground="White"
+                                      FontSize="14"
+                                      Width="32" Height="32"
+                                      Padding="0,16,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                        <fa:IconBlock Icon="PlusCircle"
+                                      Foreground="RoyalBlue"
+                                      FontSize="13"
+                                      Width="32" Height="32"
+                                      Padding="0,17,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Button>
+                <Button x:Name = "button_RemoveChunk"
+                        Width="30" Height="30" Padding="0,0"
+                        Click="button_RemoveChunk_Click"
+                        ToolTip="Remove Chunk">
+                    <Grid>
+                        <fa:IconBlock Icon="Cube"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                        <fa:IconBlock Icon="Circle" IconFont="Solid"
+                                      Foreground="White"
+                                      FontSize="14"
+                                      Width="32" Height="32"
+                                      Padding="0,16,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                        <fa:IconBlock Icon="CircleMinus"
+                                      Foreground="IndianRed"
+                                      FontSize="13"
+                                      Width="32" Height="32"
+                                      Padding="0,17,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Button>
+                <Button x:Name = "button_DeselectAll"
+                        Width="30" Height="30" Padding="0,0"
+                        Click="button_DeselectAll_Click"
+                        ToolTip="Clear Selection">
+                    <Grid>
+                        <fa:IconBlock Icon="SquareXmark"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="20"/>
+                    </Grid>
+                </Button>
+            </ToolBar>
+            <ToolBar HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,0">
+                <TextBlock IsHitTestVisible="False" Foreground="#d0d0d0" Width="35"
+                           Text="Map" TextAlignment="Center" VerticalAlignment="Center"/>
+                <ComboBox Text="Map" Width="200"
+                          SelectionChanged="mapComboBox_SelectionChanged"
+                          Name="mapComboBox" VerticalAlignment="Center" Margin="5,0,5,0"
+                          ItemsSource="{Binding viewModes}" ToolTip="Map List"/>
+                <Button x:Name = "button_AddMap" Width="30" Height="30"
+                        Padding="0,0" Click="button_AddMap_Click"
+                        ToolTip="Create New Map">
+                    <Grid>
+                        <fa:IconBlock Icon="Map"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                        <fa:IconBlock Icon="Circle" IconFont="Solid"
+                                      Foreground="White"
+                                      FontSize="14"
+                                      Width="32" Height="32"
+                                      Padding="0,16,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                        <fa:IconBlock Icon="PlusCircle"
+                                      Foreground="RoyalBlue"
+                                      FontSize="13"
+                                      Width="32" Height="32"
+                                      Padding="0,17,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Button>
+                <Button x:Name = "button_RemoveMap" Width="30" Height="30" 
+                        Padding="0,0" Click="button_RemoveMap_Click"
+                        ToolTip="Remove Map">
+                    <Grid>
+                        <fa:IconBlock Icon="Map"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                        <fa:IconBlock Icon="Circle" IconFont="Solid"
+                                      Foreground="White"
+                                      FontSize="14"
+                                      Width="32" Height="32"
+                                      Padding="0,16,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                        <fa:IconBlock Icon="CircleMinus"
+                                      Foreground="IndianRed"
+                                      FontSize="13"
+                                      Width="32" Height="32"
+                                      Padding="0,17,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Button>
+            </ToolBar>
+            <ToolBar HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,0">
+                <ToggleButton x:Name="toggle_Grid" IsChecked="True"
+                              Checked = "ToggleGridOn" Unchecked = "ToggleGridOff">
+                    <Grid>
+                        <fa:IconBlock Icon="GripLinesVertical"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Padding="11,0"
+                                      Width="20" Height="20"/>
+                        <fa:IconBlock Icon="GripLinesVertical"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Padding="0,0,10,0"
+                                      Width="20" Height="20"/>
+                        <fa:IconBlock Icon="GripLines"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      VerticalAlignment="Top"
+                                      Width="20" Height="14"/>
+
+                    </Grid>
+                </ToggleButton>
+            </ToolBar>
+        </ToolBarTray>
+        <Grid Name="RendererGrid" Background="#1f1f1f" Grid.Row="1">
+            <glControl:GLWpfControl Name="GLWpfControl" Focusable="True"/>
+        </Grid>
     </Grid>
 </UserControl>

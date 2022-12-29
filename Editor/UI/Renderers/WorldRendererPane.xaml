@@ -13,11 +13,11 @@
         <glControl:GLWpfControl Name="GLWpfControl" Margin="0,24,0,0" Focusable="True"/>
         <Rectangle Name="ViewportRect0" HorizontalAlignment="Left" Height="100" Margin="0,24,0,0" Stroke="White" VerticalAlignment="Bottom" Width="100" IsHitTestVisible="False"/>
         <ToolBarTray Height="24" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,2">
-            <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center" Width="300">
+            <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center">
                 <TextBlock IsHitTestVisible="False" Name="txtSelectViewMode" Foreground="#d0d0d0" Text="View" TextAlignment="Center" VerticalAlignment="Center" Margin="10,0"/>
                 <ComboBox Text="ViewMode" Width="150" Height="21" SelectionChanged="viewModeComboBox_SelectionChanged" Name="viewModeComboBox" VerticalAlignment="Center" Margin="0,0,0,0" ItemsSource="{Binding viewModes}" Loaded="viewModeComboBox_Loaded" />
             </ToolBar>
-            <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center" Width="919">
+            <ToolBar HorizontalAlignment="Center" Height="24" VerticalAlignment="Center">
                 <ToggleButton x:Name = "fogToggle" Checked = "ToggleFogOn" Unchecked = "ToggleFogOff" Width="20" Height="20" Padding="0,0,0,0">
                     <fa:IconBlock Icon="Cloud" Foreground="Gray" FontSize="12" Width="15" Height="12"/>
                 </ToggleButton>

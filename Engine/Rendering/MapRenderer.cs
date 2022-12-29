@@ -26,6 +26,7 @@ namespace ProjectWS.Engine.Rendering
         private int[]? lineSquareIndices;
         private int lineSquareVAO;
         public bool deselectMode;
+        public bool showGrid = true;
 
         const int MAP_SIZE = 128;
         readonly Color32 envColor = new Color32(10, 10, 20, 255);
@@ -325,6 +326,19 @@ namespace ProjectWS.Engine.Rendering
             this.selectionBitmap[linearCoord + 3] = deselectedCellColor.A;
         }
 
+        public void DeselectAllCells()
+        {
+            for (int x = 0; x < MAP_SIZE; x++)
+            {
+                for (int y = 0; y < MAP_SIZE; y++)
+                {
+                    DeselectCell(x, y);
+                }
+            }
+
+            UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+        }
+
         public override void Render(int frameBuffer)
         {
             if (!this.rendering) return;
@@ -346,7 +360,8 @@ namespace ProjectWS.Engine.Rendering
             //RenderHighlight();
 
             // Render grid
-            RenderGrid(100);
+            if (showGrid)
+                RenderGrid(100);
 
             // render marqueue
             RenderMarqueue(20);

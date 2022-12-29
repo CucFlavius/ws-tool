@@ -42,7 +42,6 @@ namespace ProjectWS.Editor
         public LayoutAnchorable toolboxLayoutAnchorable;
 
         public DataManagerWindow dataManagerWindow;
-        public WorldManagerWindow worldManagerWindow;
 
         FPSCounter? fps;
 
@@ -370,7 +369,9 @@ namespace ProjectWS.Editor
             }
             else if (type == 2)
             {
-                var rendererPane = new MapRendererPane();
+                renderer = new MapRenderer(this.engine, ID, this.engine.input);
+
+                var rendererPane = new MapRendererPane(this, renderer as MapRenderer);
                 openTkControl = rendererPane.GetOpenTKControl();
                 rendererGrid = rendererPane.GetRendererGrid();
                 this.controls?.Add(ID, openTkControl);
@@ -387,7 +388,6 @@ namespace ProjectWS.Editor
                 var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
                 openTkControl.Start(settings);
 
-                renderer = new MapRenderer(this.engine, ID, this.engine.input);
                 //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
                 this.engine.renderers.Add(renderer);
 
