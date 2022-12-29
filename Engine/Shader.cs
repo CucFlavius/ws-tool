@@ -175,5 +175,10 @@ namespace ProjectWS.Engine
         {
             GL.Uniform2(GL.GetUniformLocation(Handle, name), x, y);
         }
+
+        internal void SetVec2(string name, Vector2 vec)
+        {
+            GL.Uniform2(GL.GetUniformLocation(Handle, name), vec.X, vec.Y);
+        }
     }
 }

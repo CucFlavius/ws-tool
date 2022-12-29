@@ -87,6 +87,7 @@ namespace ProjectWS.Engine
                     this.renderers[i].iconShader?.Load();
                     this.renderers[i].lightPassShader?.Load();
                     this.renderers[i].mapTileShader?.Load();
+                    this.renderers[i].marqueeShader?.Load();
                 }
             }
 

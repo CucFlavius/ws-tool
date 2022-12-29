@@ -28,6 +28,7 @@ namespace ProjectWS.Engine.Rendering
         public Shader iconShader;
         public Shader lightPassShader;
         public Shader mapTileShader;
+        public Shader marqueeShader;
 
         public List<Viewport>? viewports;
         public List<Objects.GameObject>? gizmos;

@@ -10,14 +10,41 @@ namespace ProjectWS.Engine.Rendering
     public class MapRenderer : Renderer
     {
         public TextRenderer? textRenderer;
-        public Vector2 highlight;
-        public bool highlightVisible;
-        public byte[] selectionBitmap;
-        int hightlightQuadVAO;
+        public Vector2i highlight;
+        public Vector2 mousePosMapSpace;
+        public bool mouseOverGrid;
+        public byte[]? selectionBitmap;
         int bgVAO;
-        int[] gridIndices;
+        int selectionLayerVAO;
+        int[]? gridIndices;
         int gridVAO;
         private uint selectionBitmapPtr;
+        private bool marqueeVisible;
+        public Vector2 marqueeMin;
+        public Vector2 marqueeMax;
+        public Vector2 marqueeMaxPrevious;
+        private int[]? lineSquareIndices;
+        private int lineSquareVAO;
+        public bool deselectMode;
+
+        const int MAP_SIZE = 128;
+        readonly Color32 envColor = new Color32(10, 10, 20, 255);
+        readonly Color32 selectedCellColor = new Color32(255, 255, 0, 128);
+        readonly Color32 deselectedCellColor = new Color32(0, 0, 0, 0);
+        readonly Color32 backgroundCellColor = new Color32(50, 50, 50, 255);
+        readonly Color32 hasAreaColor = new Color32(80, 80, 80, 255);
+        readonly Color32 gridColor = new Color32(20, 20, 20, 255);
+        const float halfQuad = 0.5f;
+
+        readonly float[] quadVertices = new float[]
+        {
+            // positions                // texture Coords
+            -halfQuad, 0.0f, halfQuad,  0.0f, 1.0f,
+            -halfQuad, 0.0f,-halfQuad,  0.0f, 0.0f,
+             halfQuad, 0.0f, halfQuad,  1.0f, 1.0f,
+             halfQuad, 0.0f,-halfQuad,  1.0f, 0.0f,
+        };
+
 
         public MapRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
@@ -35,77 +62,54 @@ namespace ProjectWS.Engine.Rendering
             this.mapTileShader = new Shader("shaders/maptile_vert.glsl", "shaders/maptile_frag.glsl");
             this.fontShader = new Shader("shaders/font_vert.glsl", "shaders/font_frag.glsl");
             this.lineShader = new Shader("shaders/line_vert.glsl", "shaders/line_frag.glsl");
+            this.marqueeShader = new Shader("shaders/marquee_vert.glsl", "shaders/marquee_frag.glsl");
 
-            // Build geometry
-            BuildMapGeometry();
+            // setup marqueue quad
+            BuildLineSquare();
+
+            // setup Background
+            this.bgVAO = BuildQuad(quadVertices);
+
+            // setup Selection Layer
+            this.selectionLayerVAO = BuildQuad(quadVertices);
+
             BuildGrid();
 
-            this.selectionBitmap = new byte[128 * 128 * 4];
-            for (int i = 0; i < 128 * 128 * 4; i+=4)
-            {
-                this.selectionBitmap[i] = 70;
-                this.selectionBitmap[i + 1] = 70;
-                this.selectionBitmap[i + 2] = 70;
-                this.selectionBitmap[i + 3] = 255;
-
-            }
-            BuildBitmap(this.selectionBitmap, out this.selectionBitmapPtr);
+            this.selectionBitmapPtr = BuildBitmap(this.deselectedCellColor, MAP_SIZE, MAP_SIZE, out this.selectionBitmap);
 
             this.textRenderer?.Initialize();
         }
 
-        public void BuildMapGeometry()
+        private int BuildQuad(float[] quadVertices)
         {
-            float hSize = 0.5f;
-            float[] quadVertices = new float[]
-            {
-                // positions        // texture Coords
-                -hSize, 0.0f, hSize, 0.0f, 1.0f,
-                -hSize, 0.0f,-hSize, 0.0f, 0.0f,
-                hSize,  0.0f, hSize, 1.0f, 1.0f,
-                hSize,  0.0f,-hSize, 1.0f, 0.0f,
-            };
-
-            // setup highlight quad VAO
-            this.hightlightQuadVAO = GL.GenVertexArray();
-            var highlightQuadVBO = GL.GenBuffer();
-            GL.BindVertexArray(this.hightlightQuadVAO);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, highlightQuadVBO);
+            int vao = GL.GenVertexArray();
+            var vbo = GL.GenBuffer();
+            GL.BindVertexArray(vao);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
             GL.BufferData(BufferTarget.ArrayBuffer, 4 * quadVertices.Length, quadVertices, BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * 4);
 
-            // setup Background VAO
-            this.bgVAO = GL.GenVertexArray();
-            var bgVBO = GL.GenBuffer();
-            GL.BindVertexArray(this.bgVAO);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, bgVBO);
-            GL.BufferData(BufferTarget.ArrayBuffer, 4 * quadVertices.Length, quadVertices, BufferUsageHint.StaticDraw);
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * 4);
+            return vao;
         }
 
         public void BuildGrid()
         {
-            int max = 128;
-
-            var line = new Vector3[max * 4];
+            var line = new Vector3[MAP_SIZE * 4];
 
             int idx = 0;
-            for (int x = 0; x < max; x++)
+            for (int x = 0; x < MAP_SIZE; x++)
             {
                 line[idx++] = new Vector3(x, 0, 0);
-                line[idx++] = new Vector3(x, 0, max);
+                line[idx++] = new Vector3(x, 0, MAP_SIZE);
                 line[idx++] = new Vector3(0, 0, x);
-                line[idx++] = new Vector3(max, 0, x);
+                line[idx++] = new Vector3(MAP_SIZE, 0, x);
             }
 
-            this.gridIndices = new int[max * 4];
-            for (int i = 0; i < max * 4; i += 2)
+            this.gridIndices = new int[MAP_SIZE * 4];
+            for (int i = 0; i < MAP_SIZE * 4; i += 2)
             {
                 this.gridIndices[i] = i;
                 this.gridIndices[i + 1] = i + 1;
@@ -128,10 +132,49 @@ namespace ProjectWS.Engine.Rendering
             GL.BindVertexArray(0);
         }
 
-
-        void BuildBitmap(byte[] data, out uint ptr)
+        public void BuildLineSquare()
         {
-            if (data == null) { ptr = 0; return; }
+            var line = new Vector3[]
+            {
+                new Vector3(-0.5f, 0, -0.5f),
+                new Vector3(-0.5f, 0, 0.5f),
+                new Vector3(0.5f, 0, 0.5f),
+                new Vector3(0.5f, 0, -0.5f),
+            };
+
+            this.lineSquareIndices = new int[]
+            {
+                0, 1, 1, 2, 2, 3, 3, 0
+            };
+
+            int _vertexBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
+            GL.BufferData(BufferTarget.ArrayBuffer, line.Length * 3 * 4, line, BufferUsageHint.StaticDraw);
+
+            this.lineSquareVAO = GL.GenVertexArray();
+            GL.BindVertexArray(this.lineSquareVAO);
+
+            GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
+
+            int _elementBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, this.lineSquareIndices.Length * 4, this.lineSquareIndices, BufferUsageHint.StaticDraw);
+
+            GL.BindVertexArray(0);
+        }
+
+        uint BuildBitmap(Color32 baseColor, int w, int h, out byte[] data)
+        {
+            uint ptr = 0;
+            data = new byte[w * h * 4];
+            for (int i = 0; i < w * h * 4; i += 4)
+            {
+                data[i] = baseColor.R;
+                data[i + 1] = baseColor.G;
+                data[i + 2] = baseColor.B;
+                data[i + 3] = baseColor.A;
+            }
 
             GL.GenTextures(1, out ptr);
             GL.BindTexture(TextureTarget.Texture2D, ptr);
@@ -143,13 +186,15 @@ namespace ProjectWS.Engine.Rendering
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, 0);
 
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 128, 128, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, w, h, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+
+            return ptr;
         }
 
         public void UpdateBitmap(uint ptr, byte[] data)
         {
             GL.BindTexture(TextureTarget.Texture2D, ptr);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 128, 128, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, MAP_SIZE, MAP_SIZE, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
         }
 
         public override void Update(float deltaTime)
@@ -165,12 +210,12 @@ namespace ProjectWS.Engine.Rendering
                 }
             }
 
-            textRenderer?.DrawLabel3D("TEST", new Vector3(0, 0.1f, 0), new Vector4(1, 1, 0, 1), true);
+            //textRenderer?.DrawLabel3D("TEST", new Vector3(0, 0.1f, 0), new Vector4(1, 1, 0, 1), true);
 
             // Determine which quad mouse is over
             var vp = this.viewports![0];
 
-            this.highlightVisible = false;
+            this.mouseOverGrid = false;
 
             if (this.ID == this.engine.focusedRendererID)
             {
@@ -180,42 +225,104 @@ namespace ProjectWS.Engine.Rendering
 
                     if (mousePos.X >= 0 && mousePos.Y >= 0)
                     {
-                        this.highlightVisible = true;
+                        this.mouseOverGrid = true;
                         var vpSize = new Vector2((float)vp.width, (float)vp.height);
                         var oCamera = vp.mainCamera as OrthoCamera;
                         if (oCamera != null)
                         {
-                            this.highlight = ((-mousePos.Xy + (vpSize / 2)) / oCamera.zoom) + oCamera.transform.GetPosition().Xz;
+                            this.mousePosMapSpace = ((mousePos.Xy - (vpSize / 2)) / oCamera.zoom) + oCamera.transform.GetPosition().Xz;
 
-                            this.highlight.X = (int)this.highlight.X;
-                            this.highlight.Y = (int)this.highlight.Y;
+                            this.highlight.X = (int)this.mousePosMapSpace.X;
+                            this.highlight.Y = (int)this.mousePosMapSpace.Y;
 
                             // Out of map bounds check
-                            if (this.highlight.X < 0 || this.highlight.X >= 128 || this.highlight.Y < 0 || this.highlight.Y >= 128)
-                                this.highlightVisible = false;
+                            if (this.highlight.X < 0 || this.highlight.X >= MAP_SIZE || this.highlight.Y < 0 || this.highlight.Y >= MAP_SIZE)
+                                this.mouseOverGrid = false;
                         }
                     }
                 }
             }
 
-            if (this.highlightVisible)
+            if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonDown)
             {
-                if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonDown)
+                this.marqueeMin = mousePosMapSpace;
+                this.marqueeVisible = true;
+
+                if (this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftAlt] ||
+                    this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightAlt])
+                    this.deselectMode = true;
+                else
+                    this.deselectMode = false;
+            }
+            if (this.engine.input.LMB)
+            {
+                this.marqueeMax = this.mousePosMapSpace;
+
+                if (this.marqueeMax != this.marqueeMaxPrevious)
                 {
-                    var linearCoord = (int)((this.highlight.Y * 512) + (this.highlight.X * 4));
-                    var R = this.selectionBitmap[linearCoord];
-                    if (R == 70)
+                    this.marqueeMaxPrevious = this.marqueeMax;
+
+                    var minX = MathF.Min(this.marqueeMin.X, this.marqueeMax.X);
+                    var maxX = MathF.Max(this.marqueeMin.X, this.marqueeMax.X);
+                    var minY = MathF.Min(this.marqueeMin.Y, this.marqueeMax.Y);
+                    var maxY = MathF.Max(this.marqueeMin.Y, this.marqueeMax.Y);
+
+                    for (int x = (int)minX; x <= (int)maxX; x++)
                     {
-                        this.selectionBitmap[linearCoord] = 255;
-                    }
-                    else
-                    {
-                        this.selectionBitmap[linearCoord] = 70;
+                        for (int y = (int)minY; y <= (int)maxY; y++)
+                        {
+                            if (deselectMode)
+                                DeselectCell(x, y);
+                            else
+                                SelectCell(x, y);
+                        }
                     }
 
                     UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
                 }
             }
+            if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonUp)
+            {
+                this.marqueeVisible = false;
+
+                if ((int)this.marqueeMin.X == (int)this.marqueeMax.X &&
+                    (int)this.marqueeMin.Y == (int)this.marqueeMax.Y)
+                {
+                    if (this.mouseOverGrid)
+                    {
+                        if (deselectMode)
+                            DeselectCell(this.highlight.X, this.highlight.Y);
+                        else
+                            SelectCell(this.highlight.X, this.highlight.Y);
+
+                        UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+                    }
+                }
+            }
+
+            //Debug.Log(this.marqueueVisible + " " + this.marqueueMin + " " + this.marqueueMax);
+        }
+
+        public void SelectCell(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE)
+                return;
+            var linearCoord = (int)((y * 4 * MAP_SIZE) + (x * 4));
+            this.selectionBitmap![linearCoord] = selectedCellColor.R;
+            this.selectionBitmap[linearCoord + 1] = selectedCellColor.G;
+            this.selectionBitmap[linearCoord + 2] = selectedCellColor.B;
+            this.selectionBitmap[linearCoord + 3] = selectedCellColor.A;
+        }
+
+        public void DeselectCell(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE)
+                return;
+            var linearCoord = (int)((y * 4 * MAP_SIZE) + (x * 4));
+            this.selectionBitmap![linearCoord] = deselectedCellColor.R;
+            this.selectionBitmap[linearCoord + 1] = deselectedCellColor.G;
+            this.selectionBitmap[linearCoord + 2] = deselectedCellColor.B;
+            this.selectionBitmap[linearCoord + 3] = deselectedCellColor.A;
         }
 
         public override void Render(int frameBuffer)
@@ -223,7 +330,7 @@ namespace ProjectWS.Engine.Rendering
             if (!this.rendering) return;
 
             //GL.Viewport(this.x, this.y, this.width, this.height);
-            GL.ClearColor(0.15f, 0.1f, 0.15f, 1.0f);
+            GL.ClearColor(envColor.R / 255f, envColor.G / 255f, envColor.B / 255f, envColor.A / 255f);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
@@ -233,42 +340,92 @@ namespace ProjectWS.Engine.Rendering
             this.viewports?[0]?.Use();
 
             // Render BG
-            this.mapTileShader.Use();
-            GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, this.selectionBitmapPtr);
-            this.viewports?[0]?.mainCamera?.SetToShader(this.mapTileShader);
-            var bgMat = Matrix4.CreateTranslation(0.5f, 0, 0.5f);
-            bgMat *= Matrix4.CreateScale(128);
-            this.mapTileShader.SetMat4("model", ref bgMat);
+            RenderBackground(0);
+
+            // Render highlight quad
+            //RenderHighlight();
+
+            // Render grid
+            RenderGrid(100);
+
+            // render marqueue
+            RenderMarqueue(20);
+
+            // render selection
+            RenderSelectionLayer(10);
+
+            // Render Text
+            //this.textRenderer?.Render(this, this.viewports![0]);
+        }
+
+        private void RenderGrid(int layer)
+        {
+            GL.Disable(EnableCap.Blend);
+
+            this.lineShader.Use();
+            this.viewports?[0]?.mainCamera?.SetToShader(this.lineShader);
+            var gridMat = Matrix4.CreateTranslation(0, layer/1000f, 0);
+            this.lineShader.SetMat4("model", ref gridMat);
+            this.lineShader.SetColor("lineColor", gridColor);
+            GL.BindVertexArray(this.gridVAO);
+            GL.DrawElements(BeginMode.Lines, this.gridIndices!.Length, DrawElementsType.UnsignedInt, 0);
+        }
+
+        private void RenderMarqueue(int layer)
+        {
+            if (this.marqueeVisible)
+            {
+                GL.Disable(EnableCap.Blend);
+
+                this.marqueeShader.Use();
+                this.viewports?[0]?.mainCamera?.SetToShader(this.marqueeShader);
+
+                // Calculate the position and size of the quad
+                Vector2 position = (this.marqueeMin + this.marqueeMax) / 2;
+                Vector2 size = this.marqueeMax - this.marqueeMin;
+
+                // Create the matrix that transforms the quad
+                var quadMat = Matrix4.CreateScale(size.X, 1f, size.Y) * Matrix4.CreateTranslation(position.X, layer / 1000f, position.Y);
+
+                this.marqueeShader.SetMat4("model", ref quadMat);
+                this.marqueeShader.SetColor("lineColor", new Color(1f, 1f, 1f, 1.0f));
+                this.marqueeShader.SetFloat("aspectRatio", this.viewports![0].aspect);
+
+                GL.BindVertexArray(this.lineSquareVAO);
+                GL.DrawElements(BeginMode.Lines, this.lineSquareIndices!.Length, DrawElementsType.UnsignedInt, 0);
+            }
+        }
+
+        private void RenderBackground(int layer)
+        {
+            GL.Disable(EnableCap.Blend);
+
+            this.lineShader.Use();
+            this.viewports?[0]?.mainCamera?.SetToShader(this.lineShader);
+            var bgMat = Matrix4.CreateScale(MAP_SIZE) * Matrix4.CreateTranslation(MAP_SIZE / 2, layer / 1000f, MAP_SIZE / 2);
+            this.lineShader.SetMat4("model", ref bgMat);
+            this.lineShader.SetColor("lineColor", backgroundCellColor);
 
             GL.BindVertexArray(this.bgVAO);
             GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
             GL.BindVertexArray(0);
+        }
 
-            // Render highlight quad
-            if (this.highlightVisible)
-            {
-                this.lineShader.Use();
-                this.viewports?[0]?.mainCamera?.SetToShader(this.lineShader);
-                var quadMat = Matrix4.CreateTranslation(this.highlight.X + 0.5f, 0.1f, this.highlight.Y + 0.5f);
-                this.lineShader.SetMat4("model", ref quadMat);
-                this.lineShader.SetColor("lineColor", new Color(0.4f, 0.4f, 0.4f, 1.0f));
-                GL.BindVertexArray(this.hightlightQuadVAO);
-                GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
-                GL.BindVertexArray(0);
-            }
+        private void RenderSelectionLayer(int layer)
+        {
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-            // Render grid
-            this.lineShader.Use();
-            this.viewports?[0]?.mainCamera?.SetToShader(this.lineShader);
-            var gridMat = Matrix4.CreateTranslation(0, 0.2f, 0);
-            this.lineShader.SetMat4("model", ref gridMat);
-            this.lineShader.SetColor("lineColor", new Color(0.2f, 0.2f, 0.2f, 1.0f));
-            GL.BindVertexArray(this.gridVAO);
-            GL.DrawElements(BeginMode.Lines, this.gridIndices.Length, DrawElementsType.UnsignedInt, 0);
+            this.mapTileShader.Use();
+            this.viewports?[0]?.mainCamera?.SetToShader(this.mapTileShader);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, this.selectionBitmapPtr);
+            var bgMat = Matrix4.CreateScale(MAP_SIZE) * Matrix4.CreateTranslation(MAP_SIZE / 2, layer / 1000f, MAP_SIZE / 2);
+            this.mapTileShader.SetMat4("model", ref bgMat);
 
-            // Render Text
-            this.textRenderer?.Render(this, this.viewports[0]);
+            GL.BindVertexArray(this.selectionLayerVAO);
+            GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
+            GL.BindVertexArray(0);
         }
     }
 }

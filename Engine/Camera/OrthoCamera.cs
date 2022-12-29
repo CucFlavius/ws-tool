@@ -32,10 +32,10 @@ namespace ProjectWS.Engine
         {
             // Calculate the projection matrix
             this.projection = Matrix4.CreateOrthographicOffCenter(
-                -viewportSize.X / 2 / zoom,  // left
-                viewportSize.X / 2 / zoom,   // right
-                -viewportSize.Y / 2 / zoom,  // bottom
-                viewportSize.Y / 2 / zoom,   // top
+                viewportSize.X / 2 / zoom,  // left
+                -viewportSize.X / 2 / zoom,   // right
+                viewportSize.Y / 2 / zoom,  // bottom
+                -viewportSize.Y / 2 / zoom,   // top
                 -1.0f,                       // near
                 1.0f);                       // far
 

@@ -55,6 +55,8 @@ namespace ProjectWS.Editor
             { OpenTK.Windowing.GraphicsLibraryFramework.Keys.C, Engine.Input.User32Wrapper.Key.C },
             { OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space, Engine.Input.User32Wrapper.Key.Space },
             { OpenTK.Windowing.GraphicsLibraryFramework.Keys.R, Engine.Input.User32Wrapper.Key.R },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftAlt, Engine.Input.User32Wrapper.Key.Alt },
+            { OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightAlt, Engine.Input.User32Wrapper.Key.Alt },
         };
 
         public Editor()

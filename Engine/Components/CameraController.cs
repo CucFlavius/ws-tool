@@ -140,8 +140,8 @@ namespace ProjectWS.Engine.Components
                 this.Pitch -= yoffset;
             else if (this.cameraMode == Mode.OrthoTop)
             {
-                this.Pos.X += xoffset;
-                this.Pos.Z -= yoffset;
+                this.Pos.X -= xoffset;
+                this.Pos.Z += yoffset;
             }
 
             // make sure that when pitch is out of bounds, screen doesn't get flipped
