@@ -12,6 +12,7 @@ using System.IO.Pipes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using static ProjectWS.Engine.Project.Project;
 
 namespace ProjectWS.Editor
 {
@@ -42,6 +43,9 @@ namespace ProjectWS.Editor
         public LayoutAnchorable toolboxLayoutAnchorable;
 
         public DataManagerWindow dataManagerWindow;
+        public MapEditorWindow mapEditorWindow;
+        public MapImportWindow mapImportWindow;
+        public int mapRendererPaneID;
 
         FPSCounter? fps;
 
@@ -63,6 +67,7 @@ namespace ProjectWS.Editor
             this.controls = new Dictionary<int, GLWpfControl>();
             this.worldRendererPanes = new Dictionary<int, WorldRendererPane>();
             this.modelRendererPanes = new Dictionary<int, ModelRendererPane>();
+            this.mapRendererPanes = new Dictionary<int, MapRendererPane>();
             this.tools = new List<Tool>();
             Start();
         }
@@ -391,7 +396,8 @@ namespace ProjectWS.Editor
                 //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
                 this.engine.renderers.Add(renderer);
 
-                this.mapRendererPanes?.Add(ID,rendererPane);
+                this.mapRendererPaneID = ID;
+                this.mapRendererPanes.Add(ID,rendererPane);
             }
             else
             {
@@ -527,21 +533,78 @@ namespace ProjectWS.Editor
         internal void OpenWorldManager()
         {
             var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Map", this.engine.renderers.Count, 2);
-            /*
-            this.worldManagerWindow = new WorldManagerWindow(this);
-            this.worldManagerWindow.Owner = Program.mainWindow;
-            this.worldManagerWindow.Show();
+        }
 
-            // Make map renderer
-            if (this.mapRendererControl == null)
+        internal void CreateMap()
+        {
+            this.mapEditorWindow = new MapEditorWindow(this, true);
+            this.mapEditorWindow.Owner = Program.mainWindow;
+            this.mapEditorWindow.Show();
+        }
+
+        internal void EditMap()
+        {
+            int index = this.mapRendererPanes[this.mapRendererPaneID].mapComboBox.SelectedIndex;
+            if (index == -1)
+                return;
+
+            this.mapEditorWindow = new MapEditorWindow(this, false);
+            this.mapEditorWindow.Owner = Program.mainWindow;
+            this.mapEditorWindow.Show();
+
+            var map = ProjectManager.project!.Maps![index];
+
+            this.mapEditorWindow.FillInputs(map);
+        }
+
+        internal void ImportMap()
+        {
+            this.mapImportWindow = new MapImportWindow(this);
+            this.mapImportWindow.Owner = Program.mainWindow;
+            this.mapImportWindow.Show();
+        }
+
+        internal void RemoveMap()
+        {
+            if (System.Windows.MessageBox.Show("Are you sure you want to remove this map and all of the assets that belong to it?", "Remove map ?", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
             {
-                this.mapRendererControl = this.worldManagerWindow.GLWpfControl;
-                var mapRenderer = new MapRenderer(this.engine, 10000, this.engine.input);
-                this.engine.renderers.Add(mapRenderer);
-                var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
-                this.mapRendererControl.Start(settings);
+                // Remove from dropdown
+                if (this.mapRendererPanes == null) return;
+                if (ProjectManager.project == null) return;
+                if (ProjectManager.project.Maps == null) return;
+
+
+                int idx = this.mapRendererPanes[this.mapRendererPaneID].mapComboBox.SelectedIndex;
+                if (idx == -1) return;
+
+                var name = this.mapRendererPanes?[this.mapRendererPaneID].mapComboBox.Items[idx].ToString();
+                this.mapRendererPanes?[this.mapRendererPaneID].mapComboBox.Items.RemoveAt(idx);
+
+                // Remove from project
+                int projIdx = -1;
+                if (name != null)
+                {
+                    for (int i = 0; i < ProjectManager.project.Maps.Count; i++)
+                    {
+                        if (ProjectManager.project.Maps[i] == null) continue;
+                        if (ProjectManager.project.Maps[i].Name == null) continue;
+
+                        if (ProjectManager.project.Maps[i].Name == name)
+                        {
+                            projIdx = i;
+                            break;
+                        }
+                    }
+                }
+                if (projIdx != -1)
+                {
+                    // TODO : If the map is loaded in world renderer, unload it
+                    // TODO : Destroy map assets
+
+                    ProjectManager.project.Maps.RemoveAt(projIdx);
+                    ProjectManager.SaveProject();
+                }
             }
-            */
         }
     }
 }

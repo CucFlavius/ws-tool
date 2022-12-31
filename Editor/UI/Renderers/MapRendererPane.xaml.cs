@@ -1,7 +1,10 @@
 ﻿using OpenTK.Wpf;
+using ProjectWS.Engine.Project;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -15,11 +18,20 @@ namespace ProjectWS.Editor
         public Editor editor;
         public MapRenderer mapRenderer;
 
+        public ObservableCollection<string>? mapNames { get; set; }
+
         public MapRendererPane(Editor editor, MapRenderer mapRenderer)
         {
             InitializeComponent();
             this.editor = editor;
             this.mapRenderer = mapRenderer;
+
+            this.mapComboBox.Items.Clear();
+
+            foreach (Project.Map map in ProjectManager.project!.Maps!)
+            {
+                this.mapComboBox.Items.Add(map.Name);
+            }
         }
 
         public GLWpfControl GetOpenTKControl()
@@ -44,12 +56,12 @@ namespace ProjectWS.Editor
 
         private void button_AddMap_Click(object sender, RoutedEventArgs e)
         {
-
+            editor.CreateMap();
         }
 
         private void button_RemoveMap_Click(object sender, RoutedEventArgs e)
         {
-
+            editor.RemoveMap();
         }
 
         private void mapComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -88,6 +100,16 @@ namespace ProjectWS.Editor
         {
             if (this.mapRenderer != null)
                 this.mapRenderer.showGrid = false;
+        }
+
+        private void button_ImportMap_Click(object sender, RoutedEventArgs e)
+        {
+            this.editor.ImportMap();
+        }
+
+        private void button_EditMap_Click(object sender, RoutedEventArgs e)
+        {
+            this.editor.EditMap();
         }
     }
 }

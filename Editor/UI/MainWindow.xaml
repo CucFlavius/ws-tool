@@ -28,16 +28,16 @@
             </MenuItem>
             <MenuItem Header="View">
                 <MenuItem Name="menuItem_Toolbox" Header="Toolbox" Click="menuItem_Toolbox_Click" IsEnabled="True"/>
+                <MenuItem Name="menuItem_WorldManager" Header="World Manager" Click="menuItem_WorldManager_Click"  IsEnabled="True"/>
             </MenuItem>
             <MenuItem Header="Window">
                 <MenuItem Name="menuItem_DataManager" Header="Data Manager" Click="menuItem_DataManager_Click"  IsEnabled="True"/>
-                <MenuItem Name="menuItem_WorldManager" Header="World Manager" Click="menuItem_WorldManager_Click"  IsEnabled="True"/>
             </MenuItem>
         </Menu>
         <ToolBarTray Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,2">
             <ToolBar HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Button x:Name = "button_WorldManager" Width="30" Height="30" Padding="0,0,0,0" Click="button_WorldManager_Click">
-                    <fa:IconBlock Icon="Globe" Foreground="Gray" FontSize="19" Width="24" Height="24"/>
+                    <fa:IconBlock Icon="Globe" Foreground="Gray" FontSize="19" Width="24" Height="19"/>
                 </Button>
             </ToolBar>
         </ToolBarTray>

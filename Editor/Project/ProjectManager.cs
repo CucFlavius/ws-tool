@@ -1,7 +1,10 @@
 ﻿using ProjectWS.Engine.Data;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Windows.Documents;
 
 namespace ProjectWS.Engine.Project
 {
@@ -57,6 +60,11 @@ namespace ProjectWS.Engine.Project
             File.WriteAllText(projectPath, data);
 
             // TODO: Save all map changes here
+        }
+
+        public static List<Project.Map>? GetMapList()
+        {
+            return project?.Maps;
         }
     }
 }

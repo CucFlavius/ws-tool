@@ -34,4 +34,10 @@
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
+
+    <!--TextBlock-->
+    <Style x:Key="{x:Type TextBlock}"
+           TargetType="TextBlock">
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
 </ResourceDictionary>

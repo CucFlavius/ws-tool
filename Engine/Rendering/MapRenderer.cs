@@ -27,6 +27,7 @@ namespace ProjectWS.Engine.Rendering
         private int lineSquareVAO;
         public bool deselectMode;
         public bool showGrid = true;
+        public bool mouseDownInView = false;
 
         const int MAP_SIZE = 128;
         readonly Color32 envColor = new Color32(10, 10, 20, 255);
@@ -246,62 +247,76 @@ namespace ProjectWS.Engine.Rendering
 
             if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonDown)
             {
-                this.marqueeMin = mousePosMapSpace;
-                this.marqueeVisible = true;
+                var mousePos = this.engine.input.GetMousePosition();
 
-                if (this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftAlt] ||
-                    this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightAlt])
-                    this.deselectMode = true;
+                if (mousePos.X >= 0 && mousePos.Y >= 0)
+                {
+                    this.mouseDownInView = true;
+                    this.marqueeMin = mousePosMapSpace;
+                    this.marqueeVisible = true;
+
+                    if (this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftAlt] ||
+                        this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightAlt])
+                        this.deselectMode = true;
+                    else
+                        this.deselectMode = false;
+                }
                 else
-                    this.deselectMode = false;
+                {
+                    this.mouseDownInView = false;
+                }
             }
             if (this.engine.input.LMB)
             {
-                this.marqueeMax = this.mousePosMapSpace;
-
-                if (this.marqueeMax != this.marqueeMaxPrevious)
+                if (this.mouseDownInView)
                 {
-                    this.marqueeMaxPrevious = this.marqueeMax;
+                    this.marqueeMax = this.mousePosMapSpace;
 
-                    var minX = MathF.Min(this.marqueeMin.X, this.marqueeMax.X);
-                    var maxX = MathF.Max(this.marqueeMin.X, this.marqueeMax.X);
-                    var minY = MathF.Min(this.marqueeMin.Y, this.marqueeMax.Y);
-                    var maxY = MathF.Max(this.marqueeMin.Y, this.marqueeMax.Y);
-
-                    for (int x = (int)minX; x <= (int)maxX; x++)
+                    if (this.marqueeMax != this.marqueeMaxPrevious)
                     {
-                        for (int y = (int)minY; y <= (int)maxY; y++)
-                        {
-                            if (deselectMode)
-                                DeselectCell(x, y);
-                            else
-                                SelectCell(x, y);
-                        }
-                    }
+                        this.marqueeMaxPrevious = this.marqueeMax;
 
-                    UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+                        var minX = MathF.Min(this.marqueeMin.X, this.marqueeMax.X);
+                        var maxX = MathF.Max(this.marqueeMin.X, this.marqueeMax.X);
+                        var minY = MathF.Min(this.marqueeMin.Y, this.marqueeMax.Y);
+                        var maxY = MathF.Max(this.marqueeMin.Y, this.marqueeMax.Y);
+
+                        for (int x = (int)minX; x <= (int)maxX; x++)
+                        {
+                            for (int y = (int)minY; y <= (int)maxY; y++)
+                            {
+                                if (deselectMode)
+                                    DeselectCell(x, y);
+                                else
+                                    SelectCell(x, y);
+                            }
+                        }
+
+                        UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+                    }
                 }
             }
             if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonUp)
             {
                 this.marqueeVisible = false;
 
-                if ((int)this.marqueeMin.X == (int)this.marqueeMax.X &&
-                    (int)this.marqueeMin.Y == (int)this.marqueeMax.Y)
+                if (this.mouseDownInView)
                 {
-                    if (this.mouseOverGrid)
+                    if ((int)this.marqueeMin.X == (int)this.marqueeMax.X &&
+                        (int)this.marqueeMin.Y == (int)this.marqueeMax.Y)
                     {
-                        if (deselectMode)
-                            DeselectCell(this.highlight.X, this.highlight.Y);
-                        else
-                            SelectCell(this.highlight.X, this.highlight.Y);
+                        if (this.mouseOverGrid)
+                        {
+                            if (deselectMode)
+                                DeselectCell(this.highlight.X, this.highlight.Y);
+                            else
+                                SelectCell(this.highlight.X, this.highlight.Y);
 
-                        UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+                            UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+                        }
                     }
                 }
             }
-
-            //Debug.Log(this.marqueueVisible + " " + this.marqueueMin + " " + this.marqueueMax);
         }
 
         public void SelectCell(int x, int y)
@@ -309,10 +324,13 @@ namespace ProjectWS.Engine.Rendering
             if (x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE)
                 return;
             var linearCoord = (int)((y * 4 * MAP_SIZE) + (x * 4));
-            this.selectionBitmap![linearCoord] = selectedCellColor.R;
-            this.selectionBitmap[linearCoord + 1] = selectedCellColor.G;
-            this.selectionBitmap[linearCoord + 2] = selectedCellColor.B;
-            this.selectionBitmap[linearCoord + 3] = selectedCellColor.A;
+            if (this.selectionBitmap != null)
+            {
+                this.selectionBitmap[linearCoord] = selectedCellColor.R;
+                this.selectionBitmap[linearCoord + 1] = selectedCellColor.G;
+                this.selectionBitmap[linearCoord + 2] = selectedCellColor.B;
+                this.selectionBitmap[linearCoord + 3] = selectedCellColor.A;
+            }
         }
 
         public void DeselectCell(int x, int y)
@@ -320,10 +338,13 @@ namespace ProjectWS.Engine.Rendering
             if (x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE)
                 return;
             var linearCoord = (int)((y * 4 * MAP_SIZE) + (x * 4));
-            this.selectionBitmap![linearCoord] = deselectedCellColor.R;
-            this.selectionBitmap[linearCoord + 1] = deselectedCellColor.G;
-            this.selectionBitmap[linearCoord + 2] = deselectedCellColor.B;
-            this.selectionBitmap[linearCoord + 3] = deselectedCellColor.A;
+            if (this.selectionBitmap != null)
+            {
+                this.selectionBitmap[linearCoord] = deselectedCellColor.R;
+                this.selectionBitmap[linearCoord + 1] = deselectedCellColor.G;
+                this.selectionBitmap[linearCoord + 2] = deselectedCellColor.B;
+                this.selectionBitmap[linearCoord + 3] = deselectedCellColor.A;
+            }
         }
 
         public void DeselectAllCells()
@@ -336,7 +357,8 @@ namespace ProjectWS.Engine.Rendering
                 }
             }
 
-            UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+            if (this.selectionBitmap != null)
+                UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
         }
 
         public override void Render(int frameBuffer)

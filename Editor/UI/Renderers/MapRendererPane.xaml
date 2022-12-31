@@ -67,7 +67,7 @@
                                       Foreground="RoyalBlue"
                                       FontSize="13"
                                       Width="32" Height="32"
-                                      Padding="0,17,16,0"
+                                      Padding="0,16.5,16,0"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Bottom"/>
                     </Grid>
@@ -92,7 +92,7 @@
                                       Foreground="IndianRed"
                                       FontSize="13"
                                       Width="32" Height="32"
-                                      Padding="0,17,16,0"
+                                      Padding="0,16.5,16,0"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Bottom"/>
                     </Grid>
@@ -115,7 +115,7 @@
                 <ComboBox Text="Map" Width="200"
                           SelectionChanged="mapComboBox_SelectionChanged"
                           Name="mapComboBox" VerticalAlignment="Center" Margin="5,0,5,0"
-                          ItemsSource="{Binding viewModes}" ToolTip="Map List"/>
+                          ItemsSource="{Binding mapNames}" ToolTip="Map List"/>
                 <Button x:Name = "button_AddMap" Width="30" Height="30"
                         Padding="0,0" Click="button_AddMap_Click"
                         ToolTip="Create New Map">
@@ -135,7 +135,7 @@
                                       Foreground="RoyalBlue"
                                       FontSize="13"
                                       Width="32" Height="32"
-                                      Padding="0,17,16,0"
+                                      Padding="0,16.5,16,0"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Bottom"/>
                     </Grid>
@@ -159,7 +159,55 @@
                                       Foreground="IndianRed"
                                       FontSize="13"
                                       Width="32" Height="32"
-                                      Padding="0,17,16,0"
+                                      Padding="0,16.5,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Button>
+                <Button x:Name = "button_ImportMap" Width="30" Height="30" 
+                        Padding="0,0" Click="button_ImportMap_Click"
+                        ToolTip="Import Map">
+                    <Grid>
+                        <fa:IconBlock Icon="Map"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                        <fa:IconBlock Icon="Circle" IconFont="Solid"
+                                      Foreground="White"
+                                      FontSize="14"
+                                      Width="32" Height="32"
+                                      Padding="0,16,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                        <fa:IconBlock Icon="ArrowCircleDown"
+                                      Foreground="DarkSeaGreen"
+                                      FontSize="13"
+                                      Width="32" Height="32"
+                                      Padding="0,16,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                    </Grid>
+                </Button>
+                <Button x:Name = "button_EditMap" Width="30" Height="30" 
+                        Padding="0,0" Click="button_EditMap_Click"
+                        ToolTip="Edit Map">
+                    <Grid>
+                        <fa:IconBlock Icon="Map"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                        <fa:IconBlock Icon="Square" IconFont="Solid"
+                                      Foreground="White"
+                                      FontSize="14"
+                                      Width="32" Height="32"
+                                      Padding="0,15,16,0"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Bottom"/>
+                        <fa:IconBlock Icon="Edit"
+                                      Foreground="DarkSeaGreen"
+                                      FontSize="13"
+                                      Width="32" Height="32"
+                                      Padding="0,15,16,0"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Bottom"/>
                     </Grid>

@@ -19,24 +19,24 @@ namespace ProjectWS.Engine.Database.Definitions
 			unk0x100 = 0x100
 		}
 
-		public uint ID;
-		public string assetPath;
-		public uint flags;
-		public uint type;
-		public string screenPath;
-		public string screenModelPath;
-		public uint chunkBounds00;
-		public uint chunkBounds01;
-		public uint chunkBounds02;
-		public uint chunkBounds03;
-		public uint plugAverageHeight;
-		public uint localizedTextIdName;
-		public uint minItemLevel;
-		public uint maxItemLevel;
-		public uint primeLevelOffset;
-		public uint primeLevelMax;
-		public uint veteranTierScalingType;
-		public uint heroismMenaceLevel;
-		public uint rewardRotationContentId;
-	}
+		public uint ID { get; set; }
+		public string? assetPath { get; set; }
+        public uint flags { get; set; }
+        public uint type { get; set; }
+        public string? screenPath { get; set; }
+        public string? screenModelPath { get; set; }
+        public uint chunkBounds00 { get; set; }
+        public uint chunkBounds01 { get; set; }
+        public uint chunkBounds02 { get; set; }
+        public uint chunkBounds03 { get; set; }
+        public uint plugAverageHeight { get; set; }
+        public uint localizedTextIdName { get; set; }
+        public uint minItemLevel { get; set; }
+        public uint maxItemLevel { get; set; }
+        public uint primeLevelOffset { get; set; }
+        public uint primeLevelMax { get; set; }
+        public uint veteranTierScalingType { get; set; }
+        public uint heroismMenaceLevel { get; set; }
+        public uint rewardRotationContentId { get; set; }
+    }
 }
