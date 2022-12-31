@@ -42,6 +42,11 @@ namespace ProjectWS.Editor
             }
 
             this.mapComboBox.ItemsSource = this.mapNames;
+
+            if (ProjectManager.project?.previousOpenMapID != 0)
+            {
+                this.mapComboBox.SelectedIndex = this.mapIDs.IndexOf(ProjectManager.project.previousOpenMapID);
+            }
         }
 
         public GLWpfControl GetOpenTKControl()
@@ -76,7 +81,16 @@ namespace ProjectWS.Editor
 
         private void mapComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            Debug.Log("Changed Map");
 
+            if (ProjectManager.project != null && this.mapComboBox != null && this.mapIDs != null)
+            {
+                if (ProjectManager.project.previousOpenMapID != this.mapIDs[this.mapComboBox.SelectedIndex])
+                {
+                    ProjectManager.project.previousOpenMapID = (uint)this.mapIDs[this.mapComboBox.SelectedIndex];
+                    ProjectManager.SaveProject();
+                }
+            }
             /*
             if (this.locationNames == null)
                 this.locationNames = new ObservableCollection<string>();

@@ -15,6 +15,7 @@ namespace ProjectWS.Engine.Project
         public List<Map>? Maps { get; set; }
         public uint lastWorldID { get; set; }
         public uint lastWorldLocationID { get; set; }
+        public uint previousOpenMapID { get; set; }
 
         public class Map
         {
