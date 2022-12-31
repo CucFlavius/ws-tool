@@ -14,15 +14,17 @@ namespace ProjectWS.Editor
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class MapRendererPane : UserControl
+    public partial class WorldManagerPane : UserControl
     {
         public Editor editor;
         public MapRenderer mapRenderer;
 
         public ObservableCollection<string>? mapNames { get; set; }
         public List<uint>? mapIDs { get; set; }
+        public ObservableCollection<string>? locationNames { get; set; }
+        public List<uint>? locationIDs { get; set; }
 
-        public MapRendererPane(Editor editor, MapRenderer mapRenderer)
+        public WorldManagerPane(Editor editor, MapRenderer mapRenderer)
         {
             InitializeComponent();
             this.editor = editor;
@@ -30,8 +32,10 @@ namespace ProjectWS.Editor
 
             this.mapNames = new ObservableCollection<string>();
             this.mapIDs = new List<uint>();
+            this.locationNames = new ObservableCollection<string>();
+            this.locationIDs = new List<uint>();
 
-            foreach (Project.Map map in ProjectManager.project!.Maps!)
+            foreach (ProjectWS.Engine.Project.Project.Map map in ProjectManager.project!.Maps!)
             {
                 this.mapNames.Add($"{map.worldRecord.ID}. {map.Name}");
                 this.mapIDs.Add(map.worldRecord.ID);
@@ -73,6 +77,47 @@ namespace ProjectWS.Editor
         private void mapComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+            /*
+            if (this.locationNames == null)
+                this.locationNames = new ObservableCollection<string>();
+
+            if (this.locationIDs == null)
+                this.locationIDs = new List<uint>();
+
+            this.locationNames.Clear();
+            this.locationIDs.Clear();
+
+            int idx = this.mapComboBox.SelectedIndex;
+            if (idx == -1) return;
+
+            if (this.mapIDs == null) return;
+
+            var ID = this.mapIDs[idx];
+
+            if (ProjectManager.project?.Maps != null)
+            {
+                Project.Map? selectedMap = null;
+                foreach (var map in ProjectManager.project.Maps)
+                {
+                    if (map.worldRecord?.ID == ID)
+                    {
+                        selectedMap = map;
+                        break;
+                    }
+                }
+
+                if (selectedMap?.worldLocations != null)
+                {
+                    foreach (Project.Map.WorldLocation location in selectedMap.worldLocations)
+                    {
+                        this.locationNames.Add($"{location.ID}");
+                        this.locationIDs.Add(location.ID);
+                    }
+                }
+            }
+
+            this.comboBox_location.ItemsSource = this.locationNames;
+            */
         }
 
         private void button_DeselectAll_Click(object sender, RoutedEventArgs e)
@@ -116,6 +161,11 @@ namespace ProjectWS.Editor
         private void button_EditMap_Click(object sender, RoutedEventArgs e)
         {
             this.editor.EditMap();
+        }
+
+        private void comboBox_location_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

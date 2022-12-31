@@ -21,7 +21,13 @@
                 <ColumnDefinition Width="70"/>
             </Grid.ColumnDefinitions>
             <RadioButton Name="radioButton_gameData" IsChecked="True" Grid.Row="0" Grid.Column="0" Padding="10,0">From Game Data</RadioButton>
-            <ComboBox Grid.Row="0" Grid.Column="1" Name="comboBox_GameDataMapList" Margin="0,0,7,0"></ComboBox>
+            <ComboBox Grid.Row="0" Grid.Column="1" Name="comboBox_GameDataMapList" Margin="0,0,7,0">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel/>
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+            </ComboBox>
             <RadioButton Name="radioButton_localData" Grid.Row="1" Grid.Column="0" Padding="10,0,10,0">From Local Data</RadioButton>
             <TextBox Name="textBox_localDataPath" Grid.Row="1" Grid.Column="1" Padding="10,0,10,0"/>
             <Button Name="button_Browse" Grid.Row="1" Grid.Column="2" Padding="10,0" Click="button_Browse_Click">Browse..</Button>

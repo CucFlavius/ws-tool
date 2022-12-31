@@ -1,15 +1,18 @@
 ﻿using AvalonDock.Layout;
 using MathUtils;
 using OpenTK.Wpf;
+using ProjectWS.Editor.Project;
 using ProjectWS.Editor.Tools;
 using ProjectWS.Editor.UI;
+using ProjectWS.Engine;
+using ProjectWS.Engine.Data;
 using ProjectWS.Engine.Database.Definitions;
 using ProjectWS.Engine.Project;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipes;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -33,22 +36,35 @@ namespace ProjectWS.Editor
         public Dictionary<int, GLWpfControl>? controls;
         public Dictionary<int, WorldRendererPane>? worldRendererPanes;
         public Dictionary<int, ModelRendererPane>? modelRendererPanes;
-        public Dictionary<int, MapRendererPane>? mapRendererPanes;
-        public GLWpfControl? mapRendererControl;
+        FPSCounter? fps;
+        //public GLWpfControl? mapRendererControl;
 
-        public SkyEditorPane? skyEditorPane;
-        public UI.Toolbox.ToolboxPane? toolboxPane;
-        public List<Tool>? tools;
-
+        // Common Layout
         public LayoutAnchorablePane layoutAnchorablePane;
+        public LayoutDocumentPane layoutDocumentPane;
+
+        // Sky Editor
+        public SkyEditorPane? skyEditorPane;
+
+        // Toolbox
+        public List<Tool>? tools;
+        public UI.Toolbox.ToolboxPane? toolboxPane;
         public LayoutAnchorable toolboxLayoutAnchorable;
 
-        public DataManagerWindow dataManagerWindow;
-        public MapEditorWindow mapEditorWindow;
-        public MapImportWindow mapImportWindow;
-        public int mapRendererPaneID;
+        // World Manager
+        public WorldManagerPane? worldManagerPane;
+        public MapRenderer? mapRenderer;
+        public LayoutDocument worldManagerDocument;
 
-        FPSCounter? fps;
+        // Data Manager
+        public DataManagerWindow dataManagerWindow;
+
+        // Map Editor
+        public MapEditorWindow mapEditorWindow;
+
+        // Map Import
+        public MapImportWindow mapImportWindow;
+
 
         Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key> opentkKeyMap = new Dictionary<OpenTK.Windowing.GraphicsLibraryFramework.Keys, Engine.Input.User32Wrapper.Key>()
         {
@@ -68,7 +84,7 @@ namespace ProjectWS.Editor
             this.controls = new Dictionary<int, GLWpfControl>();
             this.worldRendererPanes = new Dictionary<int, WorldRendererPane>();
             this.modelRendererPanes = new Dictionary<int, ModelRendererPane>();
-            this.mapRendererPanes = new Dictionary<int, MapRendererPane>();
+            //this.mapRendererPanes = new Dictionary<int, WorldManagerPane>();
             this.tools = new List<Tool>();
             Start();
         }
@@ -163,9 +179,11 @@ namespace ProjectWS.Editor
 
             this.engine.input.mousePosPerControl[this.engine.focusedRendererID] = new Vector3((float)mousePosition.X, (float)mousePosition.Y, this.mouseWheelPos);
             this.mouseWheelPos = 0;
-            for (int r = 0; r < this.engine.renderers.Count; r++)
+            //for (int r = 0; r < this.engine.renderers.Count; r++)
+            foreach(var rendererItem in this.engine.renderers)
             {
-                var renderer = this.engine.renderers[r];
+                //var renderer = this.engine.renderers[r];
+                var renderer = rendererItem.Value;
                 renderer.RecalculateViewports();
                 if (renderer.ID == engine.focusedRendererID)
                 {
@@ -290,8 +308,10 @@ namespace ProjectWS.Editor
             this.mouseWheelPos += e.Delta / 120f;
         }
 
-        public Renderer? CreateRendererPane(MainWindow window, string name, int ID, int type)
+        public Renderer? CreateRendererPane(MainWindow window, string name, int ID, int type, out LayoutDocumentPane testRenderPane)
         {
+            testRenderPane = null;
+
             if (this.engine == null) return null;
 
             Debug.Log("Create Renderer Pane, type " + type);
@@ -313,7 +333,7 @@ namespace ProjectWS.Editor
                 layoutDoc.Content = rendererPane;
                 layoutDoc.CanClose = false;
 
-                var testRenderPane = new LayoutDocumentPane(layoutDoc);
+                testRenderPane = new LayoutDocumentPane(layoutDoc);
 
                 window.LayoutDocumentPaneGroup.Children.Add(testRenderPane);
 
@@ -328,7 +348,7 @@ namespace ProjectWS.Editor
                 this.tools?.Add(new TerrainLayerPaintTool(this.engine, this, worldRenderer));
                 this.tools?.Add(new PropTool(this.engine, this, worldRenderer));
 
-                this.engine.renderers.Add(renderer);
+                this.engine.renderers.Add(ID, renderer);
                 /*
                 var gizmo = new Engine.Objects.Gizmos.BoxGizmo(Vector4.One);
                 gizmo.transform.SetPosition(0.1f, 0.1f, 0.1f);
@@ -359,7 +379,7 @@ namespace ProjectWS.Editor
                 layoutDoc.ContentId = "Renderer_" + ID + "_" + name;
                 layoutDoc.Content = rendererPane;
 
-                var testRenderPane = new LayoutDocumentPane(layoutDoc);
+                testRenderPane = new LayoutDocumentPane(layoutDoc);
 
                 window.LayoutDocumentPaneGroup.Children.Add(testRenderPane);
 
@@ -368,16 +388,17 @@ namespace ProjectWS.Editor
 
                 renderer = new ModelRenderer(this.engine, ID, this.engine.input);
                 //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
-                this.engine.renderers.Add(renderer);
+                this.engine.renderers.Add(ID, renderer);
 
                 rendererPane.changeRenderMode = renderer.SetShadingOverride;
                 this.modelRendererPanes?.Add(ID, rendererPane);
             }
+                /*
             else if (type == 2)
             {
                 renderer = new MapRenderer(this.engine, ID, this.engine.input);
 
-                var rendererPane = new MapRendererPane(this, renderer as MapRenderer);
+                var rendererPane = new WorldManagerPane(this, renderer as MapRenderer);
                 openTkControl = rendererPane.GetOpenTKControl();
                 rendererGrid = rendererPane.GetRendererGrid();
                 this.controls?.Add(ID, openTkControl);
@@ -387,7 +408,7 @@ namespace ProjectWS.Editor
                 layoutDoc.ContentId = "Renderer_" + ID + "_" + name;
                 layoutDoc.Content = rendererPane;
 
-                var testRenderPane = new LayoutDocumentPane(layoutDoc);
+                testRenderPane = new LayoutDocumentPane(layoutDoc);
 
                 window.LayoutDocumentPaneGroup.Children.Add(testRenderPane);
 
@@ -398,8 +419,9 @@ namespace ProjectWS.Editor
                 this.engine.renderers.Add(renderer);
 
                 this.mapRendererPaneID = ID;
-                this.mapRendererPanes.Add(ID,rendererPane);
+                this.mapRendererPanes?.Add(ID,rendererPane);
             }
+                */
             else
             {
                 Debug.Log("Unsupported renderer type : " + type);
@@ -414,8 +436,16 @@ namespace ProjectWS.Editor
             return renderer;
         }
 
-        public void CreateToolboxPane(MainWindow window)
+        public void OpenToolboxPane(MainWindow window)
         {
+            if (this.toolboxLayoutAnchorable != null)
+            {
+                if (!this.layoutAnchorablePane.Children.Contains(this.toolboxLayoutAnchorable))
+                    this.layoutAnchorablePane.Children.Add(this.toolboxLayoutAnchorable);
+
+                return;
+            }
+
             if (this.toolboxPane == null)
             {
                 this.toolboxPane = new UI.Toolbox.ToolboxPane();
@@ -429,6 +459,7 @@ namespace ProjectWS.Editor
                 this.toolboxLayoutAnchorable.Title = "Toolbox";
                 this.toolboxLayoutAnchorable.ContentId = "ToolboxPane";
                 this.toolboxLayoutAnchorable.Content = this.toolboxPane;
+                this.toolboxLayoutAnchorable.PropertyChanged += LayoutAnchorable_PropertyChanged;
             }
 
             if (this.layoutAnchorablePane == null)
@@ -443,6 +474,59 @@ namespace ProjectWS.Editor
                 {
                     this.tools[i].OnTooboxPaneLoaded();
                 }
+            }
+        }
+
+        public void OpenWorldManagerPane(MainWindow window)
+        {
+            if (this.worldManagerDocument != null)
+            {
+                if (!this.layoutDocumentPane.Children.Contains(this.worldManagerDocument))
+                    this.layoutDocumentPane.Children.Add(this.worldManagerDocument);
+
+                return;
+            }
+
+            int ID = 1000;
+            if (this.mapRenderer == null)
+            {
+                this.mapRenderer = new MapRenderer(this.engine, ID, this.engine.input);
+                this.engine.renderers.Add(ID, this.mapRenderer);
+            }
+
+            if (this.worldManagerPane == null)
+            {
+                this.worldManagerPane = new WorldManagerPane(this, this.mapRenderer);
+
+                var openTkControl = this.worldManagerPane.GetOpenTKControl();
+                var rendererGrid = this.worldManagerPane.GetRendererGrid();
+                Engine.Rendering.Renderer renderer = this.mapRenderer;
+
+                var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
+                openTkControl.Start(settings);
+
+                this.controls?.Add(ID, openTkControl);
+
+                // Add events
+                openTkControl.Render += (delta) => OpenTkControl_OnRender(delta, ID, openTkControl.Framebuffer);
+                openTkControl.Loaded += (sender, e) => OpenTkControl_OnLoaded(sender, e, renderer, rendererGrid, openTkControl);
+                openTkControl.SizeChanged += (sender, e) => OpenTkControl_OnSizeChanged(sender, e, renderer);
+            }
+
+            if (this.worldManagerDocument == null)
+            {
+                this.worldManagerDocument = new LayoutDocument();
+                this.worldManagerDocument.Title = "World Manager";
+                this.worldManagerDocument.ContentId = "WorldManagerPane";
+                this.worldManagerDocument.Content = this.worldManagerPane;
+
+                this.worldManagerDocument.PropertyChanged += LayoutDocument_PropertyChanged;
+            }
+
+            if (this.layoutDocumentPane == null)
+            {
+                this.layoutDocumentPane = new LayoutDocumentPane(this.worldManagerDocument);
+                window.LayoutDocumentPaneGroup.Children.Add(this.layoutDocumentPane);
             }
         }
 
@@ -531,9 +615,36 @@ namespace ProjectWS.Editor
             }
         }
 
-        internal void OpenWorldManager()
+        private void LayoutAnchorable_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Map", this.engine.renderers.Count, 2);
+            if (e.PropertyName == "Parent")
+            {
+                var layoutAnchor = sender as LayoutAnchorable;
+                if (layoutAnchor != null)
+                {
+                    if (!Engine.Engine.settings.window!.panels.ContainsKey(layoutAnchor.ContentId))
+                        Engine.Engine.settings.window.panels.Add(layoutAnchor.ContentId, new Settings.Window.Panel());
+
+                    Engine.Engine.settings.window.panels[layoutAnchor.ContentId].open = layoutAnchor.Parent != null;
+                    Engine.SettingsSerializer.Save();
+                }
+            }
+        }
+
+        private void LayoutDocument_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "Parent")
+            {
+                var layoutDoc = sender as LayoutDocument;
+                if (layoutDoc != null)
+                {
+                    if (!Engine.Engine.settings.window!.panels.ContainsKey(layoutDoc.ContentId))
+                        Engine.Engine.settings.window.panels.Add(layoutDoc.ContentId, new Settings.Window.Panel());
+
+                    Engine.Engine.settings.window.panels[layoutDoc.ContentId].open = layoutDoc.Parent != null;
+                    Engine.SettingsSerializer.Save();
+                }
+            }
         }
 
         internal void OpenCreateMapWindow()
@@ -545,7 +656,7 @@ namespace ProjectWS.Editor
 
         internal void EditMap()
         {
-            int index = this.mapRendererPanes[this.mapRendererPaneID].mapComboBox.SelectedIndex;
+            int index = this.worldManagerPane.mapComboBox.SelectedIndex;
             if (index == -1)
                 return;
 
@@ -553,9 +664,12 @@ namespace ProjectWS.Editor
             this.mapEditorWindow.Owner = Program.mainWindow;
             this.mapEditorWindow.Show();
 
-            var map = ProjectManager.project!.Maps![index];
+            if (ProjectManager.project?.Maps != null && ProjectManager.project.Maps.Count > index && index >= 0)
+            {
+                var map = ProjectManager.project.Maps[index];
 
-            this.mapEditorWindow.FillInputs(map);
+                this.mapEditorWindow.FillInputs(map);
+            }
         }
 
         internal void OpenImportMapWindow()
@@ -570,18 +684,17 @@ namespace ProjectWS.Editor
             if (System.Windows.MessageBox.Show("Are you sure you want to remove this map and all of the assets that belong to it?", "Remove map ?", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
             {
                 // Remove from dropdown
-                if (this.mapRendererPanes == null) return;
+                if (this.worldManagerPane == null) return;
                 if (ProjectManager.project == null) return;
                 if (ProjectManager.project.Maps == null) return;
 
-                var mapRendererPane = this.mapRendererPanes[this.mapRendererPaneID];
-                int idx = mapRendererPane.mapComboBox.SelectedIndex;
+                int idx = this.worldManagerPane.mapComboBox.SelectedIndex;
                 if (idx == -1) return;
 
-                var ID = mapRendererPane.mapIDs[idx];
+                var ID = this.worldManagerPane.mapIDs[idx];
                 //var name = mapRendererPane.mapComboBox.Items[idx].ToString();
-                mapRendererPane.mapIDs.RemoveAt(idx);
-                mapRendererPane.mapNames.RemoveAt(idx);
+                this.worldManagerPane.mapIDs.RemoveAt(idx);
+                this.worldManagerPane.mapNames.RemoveAt(idx);
                 //mapRendererPane.mapComboBox.Items.RemoveAt(idx);
 
                 // Remove from project
@@ -589,10 +702,11 @@ namespace ProjectWS.Editor
 
                 for (int i = 0; i < ProjectManager.project.Maps.Count; i++)
                 {
-                    if (ProjectManager.project.Maps[i] == null) continue;
-                    if (ProjectManager.project.Maps[i].worldRecord == null) continue;
+                    var map = ProjectManager.project.Maps[i];
+                    if (map == null) continue;
+                    if (map.worldRecord == null) continue;
 
-                    if (ProjectManager.project.Maps[i].worldRecord!.ID == ID)
+                    if (map.worldRecord!.ID == ID)
                     {
                         projIdx = i;
                         break;
@@ -602,7 +716,16 @@ namespace ProjectWS.Editor
                 if (projIdx != -1)
                 {
                     // TODO : If the map is loaded in world renderer, unload it
+
                     // TODO : Destroy map assets
+                    var map = ProjectManager.project.Maps[projIdx];
+                    var gameDir = $"{Archive.rootBlockName}\\{map.worldRecord.assetPath}";
+                    var gameDirNoRoot = gameDir.Substring(gameDir.IndexOf('\\'));
+                    var projectFolder = $"{Path.GetDirectoryName(ProjectManager.projectFile)}\\{Path.GetFileNameWithoutExtension(ProjectManager.projectFile)}";
+                    var realDir = $"{projectFolder}\\{gameDirNoRoot}";
+
+                    if (Directory.Exists(realDir))
+                        Directory.Delete(realDir);
 
                     ProjectManager.project.Maps.RemoveAt(projIdx);
                     ProjectManager.SaveProject();
@@ -615,14 +738,14 @@ namespace ProjectWS.Editor
             var mapName = Path.GetFileNameWithoutExtension(worldRecord.assetPath);
             var mapID = worldRecord.ID;
             // Check if map ID is already in use
-            for (int i = 0; i < ProjectManager.project.Maps.Count; i++)
+            for (int i = 0; i < ProjectManager.project?.Maps?.Count; i++)
             {
-                if (ProjectManager.project.Maps[i].worldRecord.ID == mapID)
+                if (ProjectManager.project.Maps[i]?.worldRecord?.ID == mapID)
                 {
                     // Map already loaded
                     if (System.Windows.MessageBox.Show($"Map ID {mapID} is already in use, continue importing and generate a new ID ?", "Duplicate ID", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                     {
-                        mapID = ++ProjectManager.project.lastID;
+                        mapID = ++ProjectManager.project.lastWorldID;
                     }
                     else
                     {
@@ -658,23 +781,116 @@ namespace ProjectWS.Editor
                 veteranTierScalingType = worldRecord.veteranTierScalingType
             };
 
-            ProjectManager.project.Maps.Add(newMap);
+            // Import WorldLocation2 entries into project.map struct
+            /*
+            newMap.worldLocations = new List<Map.WorldLocation>();
+            foreach (var item in DataManager.database.worldLocation.records)
+            {
+                if (item.Value.worldId == mapID)
+                {
+                    newMap.worldLocations.Add(new Map.WorldLocation()
+                    {
+                        ID = item.Key,
+                        radius = item.Value.radius,
+                        maxVerticalDistance = item.Value.maxVerticalDistance,
+                        position0 = item.Value.position0,
+                        position1 = item.Value.position1,
+                        position2 = item.Value.position2,
+                        facing0 = item.Value.facing0,
+                        facing1 = item.Value.facing1,
+                        facing2 = item.Value.facing2,
+                        facing3 = item.Value.facing3,
+                        worldId = item.Value.worldId,
+                        worldZoneId = item.Value.worldZoneId,
+                        phases = item.Value.phases
+                    });
+                }
+            }
+            */
+
 
             // Add map name to dropdown
-            var mapRendererPane = this.mapRendererPanes[this.mapRendererPaneID];
-            mapRendererPane.mapIDs.Add(mapID);
-            mapRendererPane.mapNames.Add($"{mapID}. {mapName}");
+            this.worldManagerPane.mapIDs?.Add(mapID);
+            this.worldManagerPane.mapNames?.Add($"{mapID}. {mapName}");
             //mapRendererPane.mapComboBox.Items.Add(mapName);
 
             // Select last index
-            mapRendererPane.mapComboBox.SelectedIndex = mapRendererPane.mapComboBox.Items.Count - 1;
+            this.worldManagerPane.mapComboBox.SelectedIndex = this.worldManagerPane.mapComboBox.Items.Count - 1;
 
-            // TODO : Import WorldLocation2 entries into project.map struct
+            // Load Game Data
+            var gameData = new GameData(this.engine!, Engine.Engine.settings.dataManager?.gameClientPath);
+            gameData.Read(false);
 
-            // TODO : Load Game Data
+            // Extract map assets into project folder and generate chunkInfo.json
+            var gameDir = $"{Archive.rootBlockName}\\{worldRecord.assetPath}";
+            var fileEntries = gameData.GetFileEntries(gameDir);
+            var gameDirNoRoot = gameDir.Substring(gameDir.IndexOf('\\'));
+            var projectFolder = $"{Path.GetDirectoryName(ProjectManager.projectFile)}\\{Path.GetFileNameWithoutExtension(ProjectManager.projectFile)}";
+            var realDir = $"{projectFolder}\\{gameDirNoRoot}";
 
-            // TODO : Extract map assets into project folder
+            if (fileEntries != null)
+            {
+                if (!Directory.Exists(realDir))
+                    Directory.CreateDirectory(realDir);
 
+                var chunkInfo = new MapChunkInfo();
+
+                newMap.mapChunkInfoPath = $"{realDir}\\ChunkInfo.json";
+                chunkInfo.chunks = new List<Vector2>();
+                chunkInfo.chunksLow = new List<Vector2>();
+                chunkInfo.minimaps = new List<Vector2>();
+
+                const string TEX = ".tex";
+                const string AREA = ".area";
+                const string LOW = "_Low";
+
+                foreach (var entry in fileEntries)
+                {
+                    var realFilePath = Path.Combine(realDir, entry.Key);
+
+                    var tokens = entry.Key.Split('.');
+
+                    if (tokens.Length == 3)
+                    {
+                        var hexToken = tokens[1];
+                        var xHex = $"{hexToken[2]}{hexToken[3]}";
+                        var yHex = $"{hexToken[0]}{hexToken[1]}";
+                        int xValue = int.Parse(xHex, System.Globalization.NumberStyles.HexNumber);
+                        int yValue = int.Parse(xHex, System.Globalization.NumberStyles.HexNumber);
+
+                        if (entry.Key.EndsWith(TEX))
+                        {
+                            chunkInfo.minimaps.Add(new Vector2(xValue, yValue));
+                        }
+                        else if (entry.Key.EndsWith(AREA))
+                        {
+                            if (entry.Key.Contains(LOW))
+                            {
+                                chunkInfo.chunksLow.Add(new Vector2(xValue, yValue));
+                            }
+                            else
+                            {
+                                chunkInfo.chunks.Add(new Vector2(xValue, yValue));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log(entry.Key);
+                    }
+                    using (var fs = new System.IO.FileStream(realFilePath, FileMode.Create, System.IO.FileAccess.Write))
+                    using (var ms = gameData.GetFileData(entry.Value))
+                    {
+                        ms?.WriteTo(fs);
+                    }
+                }
+
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                string data = JsonSerializer.Serialize(chunkInfo, options);
+                File.WriteAllText(newMap.mapChunkInfoPath, data);
+            }
+
+            ProjectManager.project?.Maps?.Add(newMap);
             ProjectManager.SaveProject();
         }
 

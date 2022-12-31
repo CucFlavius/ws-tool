@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="UI\Renderers\MapRendererPane.xaml.cs">
+    <Compile Update="UI\Renderers\WorldManagerPane.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="UI\Toolbox\TerrainColorPaintPane.xaml.cs">

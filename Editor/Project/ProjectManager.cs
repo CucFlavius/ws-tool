@@ -11,7 +11,7 @@ namespace ProjectWS.Engine.Project
     public class ProjectManager
     {
         public static Project? project;
-        public static string? projectPath;
+        public static string? projectFile;
 
         public const string PROJECT_EXTENSION = "wsProject";
 
@@ -26,7 +26,7 @@ namespace ProjectWS.Engine.Project
                 if (jsonString != null && jsonString != String.Empty)
                 {
                     project = JsonSerializer.Deserialize<Project>(jsonString);
-                    projectPath = path;
+                    projectFile = path;
                     Engine.settings.projectManager.previousLoadedProject = path;
                     SettingsSerializer.Save();
                     Debug.Log("Loaded Project : " + project?.Name);
@@ -39,8 +39,28 @@ namespace ProjectWS.Engine.Project
             project = new Project();
             project.Name = Path.GetFileNameWithoutExtension(path);
             project.UUID = Guid.NewGuid();
-            projectPath = path;
+            projectFile = path;
+
+            // Find last world ID
+            uint lastWorldID = 0;
+            foreach (var item in DataManager.database.world.records)
+            {
+                if (item.Key > lastWorldID)
+                    lastWorldID = item.Key;
+            }
+            project.lastWorldID = lastWorldID;
+
+            // Find last worldLocation2 ID
+            uint lastWorldLocationID = 0;
+            foreach (var item in DataManager.database.worldLocation.records)
+            {
+                if (item.Key > lastWorldLocationID)
+                    lastWorldLocationID = item.Key;
+            }
+            project.lastWorldLocationID = lastWorldLocationID;
+
             SaveProject();
+
             Engine.settings.projectManager.previousLoadedProject = path;
             SettingsSerializer.Save();
 
@@ -49,7 +69,7 @@ namespace ProjectWS.Engine.Project
 
         public static void SaveProject()
         {
-            if (projectPath == null || projectPath == String.Empty)
+            if (projectFile == null || projectFile == String.Empty)
                 return;
 
             if (project == null)
@@ -57,7 +77,7 @@ namespace ProjectWS.Engine.Project
 
             var options = new JsonSerializerOptions { WriteIndented = true };
             string data = JsonSerializer.Serialize(project, options);
-            File.WriteAllText(projectPath, data);
+            File.WriteAllText(projectFile, data);
 
             // TODO: Save all map changes here
         }

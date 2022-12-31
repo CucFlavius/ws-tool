@@ -26,6 +26,8 @@ namespace ProjectWS.Editor
 
         public MainWindow()
 		{
+			if (Program.editor == null) return;
+
 			InitializeComponent();
 			this.DataContext = this;
 			this.editor = Program.editor;
@@ -34,10 +36,18 @@ namespace ProjectWS.Editor
             Mouse.AddMouseWheelHandler(Application.Current.MainWindow, new MouseWheelEventHandler(this.editor.MouseWheelEventHandler));
 
             // Create main render/update loop renderer
-            this.editor.CreateRendererPane(this, "World", 0, 0);
+            this.editor.CreateRendererPane(this, "World", 0, 0, out _);
 
-			//this.editor.CreateSkyEditorPane(this);
-			this.editor.CreateToolboxPane(this);
+			if (Engine.Engine.settings.window != null)
+			{
+				if (Engine.Engine.settings.window.panels.ContainsKey("ToolboxPane"))
+					if (Engine.Engine.settings.window.panels["ToolboxPane"].open)
+						this.editor.OpenToolboxPane(this);
+
+				if (Engine.Engine.settings.window.panels.ContainsKey("WorldManagerPane"))
+					if (Engine.Engine.settings.window.panels["WorldManagerPane"].open)
+						this.editor.OpenWorldManagerPane(this);
+			}
         }
 
 		#region FocusedElement
@@ -83,9 +93,9 @@ namespace ProjectWS.Editor
                     if (modelRendererPane != null)
                         focusedControl = modelRendererPane.GetOpenTKControl();
                 }
-                if (activeContent.Content is MapRendererPane)
+                if (activeContent.Content is WorldManagerPane)
                 {
-                    var modelRendererPane = activeContent.Content as MapRendererPane;
+                    var modelRendererPane = activeContent.Content as WorldManagerPane;
                     if (modelRendererPane != null)
                         focusedControl = modelRendererPane.GetOpenTKControl();
                 }
@@ -134,14 +144,13 @@ namespace ProjectWS.Editor
 
             Engine.Engine.settings.window.windowState = (int)this.WindowState;
 
-			SettingsSerializer.Save();
+            SettingsSerializer.Save();
         }
 
 		private void menuItem_Toolbox_Click(object sender, RoutedEventArgs e)
 		{
-			if (!this.editor.layoutAnchorablePane.Children.Contains(this.editor.toolboxLayoutAnchorable))
-				this.editor.layoutAnchorablePane.Children.Add(this.editor.toolboxLayoutAnchorable);
-		}
+			this.editor.OpenToolboxPane(this);
+        }
 
 		private void menuItem_DataManager_Click(object sender, RoutedEventArgs e)
 		{
@@ -165,12 +174,12 @@ namespace ProjectWS.Editor
 
 		private void button_WorldManager_Click(object sender, RoutedEventArgs e)
 		{
-			this.editor.OpenWorldManager();
+			this.editor.OpenWorldManagerPane(this);
 		}
 
 		private void menuItem_WorldManager_Click(object sender, RoutedEventArgs e)
 		{
-			this.editor.OpenWorldManager();
-		}
+            this.editor.OpenWorldManagerPane(this);
+        }
 	}
 }

@@ -1,11 +1,11 @@
-﻿<UserControl x:Class="ProjectWS.Editor.MapRendererPane"
+﻿<UserControl x:Class="ProjectWS.Editor.WorldManagerPane"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:glControl="clr-namespace:OpenTK.Wpf;assembly=GLWpfControl" xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="720" d:DesignWidth="1280">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="34"/>
@@ -236,6 +236,16 @@
                     </Grid>
                 </ToggleButton>
             </ToolBar>
+            <!--
+            <ToolBar HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,0">
+                <TextBlock IsHitTestVisible="False" Foreground="#d0d0d0" Width="45"
+                           Text="Location" TextAlignment="Center" VerticalAlignment="Center"/>
+                <ComboBox Text="Map" Width="100"
+                          SelectionChanged="comboBox_location_SelectionChanged"
+                          Name="comboBox_location" VerticalAlignment="Center" Margin="5,0,5,0"
+                          ItemsSource="{Binding locationNames}" ToolTip="Map List"/>
+            </ToolBar>
+            -->
         </ToolBarTray>
         <Grid Name="RendererGrid" Background="#1f1f1f" Grid.Row="1">
             <glControl:GLWpfControl Name="GLWpfControl" Focusable="True"/>

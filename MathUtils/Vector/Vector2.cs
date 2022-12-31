@@ -25,6 +25,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
 namespace MathUtils
@@ -48,6 +49,9 @@ namespace MathUtils
         /// The Y component of the Vector2.
         /// </summary>
         public float Y;
+
+        public float x { get { return X; } set { this.X = x; } }
+        public float y { get { return Y; } set { this.Y = y; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Vector2"/> struct.
@@ -114,7 +118,7 @@ namespace MathUtils
         /// </summary>
         /// <see cref="LengthFast"/>
         /// <seealso cref="LengthSquared"/>
-        public float Length => MathF.Sqrt((X * X) + (Y * Y));
+        [JsonIgnore] public float Length => MathF.Sqrt((X * X) + (Y * Y));
 
         /// <summary>
         /// Gets an approximation of the vector length (magnitude).
@@ -125,7 +129,7 @@ namespace MathUtils
         /// </remarks>
         /// <see cref="Length"/>
         /// <seealso cref="LengthSquared"/>
-        public float LengthFast => 1.0f / MathHelper.InverseSqrtFast((X * X) + (Y * Y));
+        [JsonIgnore] public float LengthFast => 1.0f / MathHelper.InverseSqrtFast((X * X) + (Y * Y));
 
         /// <summary>
         /// Gets the square of the vector length (magnitude).
@@ -136,17 +140,17 @@ namespace MathUtils
         /// </remarks>
         /// <see cref="Length"/>
         /// <seealso cref="LengthFast"/>
-        public float LengthSquared => (X * X) + (Y * Y);
+        [JsonIgnore] public float LengthSquared => (X * X) + (Y * Y);
 
         /// <summary>
         /// Gets the perpendicular vector on the right side of this vector.
         /// </summary>
-        public Vector2 PerpendicularRight => new Vector2(Y, -X);
+        [JsonIgnore] public Vector2 PerpendicularRight => new Vector2(Y, -X);
 
         /// <summary>
         /// Gets the perpendicular vector on the left side of this vector.
         /// </summary>
-        public Vector2 PerpendicularLeft => new Vector2(-Y, X);
+        [JsonIgnore] public Vector2 PerpendicularLeft => new Vector2(-Y, X);
 
         /// <summary>
         /// Returns a copy of the Vector2 scaled to unit length.
@@ -182,37 +186,37 @@ namespace MathUtils
         /// <summary>
         /// Defines a unit-length Vector2 that points towards the X-axis.
         /// </summary>
-        public static readonly Vector2 UnitX = new Vector2(1, 0);
+        [JsonIgnore] public static readonly Vector2 UnitX = new Vector2(1, 0);
 
         /// <summary>
         /// Defines a unit-length Vector2 that points towards the Y-axis.
         /// </summary>
-        public static readonly Vector2 UnitY = new Vector2(0, 1);
+        [JsonIgnore] public static readonly Vector2 UnitY = new Vector2(0, 1);
 
         /// <summary>
         /// Defines an instance with all components set to 0.
         /// </summary>
-        public static readonly Vector2 Zero = new Vector2(0, 0);
+        [JsonIgnore] public static readonly Vector2 Zero = new Vector2(0, 0);
 
         /// <summary>
         /// Defines an instance with all components set to 1.
         /// </summary>
-        public static readonly Vector2 One = new Vector2(1, 1);
+        [JsonIgnore] public static readonly Vector2 One = new Vector2(1, 1);
 
         /// <summary>
         /// Defines an instance with all components set to positive infinity.
         /// </summary>
-        public static readonly Vector2 PositiveInfinity = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+        [JsonIgnore] public static readonly Vector2 PositiveInfinity = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
 
         /// <summary>
         /// Defines an instance with all components set to negative infinity.
         /// </summary>
-        public static readonly Vector2 NegativeInfinity = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+        [JsonIgnore] public static readonly Vector2 NegativeInfinity = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
 
         /// <summary>
         /// Defines the size of the Vector2 struct in bytes.
         /// </summary>
-        public static readonly int SizeInBytes = Unsafe.SizeOf<Vector2>();
+        [JsonIgnore] public static readonly int SizeInBytes = Unsafe.SizeOf<Vector2>();
 
         /// <summary>
         /// Adds two vectors.
@@ -832,7 +836,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets an OpenTK.Vector2 with the Y and X components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector2 Yx
         {
             get => new Vector2(Y, X);

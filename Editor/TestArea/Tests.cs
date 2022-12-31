@@ -88,7 +88,7 @@ namespace ProjectWS.TestArea
 
         void LoadAnM3ForDebug()
         {
-            var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Model", 1, 1);
+            var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Model", 1, 1, out _);
             //string path0 = @"Art\Character\Chua\Male\Chua_M.m3";
             //string path0 = @"Art\Creature\AgressorBot\AgressorBot.m3";
             //string path0 = @"Art\Prop\Constructed\Quest\Taxi\TaxiKiosk\PRP_Taxi_Kiosk_000.m3";

@@ -35,7 +35,7 @@ namespace ProjectWS.Engine
         public Data.GameData data;
         public Input.Input input;
         public Dictionary<uint, FileFormats.Sky.File> skyData;
-        public List<Rendering.Renderer> renderers;
+        public Dictionary<int, Rendering.Renderer> renderers;
 
         /// <summary>
         /// Code to be executed on application launch
@@ -46,7 +46,7 @@ namespace ProjectWS.Engine
             SettingsSerializer.Load();
             this.taskManager = new TaskManager.Manager(this);
             this.resourceManager = new Data.ResourceManager.Manager(this);
-            this.renderers = new List<Rendering.Renderer>();
+            this.renderers = new Dictionary<int, Rendering.Renderer>();
             this.input = new Input.Input(this);
             this.worlds = new Dictionary<uint, World.World>();
             this.skyData = new Dictionary<uint, FileFormats.Sky.File>();
@@ -102,9 +102,11 @@ namespace ProjectWS.Engine
                 this.firstFrame = false;
             }
 
-            for (int i = 0; i < this.renderers.Count; i++)
+            //for (int i = 0; i < this.renderers.Count; i++)
+            foreach (var rendererItem in this.renderers)
             {
-                this.renderers[i].Update(deltaTime);
+                //this.renderers[i].Update(deltaTime);
+                rendererItem.Value.Update(deltaTime);
             }
 
             this.deltaTime = deltaTime;

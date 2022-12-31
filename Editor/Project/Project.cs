@@ -1,4 +1,5 @@
-﻿using ProjectWS.Engine.Database;
+﻿using MathUtils;
+using ProjectWS.Engine.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +13,15 @@ namespace ProjectWS.Engine.Project
         public Guid UUID { get; set; }
         public string? Name { get; set; }
         public List<Map>? Maps { get; set; }
-        public uint lastID { get; set; }
+        public uint lastWorldID { get; set; }
+        public uint lastWorldLocationID { get; set; }
 
         public class Map
         {
             public string? Name { get; set; }
             public World? worldRecord { get; set; }
             public bool isGameMap { get; set; }
-
+            public string? mapChunkInfoPath { get; set; }
             public class World
             {
                 public uint ID { get; set; }

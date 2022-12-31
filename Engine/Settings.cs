@@ -41,6 +41,7 @@ namespace ProjectWS.Engine
             public double top { get; set; }
             public double height { get; set; }
             public double width { get; set; }
+            public Dictionary<string, Panel> panels { get; set; }
 
             public Window()
             {
@@ -49,6 +50,17 @@ namespace ProjectWS.Engine
                 this.top = 0;
                 this.height = 720;
                 this.width = 1280;
+                this.panels = new Dictionary<string, Panel>()
+                {
+                    { "worldManager", new Panel() },
+                    { "toolbox", new Panel() },
+                };
+            }
+
+            public class Panel
+            {
+                public bool open { get; set; }
+                public bool docked { get; set; }
             }
         }
 

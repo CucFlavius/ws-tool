@@ -215,8 +215,10 @@ namespace ProjectWS.Engine.Data
             return folderList;
         }
 
-        public Dictionary<string, Block.FileEntry> GetFileEntries(string path, string archiveName = CLIENTDATA)
+        public Dictionary<string, Block.FileEntry>? GetFileEntries(string path, string archiveName = CLIENTDATA)
         {
+            if (this.archives == null) return null;
+
             if (!this.archives.ContainsKey(archiveName))
             {
                 Debug.LogWarning($"Archive {archiveName} is not loaded.");
@@ -228,7 +230,7 @@ namespace ProjectWS.Engine.Data
 
             var archive = this.archives[archiveName];
 
-            if (archive.blockTree.TryGetValue(path, out Block branch))
+            if (archive.blockTree.TryGetValue(path, out Block? branch))
             {
                 Dictionary<string, Block.FileEntry> fileList = new Dictionary<string, Block.FileEntry>();
                 if (branch.fileEntries != null)

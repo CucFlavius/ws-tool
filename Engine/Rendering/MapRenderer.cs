@@ -50,7 +50,7 @@ namespace ProjectWS.Engine.Rendering
 
         public MapRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
-            Debug.Log("Create Model Renderer " + ID);
+            Debug.Log("Create Map Renderer " + ID);
             this.ID = ID;
             this.input = input;
 
