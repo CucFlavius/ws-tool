@@ -3,6 +3,7 @@ using MathUtils;
 using OpenTK.Wpf;
 using ProjectWS.Editor.Tools;
 using ProjectWS.Editor.UI;
+using ProjectWS.Engine.Database.Definitions;
 using ProjectWS.Engine.Project;
 using ProjectWS.Engine.Rendering;
 using System;
@@ -535,7 +536,7 @@ namespace ProjectWS.Editor
             var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Map", this.engine.renderers.Count, 2);
         }
 
-        internal void CreateMap()
+        internal void OpenCreateMapWindow()
         {
             this.mapEditorWindow = new MapEditorWindow(this, true);
             this.mapEditorWindow.Owner = Program.mainWindow;
@@ -557,7 +558,7 @@ namespace ProjectWS.Editor
             this.mapEditorWindow.FillInputs(map);
         }
 
-        internal void ImportMap()
+        internal void OpenImportMapWindow()
         {
             this.mapImportWindow = new MapImportWindow(this);
             this.mapImportWindow.Owner = Program.mainWindow;
@@ -573,29 +574,31 @@ namespace ProjectWS.Editor
                 if (ProjectManager.project == null) return;
                 if (ProjectManager.project.Maps == null) return;
 
-
-                int idx = this.mapRendererPanes[this.mapRendererPaneID].mapComboBox.SelectedIndex;
+                var mapRendererPane = this.mapRendererPanes[this.mapRendererPaneID];
+                int idx = mapRendererPane.mapComboBox.SelectedIndex;
                 if (idx == -1) return;
 
-                var name = this.mapRendererPanes?[this.mapRendererPaneID].mapComboBox.Items[idx].ToString();
-                this.mapRendererPanes?[this.mapRendererPaneID].mapComboBox.Items.RemoveAt(idx);
+                var ID = mapRendererPane.mapIDs[idx];
+                //var name = mapRendererPane.mapComboBox.Items[idx].ToString();
+                mapRendererPane.mapIDs.RemoveAt(idx);
+                mapRendererPane.mapNames.RemoveAt(idx);
+                //mapRendererPane.mapComboBox.Items.RemoveAt(idx);
 
                 // Remove from project
                 int projIdx = -1;
-                if (name != null)
-                {
-                    for (int i = 0; i < ProjectManager.project.Maps.Count; i++)
-                    {
-                        if (ProjectManager.project.Maps[i] == null) continue;
-                        if (ProjectManager.project.Maps[i].Name == null) continue;
 
-                        if (ProjectManager.project.Maps[i].Name == name)
-                        {
-                            projIdx = i;
-                            break;
-                        }
+                for (int i = 0; i < ProjectManager.project.Maps.Count; i++)
+                {
+                    if (ProjectManager.project.Maps[i] == null) continue;
+                    if (ProjectManager.project.Maps[i].worldRecord == null) continue;
+
+                    if (ProjectManager.project.Maps[i].worldRecord!.ID == ID)
+                    {
+                        projIdx = i;
+                        break;
                     }
                 }
+
                 if (projIdx != -1)
                 {
                     // TODO : If the map is loaded in world renderer, unload it
@@ -605,6 +608,79 @@ namespace ProjectWS.Editor
                     ProjectManager.SaveProject();
                 }
             }
+        }
+
+        internal void ImportGameMap(World worldRecord)
+        {
+            var mapName = Path.GetFileNameWithoutExtension(worldRecord.assetPath);
+            var mapID = worldRecord.ID;
+            // Check if map ID is already in use
+            for (int i = 0; i < ProjectManager.project.Maps.Count; i++)
+            {
+                if (ProjectManager.project.Maps[i].worldRecord.ID == mapID)
+                {
+                    // Map already loaded
+                    if (System.Windows.MessageBox.Show($"Map ID {mapID} is already in use, continue importing and generate a new ID ?", "Duplicate ID", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                    {
+                        mapID = ++ProjectManager.project.lastID;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+            }
+
+            // First create map entry in project, and add to dropdown, and only then fill in the details
+            var newMap = new Map();
+            newMap.Name = mapName;
+            newMap.isGameMap = true;
+            newMap.worldRecord = new Map.World()
+            {
+                ID = mapID,
+                assetPath = worldRecord.assetPath,
+                chunkBounds00 = worldRecord.chunkBounds00,
+                chunkBounds01 = worldRecord.chunkBounds01,
+                chunkBounds02 = worldRecord.chunkBounds02,
+                chunkBounds03 = worldRecord.chunkBounds03,
+                flags = worldRecord.flags,
+                heroismMenaceLevel = worldRecord.heroismMenaceLevel,
+                localizedTextIdName = worldRecord.localizedTextIdName,
+                maxItemLevel = worldRecord.maxItemLevel,
+                minItemLevel = worldRecord.minItemLevel,
+                plugAverageHeight = worldRecord.plugAverageHeight,
+                primeLevelMax = worldRecord.primeLevelMax,
+                primeLevelOffset = worldRecord.primeLevelOffset,
+                rewardRotationContentId = worldRecord.rewardRotationContentId,
+                screenModelPath = worldRecord.screenModelPath,
+                screenPath = worldRecord.screenPath,
+                type = worldRecord.type,
+                veteranTierScalingType = worldRecord.veteranTierScalingType
+            };
+
+            ProjectManager.project.Maps.Add(newMap);
+
+            // Add map name to dropdown
+            var mapRendererPane = this.mapRendererPanes[this.mapRendererPaneID];
+            mapRendererPane.mapIDs.Add(mapID);
+            mapRendererPane.mapNames.Add($"{mapID}. {mapName}");
+            //mapRendererPane.mapComboBox.Items.Add(mapName);
+
+            // Select last index
+            mapRendererPane.mapComboBox.SelectedIndex = mapRendererPane.mapComboBox.Items.Count - 1;
+
+            // TODO : Import WorldLocation2 entries into project.map struct
+
+            // TODO : Load Game Data
+
+            // TODO : Extract map assets into project folder
+
+            ProjectManager.SaveProject();
+        }
+
+        internal void ImportLocalMap(string text)
+        {
+            
         }
     }
 }

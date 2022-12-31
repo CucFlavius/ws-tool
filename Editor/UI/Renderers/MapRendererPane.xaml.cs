@@ -2,6 +2,7 @@
 using ProjectWS.Engine.Project;
 using ProjectWS.Engine.Rendering;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -19,6 +20,7 @@ namespace ProjectWS.Editor
         public MapRenderer mapRenderer;
 
         public ObservableCollection<string>? mapNames { get; set; }
+        public List<uint>? mapIDs { get; set; }
 
         public MapRendererPane(Editor editor, MapRenderer mapRenderer)
         {
@@ -26,12 +28,16 @@ namespace ProjectWS.Editor
             this.editor = editor;
             this.mapRenderer = mapRenderer;
 
-            this.mapComboBox.Items.Clear();
+            this.mapNames = new ObservableCollection<string>();
+            this.mapIDs = new List<uint>();
 
             foreach (Project.Map map in ProjectManager.project!.Maps!)
             {
-                this.mapComboBox.Items.Add(map.Name);
+                this.mapNames.Add($"{map.worldRecord.ID}. {map.Name}");
+                this.mapIDs.Add(map.worldRecord.ID);
             }
+
+            this.mapComboBox.ItemsSource = this.mapNames;
         }
 
         public GLWpfControl GetOpenTKControl()
@@ -56,7 +62,7 @@ namespace ProjectWS.Editor
 
         private void button_AddMap_Click(object sender, RoutedEventArgs e)
         {
-            editor.CreateMap();
+            editor.OpenCreateMapWindow();
         }
 
         private void button_RemoveMap_Click(object sender, RoutedEventArgs e)
@@ -104,7 +110,7 @@ namespace ProjectWS.Editor
 
         private void button_ImportMap_Click(object sender, RoutedEventArgs e)
         {
-            this.editor.ImportMap();
+            this.editor.OpenImportMapWindow();
         }
 
         private void button_EditMap_Click(object sender, RoutedEventArgs e)

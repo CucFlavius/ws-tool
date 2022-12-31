@@ -1,9 +1,5 @@
 ﻿using ProjectWS.Engine.Data.DataProcess;
-using System;
-using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace ProjectWS.Engine.Data
@@ -21,6 +17,7 @@ namespace ProjectWS.Engine.Data
         public static Action<string?>? logProgressText;
 
         public static bool assetDBReady;
+        public static Database? database;
 
 
         public static void LoadAssetDatabase(string path)
@@ -44,6 +41,8 @@ namespace ProjectWS.Engine.Data
             {
                 assetDBReady = true;
             }
+
+            database = new Database(engineRef);
         }
 
         public static void CreateAssetDB(string path, Action<float>? _logProgress = null, Action<string?>? _logProgressText = null)
@@ -93,6 +92,7 @@ namespace ProjectWS.Engine.Data
                     assetDB.database = AssetDatabase.DataStatus.InProgress;
                     SaveAssetDB(path);
                     new PExtractDatabase(spd).Run();
+                    database = new Database(engineRef);
                     assetDB.database = AssetDatabase.DataStatus.Ready;
                     SaveAssetDB(path);
                 }

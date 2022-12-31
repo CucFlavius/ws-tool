@@ -66,21 +66,26 @@ namespace ProjectWS.Editor.UI
             if (ProjectManager.project == null) return;
             if (ProjectManager.project.Maps == null) return;
 
+            var mapRendererPane = this.editor.mapRendererPanes[this.editor.mapRendererPaneID];
+
             if (newMap)
             {
                 // First create map entry in project, and add to dropdown, and only then fill in the details
                 var newMap = new Map();
-                newMap.worldRecord = new Engine.Database.Definitions.World();
+                newMap.worldRecord = new Map.World();
                 newMap.worldRecord.ID = ++ProjectManager.project.lastID;
                 ProjectManager.project.Maps.Add(newMap);
 
                 // Add map name to dropdown
-                this.editor.mapRendererPanes[this.editor.mapRendererPaneID].mapComboBox.Items.Add(this.textBox_MapName.Text);
+                mapRendererPane.mapIDs.Add(newMap.worldRecord.ID);
+                mapRendererPane.mapNames.Add($"{newMap.worldRecord.ID}. {this.textBox_MapName.Text}");
+                //mapRendererPane.mapComboBox.Items.Add(this.textBox_MapName.Text);
+
                 // Select last index
-                this.editor.mapRendererPanes[this.editor.mapRendererPaneID].mapComboBox.SelectedIndex = this.editor.mapRendererPanes[this.editor.mapRendererPaneID].mapComboBox.Items.Count - 1;
+                mapRendererPane.mapComboBox.SelectedIndex = mapRendererPane.mapComboBox.Items.Count - 1;
             }
 
-            int index = this.editor.mapRendererPanes[this.editor.mapRendererPaneID].mapComboBox.SelectedIndex;
+            int index = mapRendererPane.mapComboBox.SelectedIndex;
 
             // Add map data to project
             var map = ProjectManager.project.Maps![index];
@@ -89,7 +94,8 @@ namespace ProjectWS.Editor.UI
             if (!newMap && map.Name != mapName)
             {
                 // Rename map name in dropdown
-                this.editor.mapRendererPanes[this.editor.mapRendererPaneID].mapComboBox.Items[index] = mapName;
+                mapRendererPane.mapNames[index] = mapName;
+                //mapRendererPane.mapComboBox.Items[index] = mapName;
 
                 // TODO : Rename map folder and assets like area files and minimaps
             }

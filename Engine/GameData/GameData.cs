@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using ProjectWS.Engine.Database;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +20,7 @@ namespace ProjectWS.Engine.Data
         public bool databaseAvailable;
         public Dictionary<string, Archive>? archives;
         public Action<Data.GameData>? onLoaded;
-        public Database.Tables? database;
+        public Tables? database;
 
         public GameData(Engine engine, string? gamePath = null, Action<Data.GameData>? onLoaded = null)
         {
@@ -66,7 +67,7 @@ namespace ProjectWS.Engine.Data
 
             // Load database
             if (loadDatabase)
-                this.database = new Database.Tables(this.engine, this);
+                this.database = new Tables(this.engine, this);
         }
 
         string? FindInstallationUsingRegistry()
