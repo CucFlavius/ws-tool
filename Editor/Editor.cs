@@ -109,6 +109,11 @@ namespace ProjectWS.Editor
 
             // Create framerate counter
             this.fps = new FPSCounter();
+
+
+            // TEMP
+            var gameData = new GameData(this.engine!, Engine.Engine.settings.dataManager?.gameClientPath);
+            gameData.Read(false);
         }
 
         public void Update()
@@ -717,7 +722,7 @@ namespace ProjectWS.Editor
                 {
                     // TODO : If the map is loaded in world renderer, unload it
 
-                    // TODO : Destroy map assets
+                    // Destroy map assets
                     var map = ProjectManager.project.Maps[projIdx];
                     var gameDir = $"{Archive.rootBlockName}\\{map.worldRecord.assetPath}";
                     var gameDirNoRoot = gameDir.Substring(gameDir.IndexOf('\\'));
@@ -725,12 +730,31 @@ namespace ProjectWS.Editor
                     var realDir = $"{projectFolder}\\{gameDirNoRoot}";
 
                     if (Directory.Exists(realDir))
-                        Directory.Delete(realDir);
+                        DeleteDirectory(realDir);
 
                     ProjectManager.project.Maps.RemoveAt(projIdx);
                     ProjectManager.SaveProject();
                 }
             }
+        }
+
+        void DeleteDirectory(string target_dir)
+        {
+            string[] files = Directory.GetFiles(target_dir);
+            string[] dirs = Directory.GetDirectories(target_dir);
+
+            foreach (string file in files)
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+                File.Delete(file);
+            }
+
+            foreach (string dir in dirs)
+            {
+                DeleteDirectory(dir);
+            }
+
+            Directory.Delete(target_dir, false);
         }
 
         internal void ImportGameMap(World worldRecord)

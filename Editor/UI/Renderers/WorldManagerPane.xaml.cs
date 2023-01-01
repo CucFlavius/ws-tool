@@ -85,6 +85,9 @@ namespace ProjectWS.Editor
 
             if (ProjectManager.project != null && this.mapComboBox != null && this.mapIDs != null)
             {
+                if (this.mapComboBox.SelectedIndex == -1)
+                    return;
+
                 if (ProjectManager.project.previousOpenMapID != this.mapIDs[this.mapComboBox.SelectedIndex])
                 {
                     ProjectManager.project.previousOpenMapID = (uint)this.mapIDs[this.mapComboBox.SelectedIndex];

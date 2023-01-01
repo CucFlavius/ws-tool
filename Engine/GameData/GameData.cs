@@ -1,10 +1,5 @@
-using Microsoft.Win32;
 using ProjectWS.Engine.Database;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Text;
 
 namespace ProjectWS.Engine.Data
 {
@@ -194,22 +189,7 @@ namespace ProjectWS.Engine.Data
             {
                 foreach (Block.DirectoryEntry directoryEntry in branch.directoryEntries)
                 {
-                    string word = "";
-                    int increment = 0;
-                    for (int t = 0; t < 200; t++)
-                    {
-                        char c = branch.nameData[directoryEntry.nameOffset + increment];
-                        increment++;
-                        if (c != '\0')
-                        {
-                            word += c;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    folderList.Add(word);
+                    folderList.Add(directoryEntry.name);
                 }
             }
             return folderList;
@@ -237,8 +217,7 @@ namespace ProjectWS.Engine.Data
                 {
                     foreach (Block.FileEntry fileEntry in branch.fileEntries)
                     {
-                        if (!fileList.ContainsKey(archive.fileNames[fileEntry.hash]))
-                            fileList.Add(archive.fileNames[fileEntry.hash], fileEntry);
+                        fileList.Add(fileEntry.name, fileEntry);
                     }
                 }
                 return fileList;

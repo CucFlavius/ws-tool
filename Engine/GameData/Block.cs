@@ -1,6 +1,9 @@
+using ProjectWS.FileFormats.Extensions;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection.PortableExecutable;
+using static ProjectWS.Engine.Data.Block;
 
 namespace ProjectWS.Engine.Data
 {
@@ -8,80 +11,49 @@ namespace ProjectWS.Engine.Data
     {
         public uint directoryCount;
         public uint fileCount;
-        public DirectoryEntry[] directoryEntries;
-        public FileEntry[] fileEntries;
-        public char[] nameData;
+        public DirectoryEntry[]? directoryEntries;
+        public FileEntry[]? fileEntries;
 
         public Block(BinaryReader br, uint blockIndex, string breadCrumb, Archive archive)
         {
+            long save = br.BaseStream.Position;
+
             br.BaseStream.Position = (long)archive.index.blockHeaders[blockIndex].blockOffset;
 
             this.directoryCount = br.ReadUInt32();
             this.fileCount = br.ReadUInt32();
 
+            long pos = br.BaseStream.Position;
+            long end = pos + (8 * this.directoryCount) + (56 * this.fileCount);
+
             if (this.directoryCount > 0)
             {
                 this.directoryEntries = new DirectoryEntry[this.directoryCount];
+
                 for (int i = 0; i < this.directoryCount; i++)
                 {
-                    this.directoryEntries[i] = new DirectoryEntry(br);
+                    this.directoryEntries[i] = new DirectoryEntry(br, end);
+                    
+                    string newPath = $"{breadCrumb}\\{this.directoryEntries[i].name}";
+                    Block block = new Block(br, this.directoryEntries[i].nextBlock, newPath, archive);
+                    archive.blockTree.Add(newPath, block);
                 }
             }
 
             if (this.fileCount > 0)
             {
                 this.fileEntries = new FileEntry[this.fileCount];
+
                 for (int i = 0; i < this.fileCount; i++)
                 {
-                    this.fileEntries[i] = new FileEntry(br);
+                    this.fileEntries[i] = new FileEntry(br, end);
+
+                    var filePath = $"{breadCrumb}\\{this.fileEntries[i].name}";
+                    archive.fileList.Add(filePath, this.fileEntries[i]);
                 }
             }
 
-            long remainingSize = (long)archive.index.blockHeaders[blockIndex].blockSize - (br.BaseStream.Position - (long)archive.index.blockHeaders[blockIndex].blockOffset);
-            this.nameData = br.ReadChars((int)remainingSize);
-
-            if (this.directoryEntries != null)
-            {
-                foreach (var directoryEntry in this.directoryEntries)
-                {
-                    string word = GetWord(directoryEntry.nameOffset);
-                    directoryEntry.name = word;
-                    string newPath = $"{breadCrumb}\\{word}";
-                    Block block = new Block(br, directoryEntry.nextBlock, newPath, archive);
-                    archive.blockTree.Add(newPath, block);
-                }
-            }
-
-            if (this.fileEntries != null)
-            {
-                foreach (var fileEntry in this.fileEntries)
-                {
-                    byte[] hash = fileEntry.hash;
-                    string word = GetWord(fileEntry.nameOffset);
-                    fileEntry.name = word;
-                    if (!archive.fileNames.ContainsKey(hash))
-                    {
-                        archive.fileNames.Add(hash, word);
-                    }
-                    archive.fileList.Add($"{breadCrumb}\\{word}".ToLower(), fileEntry);
-                }
-            }
-        }
-
-        string GetWord(uint offset)
-        {
-            string word = "";
-            int increment = 0;
-            for (int t = 0; t < 200; t++)
-            {
-                char c = this.nameData[offset + increment];
-                increment++;
-                if (c != '\0')
-                    word += c;
-                else
-                    break;
-            }
-            return word;
+            br.BaseStream.Position = save;
         }
 
         public class DirectoryEntry
@@ -90,10 +62,16 @@ namespace ProjectWS.Engine.Data
             public uint nextBlock;
             public string name;
 
-            public DirectoryEntry(BinaryReader br)
+            public DirectoryEntry(BinaryReader br, long dirEnd)
             {
                 this.nameOffset = br.ReadUInt32();
                 this.nextBlock = br.ReadUInt32();
+
+                long save = br.BaseStream.Position;
+
+                br.BaseStream.Position = dirEnd + this.nameOffset;
+                this.name = br.ReadNullTerminatedString();
+                br.BaseStream.Position = save;
             }
         }
 
@@ -108,7 +86,7 @@ namespace ProjectWS.Engine.Data
             public uint unk2;
             public string name;
 
-            public FileEntry(BinaryReader br)
+            public FileEntry(BinaryReader br, long fileEnd)
             {
                 this.nameOffset = br.ReadUInt32();
                 this.compression = (Compression)br.ReadUInt32();
@@ -117,6 +95,11 @@ namespace ProjectWS.Engine.Data
                 this.compressedSize = br.ReadUInt64();
                 this.hash = br.ReadBytes(20);
                 this.unk2 = br.ReadUInt32();
+
+                long save = br.BaseStream.Position;
+                br.BaseStream.Position = fileEnd + this.nameOffset;
+                this.name = br.ReadNullTerminatedString();
+                br.BaseStream.Position = save;
             }
 
             public enum Compression

@@ -92,6 +92,35 @@ namespace ProjectWS.FileFormats.Extensions
             br.BaseStream.Seek(chunkSize, SeekOrigin.Current);
         }
 
+        public static string ReadNullTerminatedString(this BinaryReader br)
+        {
+            StringBuilder sb = new StringBuilder();
+            char c;
+
+            while ((c = Convert.ToChar(br.ReadByte())) != 0)
+                sb.Append(c);
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Reads a C style null terminated ASCII string
+        /// </summary>
+        /// <param name="reader">The binary reader</param>
+        /// <returns>A string as read from the stream</returns>
+        public static string ReadSZString(this BinaryReader reader)
+        {
+            var result = new StringBuilder();
+            while (true)
+            {
+                byte b = reader.ReadByte();
+                if (0 == b)
+                    break;
+                result.Append((char)b);
+            }
+            return result.ToString();
+        }
+
         public static void Align(this BinaryReader br, int alignment = 4)
         {
             int loc = (int)br.BaseStream.Position;

@@ -10,7 +10,6 @@ namespace ProjectWS.Engine.Data
         public Index index;
         public Data data;
         public Dictionary<string, Block> blockTree;
-        public Dictionary<byte[], string> fileNames;
         public Dictionary<string, Block.FileEntry> fileList;
         public const string rootBlockName = "Root";
 
@@ -21,7 +20,6 @@ namespace ProjectWS.Engine.Data
             this.index = new Index(this);
             this.data = new Data(this);
             this.blockTree = new Dictionary<string, Block>();
-            this.fileNames = new Dictionary<byte[], string>(new ByteArrayComparer());
             this.fileList = new Dictionary<string, Block.FileEntry>();
         }
 
