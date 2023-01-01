@@ -38,6 +38,7 @@ namespace MathUtils
     /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
+    [JsonConverter(typeof(Vector2JsonConverter))]
     public struct Vector2 : IEquatable<Vector2>
     {
         /// <summary>
@@ -1099,6 +1100,15 @@ namespace MathUtils
         {
             x = X;
             y = Y;
+        }
+
+        public static Vector2 FromString(string v)
+        {
+            var tokens = v.Substring(1, v.Length - 2).Split($"{MathHelper.ListSeparator} ");
+            if (float.TryParse(tokens[0], out float x) && float.TryParse(tokens[1], out float y))
+                return new Vector2(x, y);
+
+            return Vector2.Zero;
         }
     }
 }

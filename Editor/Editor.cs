@@ -860,9 +860,9 @@ namespace ProjectWS.Editor
                 var chunkInfo = new MapChunkInfo();
 
                 newMap.mapChunkInfoPath = $"{realDir}\\ChunkInfo.json";
-                chunkInfo.chunks = new List<Vector2>();
-                chunkInfo.chunksLow = new List<Vector2>();
-                chunkInfo.minimaps = new List<Vector2>();
+                chunkInfo.chunks = new List<Vector2i>();
+                chunkInfo.chunksLow = new List<Vector2i>();
+                chunkInfo.minimaps = new List<Vector2i>();
 
                 const string TEX = ".tex";
                 const string AREA = ".area";
@@ -880,21 +880,21 @@ namespace ProjectWS.Editor
                         var xHex = $"{hexToken[2]}{hexToken[3]}";
                         var yHex = $"{hexToken[0]}{hexToken[1]}";
                         int xValue = int.Parse(xHex, System.Globalization.NumberStyles.HexNumber);
-                        int yValue = int.Parse(xHex, System.Globalization.NumberStyles.HexNumber);
+                        int yValue = int.Parse(yHex, System.Globalization.NumberStyles.HexNumber);
 
                         if (entry.Key.EndsWith(TEX))
                         {
-                            chunkInfo.minimaps.Add(new Vector2(xValue, yValue));
+                            chunkInfo.minimaps.Add(new Vector2i(xValue, yValue));
                         }
                         else if (entry.Key.EndsWith(AREA))
                         {
                             if (entry.Key.Contains(LOW))
                             {
-                                chunkInfo.chunksLow.Add(new Vector2(xValue, yValue));
+                                chunkInfo.chunksLow.Add(new Vector2i(xValue, yValue));
                             }
                             else
                             {
-                                chunkInfo.chunks.Add(new Vector2(xValue, yValue));
+                                chunkInfo.chunks.Add(new Vector2i(xValue, yValue));
                             }
                         }
                     }

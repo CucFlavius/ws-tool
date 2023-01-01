@@ -2,6 +2,7 @@
 using OpenTK.Graphics.OpenGL4;
 using ProjectWS.Engine.Components;
 using SharpFont;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using System.Security.Cryptography;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -13,12 +14,15 @@ namespace ProjectWS.Engine.Rendering
         public Vector2i highlight;
         public Vector2 mousePosMapSpace;
         public bool mouseOverGrid;
-        public byte[]? selectionBitmap;
+        byte[]? selectionBitmap;
+        byte[]? availableBitmap;
         int bgVAO;
         int selectionLayerVAO;
+        int abailableLayerVAO;
         int[]? gridIndices;
         int gridVAO;
         private uint selectionBitmapPtr;
+        private uint availableBitmapPtr;
         private bool marqueeVisible;
         public Vector2 marqueeMin;
         public Vector2 marqueeMax;
@@ -28,13 +32,15 @@ namespace ProjectWS.Engine.Rendering
         public bool deselectMode;
         public bool showGrid = true;
         public bool mouseDownInView = false;
+        List<Vector2i> availableChunks;
 
         const int MAP_SIZE = 128;
         readonly Color32 envColor = new Color32(10, 10, 20, 255);
         readonly Color32 selectedCellColor = new Color32(255, 255, 0, 128);
         readonly Color32 deselectedCellColor = new Color32(0, 0, 0, 0);
         readonly Color32 backgroundCellColor = new Color32(50, 50, 50, 255);
-        readonly Color32 hasAreaColor = new Color32(80, 80, 80, 255);
+        readonly Color32 hasAreaColor = new Color32(0, 0, 0, 0);
+        readonly Color32 noAreaColor = new Color32(0, 0, 0, 255);
         readonly Color32 gridColor = new Color32(20, 20, 20, 255);
         const float halfQuad = 0.5f;
 
@@ -75,11 +81,17 @@ namespace ProjectWS.Engine.Rendering
             // setup Selection Layer
             this.selectionLayerVAO = BuildQuad(quadVertices);
 
+            this.abailableLayerVAO = BuildQuad(quadVertices);
+
             BuildGrid();
 
             this.selectionBitmapPtr = BuildBitmap(this.deselectedCellColor, MAP_SIZE, MAP_SIZE, out this.selectionBitmap);
 
+            this.availableBitmapPtr = BuildBitmap(this.noAreaColor, MAP_SIZE, MAP_SIZE, out this.availableBitmap);
+
             this.textRenderer?.Initialize();
+
+            RefreshMapView();
         }
 
         private int BuildQuad(float[] quadVertices)
@@ -168,7 +180,7 @@ namespace ProjectWS.Engine.Rendering
 
         uint BuildBitmap(Color32 baseColor, int w, int h, out byte[] data)
         {
-            uint ptr = 0;
+            uint ptr;
             data = new byte[w * h * 4];
             for (int i = 0; i < w * h * 4; i += 4)
             {
@@ -193,8 +205,9 @@ namespace ProjectWS.Engine.Rendering
             return ptr;
         }
 
-        public void UpdateBitmap(uint ptr, byte[] data)
+        public void UpdateBitmap(uint ptr, byte[]? data)
         {
+            if (data == null) return;
             GL.BindTexture(TextureTarget.Texture2D, ptr);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, MAP_SIZE, MAP_SIZE, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
         }
@@ -361,6 +374,61 @@ namespace ProjectWS.Engine.Rendering
                 UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
         }
 
+        public void RefreshMapView(List<Vector2i>? chunks = null)
+        {
+            if (chunks != null)
+                availableChunks = chunks;
+            else
+                chunks = availableChunks;
+
+            for (int x = 0; x < MAP_SIZE; x++)
+            {
+                for (int y = 0; y < MAP_SIZE; y++)
+                {
+                    MakeCellUnAvailable(x, y);
+                }
+            }
+
+            if (chunks != null)
+            {
+                for (int i = 0; i < chunks.Count; i++)
+                {
+                    MakeCellAvailable(chunks[i].X, chunks[i].Y);
+                }
+            }
+
+            UpdateBitmap(this.availableBitmapPtr, this.availableBitmap);
+        }
+
+        public void MakeCellAvailable(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE)
+                return;
+            var linearCoord = (int)((y * 4 * MAP_SIZE) + (x * 4));
+
+            if (this.availableBitmap != null)
+            {
+                this.availableBitmap[linearCoord] = hasAreaColor.R;
+                this.availableBitmap[linearCoord + 1] = hasAreaColor.G;
+                this.availableBitmap[linearCoord + 2] = hasAreaColor.B;
+                this.availableBitmap[linearCoord + 3] = hasAreaColor.A;
+            }
+        }
+
+        public void MakeCellUnAvailable(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= MAP_SIZE || y >= MAP_SIZE)
+                return;
+            var linearCoord = (int)((y * 4 * MAP_SIZE) + (x * 4));
+            if (this.availableBitmap != null)
+            {
+                this.availableBitmap[linearCoord] = noAreaColor.R;
+                this.availableBitmap[linearCoord + 1] = noAreaColor.G;
+                this.availableBitmap[linearCoord + 2] = noAreaColor.B;
+                this.availableBitmap[linearCoord + 3] = noAreaColor.A;
+            }
+        }
+
         public override void Render(int frameBuffer)
         {
             if (!this.rendering) return;
@@ -378,8 +446,8 @@ namespace ProjectWS.Engine.Rendering
             // Render BG
             RenderBackground(0);
 
-            // Render highlight quad
-            //RenderHighlight();
+            // Render available chunks layer
+            RenderAvailableLayer(5);
 
             // Render grid
             if (showGrid)
@@ -461,6 +529,23 @@ namespace ProjectWS.Engine.Rendering
             this.mapTileShader.SetMat4("model", ref bgMat);
 
             GL.BindVertexArray(this.selectionLayerVAO);
+            GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
+            GL.BindVertexArray(0);
+        }
+
+        private void RenderAvailableLayer(int layer)
+        {
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+            this.mapTileShader.Use();
+            this.viewports?[0]?.mainCamera?.SetToShader(this.mapTileShader);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, this.availableBitmapPtr);
+            var bgMat = Matrix4.CreateScale(MAP_SIZE) * Matrix4.CreateTranslation(MAP_SIZE / 2, layer / 1000f, MAP_SIZE / 2);
+            this.mapTileShader.SetMat4("model", ref bgMat);
+
+            GL.BindVertexArray(this.abailableLayerVAO);
             GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
             GL.BindVertexArray(0);
         }

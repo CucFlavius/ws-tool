@@ -12,6 +12,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
 namespace MathUtils
@@ -24,6 +25,7 @@ namespace MathUtils
     /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
+    [JsonConverter(typeof(Vector2iJsonConverter))]
     public struct Vector2i : IEquatable<Vector2i>
     {
         /// <summary>
@@ -35,6 +37,9 @@ namespace MathUtils
         /// The Y component of the Vector2i.
         /// </summary>
         public int Y;
+
+        public int x { get { return X; } set { this.X = x; } }
+        public int y { get { return Y; } set { this.Y = y; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Vector2i"/> struct.
@@ -99,47 +104,47 @@ namespace MathUtils
         /// <summary>
         /// Gets the manhattan length of the vector.
         /// </summary>
-        public int ManhattanLength => Math.Abs(X) + Math.Abs(Y);
+        [JsonIgnore] public int ManhattanLength => Math.Abs(X) + Math.Abs(Y);
 
         /// <summary>
         /// Gets the euclidian length of the vector.
         /// </summary>
-        public float EuclideanLength => MathF.Sqrt((X * X) + (Y * Y));
+        [JsonIgnore] public float EuclideanLength => MathF.Sqrt((X * X) + (Y * Y));
 
         /// <summary>
         /// Gets the perpendicular vector on the right side of this vector.
         /// </summary>
-        public Vector2i PerpendicularRight => new Vector2i(Y, -X);
+        [JsonIgnore] public Vector2i PerpendicularRight => new Vector2i(Y, -X);
 
         /// <summary>
         /// Gets the perpendicular vector on the left side of this vector.
         /// </summary>
-        public Vector2i PerpendicularLeft => new Vector2i(-Y, X);
+        [JsonIgnore] public Vector2i PerpendicularLeft => new Vector2i(-Y, X);
 
         /// <summary>
         /// Defines a unit-length <see cref="Vector2i"/> that points towards the X-axis.
         /// </summary>
-        public static readonly Vector2i UnitX = new Vector2i(1, 0);
+        [JsonIgnore] public static readonly Vector2i UnitX = new Vector2i(1, 0);
 
         /// <summary>
         /// Defines a unit-length <see cref="Vector2i"/> that points towards the Y-axis.
         /// </summary>
-        public static readonly Vector2i UnitY = new Vector2i(0, 1);
+        [JsonIgnore] public static readonly Vector2i UnitY = new Vector2i(0, 1);
 
         /// <summary>
         /// Defines an instance with all components set to 0.
         /// </summary>
-        public static readonly Vector2i Zero = new Vector2i(0, 0);
+        [JsonIgnore] public static readonly Vector2i Zero = new Vector2i(0, 0);
 
         /// <summary>
         /// Defines an instance with all components set to 1.
         /// </summary>
-        public static readonly Vector2i One = new Vector2i(1, 1);
+        [JsonIgnore] public static readonly Vector2i One = new Vector2i(1, 1);
 
         /// <summary>
         /// Defines the size of the <see cref="Vector2i"/> struct in bytes.
         /// </summary>
-        public static readonly int SizeInBytes = Unsafe.SizeOf<Vector2i>();
+        [JsonIgnore] public static readonly int SizeInBytes = Unsafe.SizeOf<Vector2i>();
 
         /// <summary>
         /// Adds two vectors.
@@ -374,7 +379,7 @@ namespace MathUtils
         /// <summary>
         /// Gets or sets a <see cref="Vector2i"/> with the Y and X components of this instance.
         /// </summary>
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public Vector2i Yx
         {
             get => new Vector2i(Y, X);
@@ -618,6 +623,16 @@ namespace MathUtils
         {
             x = X;
             y = Y;
+        }
+
+        public static Vector2i FromString(string v)
+        {
+            var tokens = v.Substring(1, v.Length - 2).Split($"{MathHelper.ListSeparator} ");
+            if (tokens.Length == 2)
+                if (int.TryParse(tokens[0], out int x) && int.TryParse(tokens[1], out int y))
+                    return new Vector2i(x, y);
+
+            return Vector2i.Zero;
         }
     }
 }

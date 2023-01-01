@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -81,8 +83,27 @@ namespace ProjectWS.Editor
 
         private void mapComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (this.mapComboBox.SelectedIndex == -1) return;
+
             Debug.Log("Changed Map");
 
+            var mapID = this.mapIDs[this.mapComboBox.SelectedIndex];
+            var mapIndexInProject = -1;
+
+            for (int i = 0; i < ProjectManager.project.Maps.Count; i++)
+            {
+                if (ProjectManager.project.Maps[i].worldRecord.ID == mapID)
+                {
+                    mapIndexInProject = i;
+                    break;
+                }
+            }
+
+            if (mapIndexInProject == -1) return;
+
+            var map = ProjectManager.project.Maps[mapIndexInProject];
+
+            // Remember map for next session
             if (ProjectManager.project != null && this.mapComboBox != null && this.mapIDs != null)
             {
                 if (this.mapComboBox.SelectedIndex == -1)
@@ -94,6 +115,24 @@ namespace ProjectWS.Editor
                     ProjectManager.SaveProject();
                 }
             }
+
+            // Load chunk info
+            ProjectWS.Editor.Project.MapChunkInfo? chunkInfo = null;
+            if (File.Exists(map.mapChunkInfoPath))
+            {
+                string? jsonString = File.ReadAllText(map.mapChunkInfoPath);
+                if (jsonString != null && jsonString != String.Empty)
+                {
+                    chunkInfo = JsonSerializer.Deserialize<ProjectWS.Editor.Project.MapChunkInfo>(jsonString);
+                }
+            }
+
+            // Refresh map visual
+            if (chunkInfo != null)
+            {
+                this.mapRenderer.RefreshMapView(chunkInfo.chunks);
+            }
+
             /*
             if (this.locationNames == null)
                 this.locationNames = new ObservableCollection<string>();

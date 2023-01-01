@@ -9,8 +9,8 @@ namespace ProjectWS.Editor.Project
 {
     public class MapChunkInfo
     {
-        public List<Vector2>? chunks { get; set; }
-        public List<Vector2>? chunksLow { get; set; }
-        public List<Vector2>? minimaps { get; set; }
+        public List<Vector2i>? chunks { get; set; }
+        public List<Vector2i>? chunksLow { get; set; }
+        public List<Vector2i>? minimaps { get; set; }
     }
 }
