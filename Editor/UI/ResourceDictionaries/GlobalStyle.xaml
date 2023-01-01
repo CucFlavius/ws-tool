@@ -40,4 +40,10 @@
            TargetType="TextBlock">
         <Setter Property="Foreground" Value="White"/>
     </Style>
+
+    <!--StatusBar-->
+    <Style x:Key="{x:Type StatusBar}"
+           TargetType="StatusBar">
+        <Setter Property="Background" Value="#1f1f1f"/>
+    </Style>
 </ResourceDictionary>

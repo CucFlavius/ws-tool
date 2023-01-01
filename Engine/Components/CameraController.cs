@@ -189,10 +189,13 @@ namespace ProjectWS.Engine.Components
                 var oCamera = this.camera as OrthoCamera;
                 if (oCamera != null)
                 {
-                    oCamera.zoom += scroll * 10;
+                    oCamera.zoom += scroll * (oCamera.zoom / 10f);
 
-                    if (oCamera.zoom <= 10)
-                        oCamera.zoom = 10;
+                    if (oCamera.zoom <= 1)
+                        oCamera.zoom = 1;
+
+                    if (oCamera.zoom >= 1000)
+                        oCamera.zoom = 1000;
                 }
                 //this.Pos.Y -= scroll;
             }

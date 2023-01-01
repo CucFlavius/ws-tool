@@ -10,6 +10,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="34"/>
             <RowDefinition Height="*" />
+            <RowDefinition Height="23"/>
         </Grid.RowDefinitions>
         <ToolBarTray Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,0,0,0">
             <ToolBar HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,0">
@@ -250,5 +251,15 @@
         <Grid Name="RendererGrid" Background="#1f1f1f" Grid.Row="1">
             <glControl:GLWpfControl Name="GLWpfControl" Focusable="True"/>
         </Grid>
+        <DockPanel Grid.Row="2">
+            <StatusBar DockPanel.Dock="Bottom">
+                <StatusBarItem>
+                    <TextBlock Width="300" Name="textBlock_HighlightedChunk"/>
+                </StatusBarItem>
+                <StatusBarItem>
+                    <TextBlock Width="100" Name="textBlock_ZoomLevel"/>
+                </StatusBarItem>
+            </StatusBar>
+        </DockPanel>
     </Grid>
 </UserControl>

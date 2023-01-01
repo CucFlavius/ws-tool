@@ -1,4 +1,5 @@
-﻿using OpenTK.Wpf;
+﻿using MathUtils;
+using OpenTK.Wpf;
 using ProjectWS.Engine.Project;
 using ProjectWS.Engine.Rendering;
 using System;
@@ -10,6 +11,7 @@ using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace ProjectWS.Editor
 {
@@ -49,6 +51,19 @@ namespace ProjectWS.Editor
             {
                 this.mapComboBox.SelectedIndex = this.mapIDs.IndexOf(ProjectManager.project.previousOpenMapID);
             }
+
+            this.mapRenderer.onCellHighlight += OnCellHighlight;
+            this.mapRenderer.onZoomLevelChanged += OnZoomLevelChanged;
+        }
+
+        public void OnCellHighlight(Vector2i coords)
+        {
+            this.textBlock_HighlightedChunk.Text = $"Mouse Over: ({coords.X}, {coords.Y})";
+        }
+
+        public void OnZoomLevelChanged(float zoom)
+        {
+            this.textBlock_ZoomLevel.Text = $"Zoom: {zoom}";
         }
 
         public GLWpfControl GetOpenTKControl()

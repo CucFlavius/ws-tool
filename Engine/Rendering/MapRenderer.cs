@@ -33,6 +33,7 @@ namespace ProjectWS.Engine.Rendering
         public bool showGrid = true;
         public bool mouseDownInView = false;
         List<Vector2i> availableChunks;
+        float zoomLevel;
 
         const int MAP_SIZE = 128;
         readonly Color32 envColor = new Color32(10, 10, 20, 255);
@@ -53,6 +54,8 @@ namespace ProjectWS.Engine.Rendering
              halfQuad, 0.0f,-halfQuad,  1.0f, 0.0f,
         };
 
+        public Action<Vector2i> onCellHighlight;
+        public Action<float> onZoomLevelChanged;
 
         public MapRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
@@ -245,10 +248,23 @@ namespace ProjectWS.Engine.Rendering
                         var oCamera = vp.mainCamera as OrthoCamera;
                         if (oCamera != null)
                         {
+                            if (this.zoomLevel != oCamera.zoom)
+                            {
+                                this.zoomLevel = oCamera.zoom;
+                                this.onZoomLevelChanged?.Invoke(this.zoomLevel);
+                            }
+
                             this.mousePosMapSpace = ((mousePos.Xy - (vpSize / 2)) / oCamera.zoom) + oCamera.transform.GetPosition().Xz;
 
-                            this.highlight.X = (int)this.mousePosMapSpace.X;
-                            this.highlight.Y = (int)this.mousePosMapSpace.Y;
+                            Vector2i currentHighlight = new Vector2i((int)this.mousePosMapSpace.X, (int)this.mousePosMapSpace.Y);
+
+                            //if (this.highlight != currentHighlight)
+                            {
+                                // Mouse over cell changed
+                                this.onCellHighlight?.Invoke(this.highlight);
+                            }
+
+                            this.highlight = currentHighlight;
 
                             // Out of map bounds check
                             if (this.highlight.X < 0 || this.highlight.X >= MAP_SIZE || this.highlight.Y < 0 || this.highlight.Y >= MAP_SIZE)
@@ -324,6 +340,7 @@ namespace ProjectWS.Engine.Rendering
                                 DeselectCell(this.highlight.X, this.highlight.Y);
                             else
                                 SelectCell(this.highlight.X, this.highlight.Y);
+
 
                             UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
                         }
