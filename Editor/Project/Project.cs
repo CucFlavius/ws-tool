@@ -23,6 +23,8 @@ namespace ProjectWS.Engine.Project
             public World? worldRecord { get; set; }
             public bool isGameMap { get; set; }
             public string? mapChunkInfoPath { get; set; }
+            public string? minimapPath { get; set; }
+
             public class World
             {
                 public uint ID { get; set; }

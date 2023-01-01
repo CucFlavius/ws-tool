@@ -688,8 +688,8 @@ namespace ProjectWS.Engine.World
                 {
                     for (int j = 0; j < WORLD_SIZE; j++)
                     {
-                        string x = i.ToString("X").ToLower();
-                        string y = j.ToString("X").ToLower();
+                        string x = i.ToString("X2").ToLower();
+                        string y = j.ToString("X2").ToLower();
                         string path = $"{fileName}.{y}{x}.area";
                         if (allFilesInMapDir.ContainsKey(path))
                         {

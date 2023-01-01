@@ -14,6 +14,29 @@
         </Grid.RowDefinitions>
         <ToolBarTray Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,0,0,0">
             <ToolBar HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,0">
+                <RadioButton x:Name = "button_Select" 
+                        Width="30" Height="30" Padding="0,0,0,0"
+                        Checked="button_Select_Checked" Unchecked="button_Select_Unchecked"
+                        ToolTip="Select" IsChecked="True">
+                    <Grid>
+                        <fa:IconBlock Icon="MousePointer"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                    </Grid>
+                </RadioButton>
+                <RadioButton x:Name = "button_MarqueeSelect" 
+                        Width="30" Height="30" Padding="0,0,0,0"
+                        Checked="button_MarqueeSelect_Checked" Unchecked="button_MarqueeSelect_Unchecked"
+                        ToolTip="Marquee Select">
+                    <Grid>
+                        <fa:IconBlock Icon="Square"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="21"/>
+                    </Grid>
+                </RadioButton>
+                <Separator></Separator>
                 <Button x:Name = "button_CutChunk" 
                         Width="30" Height="30" Padding="0,0,0,0"
                         Click="button_CutChunk_Click"
@@ -47,7 +70,7 @@
                                       Width="24" Height="21"/>
                     </Grid>
                 </Button>
-
+                <Separator></Separator>
                 <Button x:Name = "button_AddChunk" 
                         Width="30" Height="30" Padding="0,0,0,0"
                         Click="button_AddChunk_Click"
@@ -98,12 +121,24 @@
                                       VerticalAlignment="Bottom"/>
                     </Grid>
                 </Button>
+                <Separator></Separator>
                 <Button x:Name = "button_DeselectAll"
                         Width="30" Height="30" Padding="0,0"
                         Click="button_DeselectAll_Click"
                         ToolTip="Clear Selection">
                     <Grid>
                         <fa:IconBlock Icon="SquareXmark"
+                                      Foreground="White"
+                                      FontSize="20"
+                                      Width="24" Height="20"/>
+                    </Grid>
+                </Button>
+                <Button x:Name = "button_TeleportToCellInSandbox"
+                        Width="30" Height="30" Padding="0,0"
+                        Click="button_TeleportToCellInSandbox_Click"
+                        ToolTip="Teleport to selected chunk in sandbox.">
+                    <Grid>
+                        <fa:IconBlock Icon="Location"
                                       Foreground="White"
                                       FontSize="20"
                                       Width="24" Height="20"/>

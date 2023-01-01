@@ -1,10 +1,6 @@
 ﻿using MathUtils;
 using OpenTK.Graphics.OpenGL4;
-using ProjectWS.Engine.Components;
-using SharpFont;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using System.Security.Cryptography;
-using static System.Net.Mime.MediaTypeNames;
+using ProjectWS.Engine.World;
 
 namespace ProjectWS.Engine.Rendering
 {
@@ -14,6 +10,7 @@ namespace ProjectWS.Engine.Rendering
         public Vector2i highlight;
         public Vector2 mousePosMapSpace;
         public bool mouseOverGrid;
+        public Vector2i selectedCell;
         byte[]? selectionBitmap;
         byte[]? availableBitmap;
         int bgVAO;
@@ -29,11 +26,16 @@ namespace ProjectWS.Engine.Rendering
         public Vector2 marqueeMaxPrevious;
         private int[]? lineSquareIndices;
         private int lineSquareVAO;
-        public bool deselectMode;
+        //public bool deselectMode;
         public bool showGrid = true;
         public bool mouseDownInView = false;
         List<Vector2i> availableChunks;
+        List<Vector2i> availableMinimaps;
+        MinimapChunk[][] minimaps;
         float zoomLevel;
+        public bool singleSelect = true;
+        public bool marqueeSelect = false;
+        int cellSizeOnScreen = 0;
 
         const int MAP_SIZE = 128;
         readonly Color32 envColor = new Color32(10, 10, 20, 255);
@@ -56,6 +58,9 @@ namespace ProjectWS.Engine.Rendering
 
         public Action<Vector2i> onCellHighlight;
         public Action<float> onZoomLevelChanged;
+        private string? projectFile;
+        private string? assetPath;
+        private string? mapName;
 
         public MapRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
@@ -95,6 +100,7 @@ namespace ProjectWS.Engine.Rendering
             this.textRenderer?.Initialize();
 
             RefreshMapView();
+            RefreshMinimaps();
         }
 
         private int BuildQuad(float[] quadVertices)
@@ -215,6 +221,9 @@ namespace ProjectWS.Engine.Rendering
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, MAP_SIZE, MAP_SIZE, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
         }
 
+        Vector2i previousTopLeftI = Vector2i.Zero;
+        Vector2i previousBottomRightI = Vector2i.Zero;
+
         public override void Update(float deltaTime)
         {
             if (this.viewports == null) return;
@@ -237,15 +246,61 @@ namespace ProjectWS.Engine.Rendering
 
             if (this.ID == this.engine.focusedRendererID)
             {
+                var oCamera = vp.mainCamera as OrthoCamera;
+                var vpSize = new Vector2((float)vp.width, (float)vp.height);
+
+                // Find visible cells
+                var topLeft = ((Vector2.Zero - (vpSize / 2)) / oCamera.zoom) + oCamera.transform.GetPosition().Xz;
+                var bottomRight = ((vpSize - (vpSize / 2)) / oCamera.zoom) + oCamera.transform.GetPosition().Xz;
+
+                var topLeftI = new Vector2i((int)topLeft.X, (int)topLeft.Y);
+                var bottomRightI = new Vector2i((int)bottomRight.X, (int)bottomRight.Y);
+
+                if (this.previousTopLeftI != topLeftI || this.previousBottomRightI != bottomRightI)
+                {
+                    this.previousTopLeftI = topLeftI;
+                    this.previousBottomRightI = bottomRightI;
+
+                    for (int x = 0; x < MAP_SIZE; x++)
+                    {
+                        if (x >= topLeftI.X && x <= bottomRightI.X)
+                        {
+                            for (int y = 0; y < MAP_SIZE; y++)
+                            {
+                                if (y >= topLeftI.Y && y <= bottomRightI.Y)
+                                {
+                                    this.minimaps[x][y].isVisible = true;
+                                }
+                                else
+                                {
+                                    this.minimaps[x][y].isVisible = false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (int y = 0; y < MAP_SIZE; y++)
+                            {
+                                this.minimaps[x][y].isVisible = false;
+                            }
+                        }
+                    }
+
+                    //UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+                }
+
+                // Calculate cell size on screen
+                this.cellSizeOnScreen = (int)oCamera.zoom;
+
+                // Map mouse interaction
                 if (vp.interactive)
                 {
                     var mousePos = this.engine.input.GetMousePosition();
 
-                    if (mousePos.X >= 0 && mousePos.Y >= 0)
+                    if (mousePos.X >= 0 && mousePos.Y >= 0 && mousePos.X < vpSize.X && mousePos.Y < vpSize.Y)
                     {
                         this.mouseOverGrid = true;
-                        var vpSize = new Vector2((float)vp.width, (float)vp.height);
-                        var oCamera = vp.mainCamera as OrthoCamera;
+                        
                         if (oCamera != null)
                         {
                             if (this.zoomLevel != oCamera.zoom)
@@ -282,25 +337,29 @@ namespace ProjectWS.Engine.Rendering
                 {
                     this.mouseDownInView = true;
                     this.marqueeMin = mousePosMapSpace;
-                    this.marqueeVisible = true;
-
-                    if (this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftAlt] ||
-                        this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightAlt])
-                        this.deselectMode = true;
-                    else
-                        this.deselectMode = false;
                 }
                 else
                 {
                     this.mouseDownInView = false;
                 }
+
+                if (this.marqueeSelect)
+                {
+                    this.marqueeVisible = true;
+
+                    //if (this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftAlt] ||
+                    //    this.engine.input.keyStates[OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightAlt])
+                    //    this.deselectMode = true;
+                    //else
+                    //    this.deselectMode = false;
+                }
             }
             if (this.engine.input.LMB)
             {
-                if (this.mouseDownInView)
-                {
-                    this.marqueeMax = this.mousePosMapSpace;
+                this.marqueeMax = this.mousePosMapSpace;
 
+                if (this.mouseDownInView && this.marqueeSelect)
+                {
                     if (this.marqueeMax != this.marqueeMaxPrevious)
                     {
                         this.marqueeMaxPrevious = this.marqueeMax;
@@ -310,13 +369,15 @@ namespace ProjectWS.Engine.Rendering
                         var minY = MathF.Min(this.marqueeMin.Y, this.marqueeMax.Y);
                         var maxY = MathF.Max(this.marqueeMin.Y, this.marqueeMax.Y);
 
+                        DeselectAllCells();
+
                         for (int x = (int)minX; x <= (int)maxX; x++)
                         {
                             for (int y = (int)minY; y <= (int)maxY; y++)
                             {
-                                if (deselectMode)
-                                    DeselectCell(x, y);
-                                else
+                                //if (deselectMode)
+                                //    DeselectCell(x, y);
+                                //else
                                     SelectCell(x, y);
                             }
                         }
@@ -329,22 +390,17 @@ namespace ProjectWS.Engine.Rendering
             {
                 this.marqueeVisible = false;
 
-                if (this.mouseDownInView)
+                if (this.mouseDownInView && this.singleSelect)
                 {
-                    if ((int)this.marqueeMin.X == (int)this.marqueeMax.X &&
-                        (int)this.marqueeMin.Y == (int)this.marqueeMax.Y)
+                    DeselectAllCells();
+
+                    if (this.marqueeMin == this.marqueeMax)  // If you moved your mouse away from the first cell clicked then don't select it
                     {
-                        if (this.mouseOverGrid)
-                        {
-                            if (deselectMode)
-                                DeselectCell(this.highlight.X, this.highlight.Y);
-                            else
-                                SelectCell(this.highlight.X, this.highlight.Y);
-
-
-                            UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
-                        }
+                        SelectCell(this.highlight.X, this.highlight.Y);
+                        selectedCell = this.highlight;
                     }
+
+                    UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
                 }
             }
         }
@@ -394,9 +450,9 @@ namespace ProjectWS.Engine.Rendering
         public void RefreshMapView(List<Vector2i>? chunks = null)
         {
             if (chunks != null)
-                availableChunks = chunks;
+                this.availableChunks = chunks;
             else
-                chunks = availableChunks;
+                chunks = this.availableChunks;
 
             for (int x = 0; x < MAP_SIZE; x++)
             {
@@ -415,6 +471,53 @@ namespace ProjectWS.Engine.Rendering
             }
 
             UpdateBitmap(this.availableBitmapPtr, this.availableBitmap);
+        }
+
+        public void RefreshMinimaps(List<Vector2i>? minimaps = null, string? projectFile = null, string? assetPath = null, string? mapName = null)
+        {
+            if (minimaps != null)
+                this.availableMinimaps = minimaps;
+            else
+                minimaps = this.availableMinimaps;
+
+            if (projectFile != null)
+                this.projectFile = projectFile;
+
+            if (assetPath != null)
+                this.assetPath = assetPath;
+
+            if (mapName != null)
+                this.mapName = mapName;
+
+            HashSet<Vector2i> available = new HashSet<Vector2i>(minimaps);
+
+            string projectFolder = $"{Path.GetDirectoryName(this.projectFile)}\\{Path.GetFileNameWithoutExtension(this.projectFile)}";
+
+            this.minimaps = new MinimapChunk[MAP_SIZE][];
+            for (int x = 0; x < MAP_SIZE; x++)
+            {
+                this.minimaps[x] = new MinimapChunk[MAP_SIZE];
+                for (int y = 0; y < MAP_SIZE; y++)
+                {
+                    this.minimaps[x][y] = new MinimapChunk();
+                    if (available.Contains(new Vector2i(x, y)))
+                    {
+                        this.minimaps[x][y].exists = true;
+
+                        string xHex = x.ToString("X2").ToLower();
+                        string yHex = y.ToString("X2").ToLower();
+                        
+                        string path = $"{projectFolder}\\{this.assetPath}\\{this.mapName}.{yHex}{xHex}.tex";
+                        this.minimaps[x][y].path = path;
+                        FileFormats.Tex.File tex = new FileFormats.Tex.File(path);
+                        this.minimaps[x][y].texFile = tex;
+                    }
+                    else
+                    {
+                        this.minimaps[x][y].exists = false;
+                    }
+                }
+            }
         }
 
         public void MakeCellAvailable(int x, int y)
@@ -461,23 +564,80 @@ namespace ProjectWS.Engine.Rendering
             this.viewports?[0]?.Use();
 
             // Render BG
-            RenderBackground(0);
+            //RenderBackground(0);
 
             // Render available chunks layer
-            RenderAvailableLayer(5);
+            //RenderAvailableLayer(5);
 
             // Render grid
             if (showGrid)
                 RenderGrid(100);
 
             // render marqueue
-            RenderMarqueue(20);
+            //RenderMarqueue(20);
 
             // render selection
-            RenderSelectionLayer(10);
+            //RenderSelectionLayer(10);
+
+            // render minimaps
+            RenderMinimaps(6);
 
             // Render Text
             //this.textRenderer?.Render(this, this.viewports![0]);
+        }
+
+        private void RenderMinimaps(int layer)
+        {
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+
+            this.mapTileShader.Use();
+            this.viewports?[0]?.mainCamera?.SetToShader(this.mapTileShader);
+
+            int mip = 7;
+            if (this.cellSizeOnScreen >= 512)
+                mip = 0;
+            else if (this.cellSizeOnScreen >= 256)
+                mip = 1;
+            else if (this.cellSizeOnScreen >= 128)
+                mip = 2;
+            else if (this.cellSizeOnScreen >= 64)
+                mip = 3;
+            else if (this.cellSizeOnScreen >= 32)
+                mip = 4;
+            else if (this.cellSizeOnScreen >= 16)
+                mip = 5;
+            else if (this.cellSizeOnScreen >= 8)
+                mip = 6;
+            else
+                mip = 7;
+
+            // TODO : Make sure the minimaps[][] only gets created once
+            for (int x = 0; x < MAP_SIZE; x++)
+            {
+                for (int y = 0; y < MAP_SIZE; y++)
+                {
+                    var minimap = this.minimaps[x][y];
+                    if (minimap.exists)
+                    {
+                        if (minimap.isVisible)
+                        {
+                            if (!minimap.isRead)
+                            {
+                                minimap.Read();
+                                minimap.matrix = Matrix4.CreateTranslation(x + 0.5f, layer / 1000f, y + 0.5f);
+                            }
+
+                            if (minimap.isRead)
+                            {
+                                minimap.Render(this.mapTileShader, mip);
+                            }
+                        }
+                    }
+                }
+            }
+
+            GL.BindVertexArray(0);
         }
 
         private void RenderGrid(int layer)

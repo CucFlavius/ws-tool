@@ -12,6 +12,8 @@ using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipes;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -587,6 +589,19 @@ namespace ProjectWS.Editor
             //pipeClient.Close();
         }
 
+        internal void SandboxTeleport(float x, float y, float z, uint mapID)
+        {
+            var pipeClient = new NamedPipeClientStream(".", "Arctium.ChatCommand.Pipe", PipeDirection.InOut, PipeOptions.WriteThrough | PipeOptions.Asynchronous, TokenImpersonationLevel.Impersonation);
+            pipeClient.Connect();
+
+            using (var bw = new BinaryWriter(pipeClient))
+            {
+                var data = System.Text.Encoding.ASCII.GetBytes($"!tele {x} {y} {z} {mapID}");
+                bw.Write(data.Length);
+                bw.Write(data);
+            }
+        }
+
         internal void OpenDataManager()
         {
             this.dataManagerWindow = new DataManagerWindow(this);
@@ -860,6 +875,7 @@ namespace ProjectWS.Editor
                 var chunkInfo = new MapChunkInfo();
 
                 newMap.mapChunkInfoPath = $"{realDir}\\ChunkInfo.json";
+                newMap.minimapPath = $"{realDir}\\Minimap.png";
                 chunkInfo.chunks = new List<Vector2i>();
                 chunkInfo.chunksLow = new List<Vector2i>();
                 chunkInfo.minimaps = new List<Vector2i>();
