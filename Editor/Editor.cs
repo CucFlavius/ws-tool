@@ -111,11 +111,6 @@ namespace ProjectWS.Editor
 
             // Create framerate counter
             this.fps = new FPSCounter();
-
-
-            // TEMP
-            var gameData = new GameData(this.engine!, Engine.Engine.settings.dataManager?.gameClientPath);
-            gameData.Read(false);
         }
 
         public void Update()

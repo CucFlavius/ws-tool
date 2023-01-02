@@ -9,28 +9,17 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace ProjectWS.Engine.World
 {
-    internal class MinimapChunk
+    public class MinimapChunk
     {
         public bool exists;
         public string? path;
         public FileFormats.Tex.File? texFile;
         internal bool isVisible;
-        internal bool isRead;
+        internal volatile bool isRead;
         public Matrix4 matrix;
 
-        int quadVAO;
-        int[] minimapPtr;
+        int[]? minimapPtr;
         int mipCount;
-
-        const float halfQuad = 0.5f;
-        readonly float[] quadVertices = new float[]
-        {
-            // positions                // texture Coords
-            -halfQuad, 0.0f, halfQuad,  0.0f, 1.0f,
-            -halfQuad, 0.0f,-halfQuad,  0.0f, 0.0f,
-            halfQuad, 0.0f, halfQuad,  1.0f, 1.0f,
-            halfQuad, 0.0f,-halfQuad,  1.0f, 0.0f,
-        };
 
         public void Read()
         {
@@ -54,7 +43,6 @@ namespace ProjectWS.Engine.World
 
                 this.mipCount = this.texFile.mipData.Count;
                 this.minimapPtr = new int[this.mipCount];
-                this.quadVAO = BuildQuad(quadVertices);
             }
 
             this.isRead = true;
@@ -82,9 +70,15 @@ namespace ProjectWS.Engine.World
             GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, InternalFormat.CompressedRgbaS3tcDxt1Ext, resolution, resolution, 0, this.texFile.mipData[mipIndex].Length, this.texFile.mipData[mipIndex]);
         }
 
-        internal void Render(Shader shader, int mip)
+        internal void Render(Shader shader, int mip, int quadVAO)
         {
             var mipIndex = (this.mipCount - 1) - mip;
+
+            if (this.minimapPtr == null)
+                this.minimapPtr = new int[this.mipCount];
+
+            if (mipIndex == -1 || mipIndex >= this.mipCount)
+                mipIndex = this.mipCount - 1;
 
             if (this.minimapPtr[mipIndex] == 0)
                 BuildMip(mip);
@@ -94,7 +88,7 @@ namespace ProjectWS.Engine.World
 
             shader.SetMat4("model", ref matrix);
 
-            GL.BindVertexArray(this.quadVAO);
+            GL.BindVertexArray(quadVAO);
             GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
         }
 
