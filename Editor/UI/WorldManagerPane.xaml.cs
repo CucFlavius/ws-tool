@@ -115,7 +115,7 @@ namespace ProjectWS.Editor
             this.selectedMapID = mapID;
             var mapIndexInProject = -1;
 
-            for (int i = 0; i < ProjectManager.project.Maps.Count; i++)
+            for (int i = 0; i < ProjectManager.project?.Maps?.Count; i++)
             {
                 if (ProjectManager.project.Maps[i].worldRecord.ID == mapID)
                 {
@@ -152,12 +152,8 @@ namespace ProjectWS.Editor
                 }
             }
 
-            // Load minimap
-            //if (!File.Exists(map.minimapPath))
-            {
-                // Generate minimap
-                //GenerateMinimap(chunkInfo, map);
-            }
+            // Clear old map
+            this.mapRenderer.ClearMap();
 
             // Refresh map visual
             if (chunkInfo != null)

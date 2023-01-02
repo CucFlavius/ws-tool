@@ -57,7 +57,21 @@ namespace ProjectWS.Engine.TaskManager
                 {
                     if (this.tasks.Count == 0)
                     {
-                        Thread.Sleep(this.sleep);
+                        //Thread.Sleep(this.sleep);
+
+                        try
+                        {
+                            //Console.WriteLine("newThread going to sleep.");
+
+                            // When newThread goes to sleep, it is immediately 
+                            // woken up by a ThreadInterruptedException.
+                            Thread.Sleep(this.sleep);
+                        }
+                        catch (ThreadInterruptedException e)
+                        {
+                            Console.WriteLine("newThread cannot go to sleep - " +
+                                "interrupted by main thread.");
+                        }
                     }
                 }
             }
@@ -66,13 +80,15 @@ namespace ProjectWS.Engine.TaskManager
         public void Clear()
         {
             this.isRunning = false;
+            /*
             if (this.thread != null)
             {
                 if (this.thread.IsAlive)
                 {
-                    this.thread.Abort();
+                    this.thread.Interrupt();
                 }
             }
+            */
         }
     }
 }

@@ -32,8 +32,8 @@ namespace ProjectWS.Engine.Rendering
         //public bool deselectMode;
         public bool showGrid = true;
         public bool mouseDownInView = false;
-        List<Vector2i> availableChunks;
-        List<Vector2i> availableMinimaps;
+        List<Vector2i>? availableChunks;
+        List<Vector2i>? availableMinimaps;
         MinimapChunk[][] minimaps;
         float zoomLevel;
         public bool singleSelect = true;
@@ -46,7 +46,7 @@ namespace ProjectWS.Engine.Rendering
 
         const int MAP_SIZE = 128;
         readonly Color32 envColor = new Color32(10, 10, 20, 255);
-        readonly Color32 selectedCellColor = new Color32(255, 255, 0, 128);
+        readonly Color32 selectedCellColor = new Color32(255, 255, 0, 50);
         readonly Color32 deselectedCellColor = new Color32(0, 0, 0, 0);
         readonly Color32 backgroundCellColor = new Color32(50, 50, 50, 255);
         readonly Color32 hasAreaColor = new Color32(0, 0, 0, 0);
@@ -63,8 +63,8 @@ namespace ProjectWS.Engine.Rendering
              halfQuad, 0.0f,-halfQuad,  1.0f, 0.0f,
         };
 
-        public Action<Vector2i> onCellHighlight;
-        public Action<float> onZoomLevelChanged;
+        public Action<Vector2i>? onCellHighlight;
+        public Action<float>? onZoomLevelChanged;
         private string? projectFile;
         private string? assetPath;
         private string? mapName;
@@ -259,7 +259,7 @@ namespace ProjectWS.Engine.Rendering
             {
                 if (this.minimapThread.tasks.Count > 0)
                 {
-                    this.minimapThread.Boot(1000);
+                    this.minimapThread.Boot(0);
                 }
             }
 
@@ -355,7 +355,7 @@ namespace ProjectWS.Engine.Rendering
                 {
                     DeselectAllCells();
 
-                    if (this.marqueeMin == this.marqueeMax)  // If you moved your mouse away from the first cell clicked then don't select it
+                    //if (this.marqueeMin == this.marqueeMax)  // If you moved your mouse away from the first cell clicked then don't select it
                     {
                         SelectCell(this.highlight.X, this.highlight.Y);
                         selectedCell = this.highlight;
@@ -519,12 +519,10 @@ namespace ProjectWS.Engine.Rendering
             UpdateBitmap(this.availableBitmapPtr, this.availableBitmap);
         }
 
-        public void RefreshMinimaps(List<Vector2i>? minimaps = null, string? projectFile = null, string? assetPath = null, string? mapName = null)
+        public void RefreshMinimaps(List<Vector2i>? availableMinimaps = null, string? projectFile = null, string? assetPath = null, string? mapName = null)
         {
-            if (minimaps != null)
-                this.availableMinimaps = minimaps;
-            else
-                minimaps = this.availableMinimaps;
+            if (availableMinimaps != null)
+                this.availableMinimaps = availableMinimaps;
 
             if (projectFile != null)
                 this.projectFile = projectFile;
@@ -536,8 +534,9 @@ namespace ProjectWS.Engine.Rendering
                 this.mapName = mapName;
 
             if (this.minimaps == null) return;
+            if (this.availableMinimaps == null) return;
 
-            HashSet<Vector2i> available = new HashSet<Vector2i>(minimaps);
+            HashSet<Vector2i> available = new HashSet<Vector2i>(this.availableMinimaps);
 
             string projectFolder = $"{Path.GetDirectoryName(this.projectFile)}\\{Path.GetFileNameWithoutExtension(this.projectFile)}";
 
@@ -609,23 +608,24 @@ namespace ProjectWS.Engine.Rendering
             this.viewports?[0]?.Use();
 
             // Render BG
-            //RenderBackground(0);
+            RenderBackground(0);
 
             // Render available chunks layer
-            //RenderAvailableLayer(5);
-
-            // Render grid
-            if (showGrid)
-                RenderGrid(100);
-
-            // render marqueue
-            //RenderMarqueue(20);
-
-            // render selection
-            //RenderSelectionLayer(10);
+            RenderAvailableLayer(5);
 
             // render minimaps
             RenderMinimaps(6);
+
+            // render selection
+            RenderSelectionLayer(7);
+
+            // Render grid
+            if (showGrid)
+                RenderGrid(19);
+
+            // render marqueue
+            RenderMarqueue(20);
+
 
             // Render Text
             //this.textRenderer?.Render(this, this.viewports![0]);
@@ -633,8 +633,7 @@ namespace ProjectWS.Engine.Rendering
 
         private void RenderMinimaps(int layer)
         {
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            GL.Disable(EnableCap.Blend);
 
             this.mapTileShader.Use();
             this.viewports?[0]?.mainCamera?.SetToShader(this.mapTileShader);
@@ -774,6 +773,31 @@ namespace ProjectWS.Engine.Rendering
         {
             if (minimapThread != null)
                 minimapThread.Clear();
+
+            this.availableChunks?.Clear();
+            this.availableMinimaps?.Clear();
+
+
+            for (int x = 0; x < MAP_SIZE; x++)
+            {
+                for (int y = 0; y < MAP_SIZE; y++)
+                {
+                    MakeCellUnAvailable(x, y);
+                }
+            }
+
+            UpdateBitmap(this.availableBitmapPtr, this.availableBitmap);
+
+            if (this.minimaps != null)
+            {
+                for (int x = 0; x < MAP_SIZE; x++)
+                {
+                    for (int y = 0; y < MAP_SIZE; y++)
+                    {
+                        this.minimaps[x][y].Clear();
+                    }
+                }
+            }
         }
     }
 }

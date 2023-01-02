@@ -1,11 +1,5 @@
 ﻿using MathUtils;
 using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ProjectWS.Engine.World
 {
@@ -18,7 +12,7 @@ namespace ProjectWS.Engine.World
         internal volatile bool isRead;
         public Matrix4 matrix;
 
-        int[]? minimapPtr;
+        int[] minimapPtr;
         int mipCount;
 
         public void Read()
@@ -57,6 +51,15 @@ namespace ProjectWS.Engine.World
             }
             var mipIndex = (this.mipCount - 1) - mip;
 
+            if (this.texFile == null)
+                return;
+
+            if (this.texFile.mipData == null)
+                return;
+
+            if (mipIndex >= this.texFile.mipData.Count || mipIndex < 0)
+                return;
+
             GL.GenTextures(1, out this.minimapPtr[mipIndex]);
             GL.BindTexture(TextureTarget.Texture2D, this.minimapPtr[mipIndex]);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
@@ -67,7 +70,8 @@ namespace ProjectWS.Engine.World
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, 0);
 
-            GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, InternalFormat.CompressedRgbaS3tcDxt1Ext, resolution, resolution, 0, this.texFile.mipData[mipIndex].Length, this.texFile.mipData[mipIndex]);
+            var data = this.texFile.mipData[mipIndex];
+            GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, InternalFormat.CompressedRgbaS3tcDxt1Ext, resolution, resolution, 0, data.Length, data);
         }
 
         internal void Render(Shader shader, int mip, int quadVAO)
@@ -92,20 +96,24 @@ namespace ProjectWS.Engine.World
             GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
         }
 
-        private int BuildQuad(float[] quadVertices)
+        public void Clear()
         {
-            int vao = GL.GenVertexArray();
-            var vbo = GL.GenBuffer();
-            GL.BindVertexArray(vao);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, 4 * quadVertices.Length, quadVertices, BufferUsageHint.StaticDraw);
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * 4);
-
-            return vao;
+            if (this.exists)
+            {
+                this.path = null;
+                this.texFile = null;
+                this.isVisible = false;
+                this.isRead = false;
+                if (this.minimapPtr != null)
+                {
+                    for (int i = 0; i < this.minimapPtr.Length; i++)
+                    {
+                        if (this.minimapPtr[i] != 0)
+                            GL.DeleteTexture(this.minimapPtr[i]);
+                    }
+                }
+                this.mipCount = 0;
+            }
         }
-
     }
 }

@@ -848,9 +848,6 @@ namespace ProjectWS.Editor
             this.worldManagerPane.mapNames?.Add($"{mapID}. {mapName}");
             //mapRendererPane.mapComboBox.Items.Add(mapName);
 
-            // Select last index
-            this.worldManagerPane.mapComboBox.SelectedIndex = this.worldManagerPane.mapComboBox.Items.Count - 1;
-
             // Load Game Data
             var gameData = new GameData(this.engine!, Engine.Engine.settings.dataManager?.gameClientPath);
             gameData.Read(false);
@@ -927,6 +924,9 @@ namespace ProjectWS.Editor
 
             ProjectManager.project?.Maps?.Add(newMap);
             ProjectManager.SaveProject();
+
+            // Select last index
+            this.worldManagerPane.mapComboBox.SelectedIndex = this.worldManagerPane.mapComboBox.Items.Count - 1;
         }
 
         internal void ImportLocalMap(string text)
