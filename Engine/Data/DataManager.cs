@@ -1,5 +1,6 @@
 ﻿using ProjectWS.Engine.Data.DataProcess;
 using System.ComponentModel;
+using System.IO;
 using System.Text.Json;
 
 namespace ProjectWS.Engine.Data
@@ -119,6 +120,38 @@ namespace ProjectWS.Engine.Data
                 string data = JsonSerializer.Serialize(assetDB, options);
                 File.WriteAllText(path, data);
             }
+        }
+
+        public static void ExportAllGameData(string selectedPath, Action<float>? _logProgress = null, Action<string?>? _logProgressText = null)
+        {
+            logProgress = _logProgress;
+            logProgressText = _logProgressText;
+
+
+            SharedProcessData spd = new SharedProcessData();
+            spd.engineRef = engineRef;
+            spd.gameClientPath = Engine.settings.dataManager?.gameClientPath;
+
+            BackgroundWorker worker = new BackgroundWorker();
+            spd.workerRef = worker;
+            spd.extractPath = selectedPath;
+            worker.WorkerReportsProgress = true;
+            worker.ProgressChanged += new ProgressChangedEventHandler(
+            (sender, e) =>
+            {
+                logProgress?.Invoke(e.ProgressPercentage);
+                if (e.UserState != null)
+                    logProgressText?.Invoke(e.UserState as String);
+            });
+            worker.DoWork +=
+            (s3, e3) =>
+            {
+                new PLoadGameData(spd).Run();
+                new PExtractAllGameData(spd).Run();
+                new PEnd(spd).Run();
+            };
+
+            worker.RunWorkerAsync();
         }
     }
 }

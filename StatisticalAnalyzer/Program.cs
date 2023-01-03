@@ -9,12 +9,12 @@ namespace StatisticalAnalyzer
         static void Main(string[] args)
         {
             Console.ForegroundColor = ConsoleColor.Gray;
-            //CheckM3Files(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Art\");
-            //CheckAreaFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Map");
-            //ExtractShaders(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Shaders", @"G:\Reverse Engineering\WildStar\DecompiledShaders");
-            //CheckSkyFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Sky");
-            CheckTexFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Art\");
-            //var area = new ProjectWS.Engine.Data.Area(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\AIDX\Map\BattlegroundHallsoftheBloodsworn\BattlegroundHallsoftheBloodsworn.3f3d.area");
+            //CheckM3Files(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Art\");
+            CheckAreaFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Map\Western");
+            //ExtractShaders(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Shaders", @"G:\Reverse Engineering\WildStar\DecompiledShaders");
+            //CheckSkyFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Sky");
+            //CheckTexFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Art\");
+            //var area = new ProjectWS.Engine.Data.Area(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Map\BattlegroundHallsoftheBloodsworn\BattlegroundHallsoftheBloodsworn.3f3d.area");
             //area.Read();
 
             //CalculateSkyCoeffs(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\Data\Sky\Adventure_Galeras3.sky");
@@ -239,20 +239,36 @@ namespace StatisticalAnalyzer
             }
         }
 
-
         static void CheckAreaFiles(string location)
         {
             string[] areaFiles = Directory.GetFiles(location, "*.area", SearchOption.AllDirectories);
 
             HashSet<long> collected = new HashSet<long>();
 
+            ushort min = ushort.MaxValue;
+            ushort max = ushort.MinValue;
+
             foreach (var filePath in areaFiles)
             {
+                if (filePath.Contains("_Low")) continue;
+
                 var area = new ProjectWS.FileFormats.Area.File(filePath);
                 using(var str = File.OpenRead(filePath))
                     area.Read(str);
+
                 for (int i = 0; i < area.subAreas?.Count; i++)
                 {
+                    for (int h = 0; h < area.subAreas[i].heightMap?.Length; h++)
+                    {
+                        ushort height = area.subAreas[i].heightMap[h];
+
+                        if (height < min)
+                            min = height;
+
+                        if (height > max)
+                            max = height;
+                    }
+                    /*
                     var check = area.subAreas[i].index;
                     //Console.WriteLine(filePath);
 
@@ -260,8 +276,14 @@ namespace StatisticalAnalyzer
                     {
                         collected.Add(check);
                     }
+                    */
                 }
             }
+
+            float hmin = ((min & 0x7FFF) / 8.0f) - 2048.0f;
+            float hmax = ((max & 0x7FFF) / 8.0f) - 2048.0f;
+            Console.WriteLine(min + " " + max);
+            Console.WriteLine(hmin + " " + hmax);
 
             foreach (var item in collected)
             {

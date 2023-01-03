@@ -25,7 +25,7 @@
                 <Button Name="Button_gameClientPathBrowse" Content="Browse..." Grid.Column="2" Click="Button_gameClientPathBrowse_Click"/>
             </Grid>
             <!--Asset Database-->
-            <Grid Margin="0, 1">
+            <Grid Margin="0, 5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="100"/>
                     <ColumnDefinition Width="279*"/>
@@ -36,9 +36,18 @@
                 <Label Content="Asset Database" Grid.Column="0" Margin="0,0,2,0"/>
                 <TextBox VerticalAlignment="Center" Name="TextBox_assetDatabasePath" Grid.Column="1" Margin="0,0,2,0" TextChanged="TextBox_assetDatabasePath_TextChanged"/>
                 <Button Name="Button_assetDatabasePathBrowse"  Content="Browse..." Grid.Column="2" Click="Button_assetDatabasePathBrowse_Click" Margin="0,0,2,0"/>
-                <Button Name="Button_assetDatabasePathCreate"  Content="Build" Grid.Column="3" Click="Button_assetDatabasePathCreate_Click" Margin="0,0,2,0"/>
-                <Button Name="Button_assetDatabasePathLoad"  Content="Load" Grid.Column="4" Click="Button_assetDatabasePathLoad_Click"/>
             </Grid>
+            <StackPanel Orientation="Horizontal" Height="30" Margin="0,5">
+                <Button Name="Button_assetDatabasePathCreate" Click="Button_assetDatabasePathCreate_Click" Width="120">
+                    Build Asset Database
+                </Button>
+                <Button Name="Button_assetDatabasePathLoad" Click="Button_assetDatabasePathLoad_Click" Width="120">
+                    Load Asset Database
+                </Button>
+                <Button Name="Button_exportAllGameData" Click="Button_exportAllGameData_Click" Width="120">
+                    Export All Game Data
+                </Button>
+            </StackPanel>
             <StackPanel Orientation="Vertical">
                 <Label Name="Label_Progress" Margin="10, 5" Content="Progress"/>
                 <ProgressBar Name="ProgressBar_Progress" 

@@ -15,5 +15,6 @@ namespace ProjectWS.Engine.Data.DataProcess
         public string? gameClientPath;
         public string? assetDBFolder;
         public GameData? gameData;
+        public string? extractPath;
     }
 }

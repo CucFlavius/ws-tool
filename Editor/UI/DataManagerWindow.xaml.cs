@@ -153,5 +153,15 @@ namespace ProjectWS.Editor.UI
         {
             FillInSavedSettingsValues();
         }
+
+        private void Button_exportAllGameData_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                Engine.Data.DataManager.ExportAllGameData(dialog.SelectedPath, LogProgress, LogProgressText);
+            }
+        }
     }
 }

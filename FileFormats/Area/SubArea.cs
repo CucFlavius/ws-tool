@@ -195,7 +195,6 @@ namespace ProjectWS.FileFormats.Area
             // Unknown Map DXT1 //
             if (this.flags.HasFlag(Flags.hasUnkMap0))
             {
-                Console.WriteLine("ye0");
                 br.ReadBytes(2312);
             }
 
@@ -239,7 +238,6 @@ namespace ProjectWS.FileFormats.Area
             // Unknown Map DXT1 //
             if (this.flags.HasFlag(Flags.hasUnkMap3))
             {
-                Console.WriteLine("ye2");
                 br.ReadBytes(2312);
             }
 
