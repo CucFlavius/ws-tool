@@ -8,11 +8,10 @@ namespace ProjectWS.Engine.Data.ResourceManager
         string filePath;
 
         // Reference //
-        public GameData gameData;
         public Manager manager;
 
         // Data //
-        public ProjectWS.FileFormats.Tex.File tex;
+        public ProjectWS.FileFormats.Tex.File? tex;
         public uint texturePtr;
         public Manager.ResourceState state;
 
@@ -26,10 +25,9 @@ namespace ProjectWS.Engine.Data.ResourceManager
         // Usage //
         public List<MaterialReference> materialReferences;
 
-        public TextureResource(string filePath, Manager manager, GameData gameData)
+        public TextureResource(string filePath, Manager manager)
         {
             this.filePath = filePath;
-            this.gameData = gameData;
             this.manager = manager;
             this.state = Manager.ResourceState.IsLoading;
         }
@@ -43,26 +41,14 @@ namespace ProjectWS.Engine.Data.ResourceManager
         {
             this.state = Manager.ResourceState.IsLoading;
 
-            //Debug.Log(this.manager.engine.cacheLocation + this.filePath);
-
-            if (File.Exists(this.manager.engine.cacheLocation + this.filePath))
+            this.tex = new ProjectWS.FileFormats.Tex.File(this.filePath);
+            using (var fs = DataManager.GetFileStream(this.filePath))
             {
-                // Load cached
-                this.tex = new ProjectWS.FileFormats.Tex.File(this.manager.engine.cacheLocation + this.filePath);
-                this.tex.Read(File.OpenRead(this.manager.engine.cacheLocation + this.filePath));
-            }
-            else
-            {
-                // Load straight from game data, and cache
-                this.tex = new ProjectWS.FileFormats.Tex.File(this.filePath);
-                this.tex.Read(this.gameData.GetFileData(this.filePath));
-
-                // Only cache jpeg
-                if (this.tex.header?.format == 0 && this.tex.header?.isCompressed == 1)
-                    this.tex.Write(this.manager.engine.cacheLocation + this.filePath);
+                if (fs != null)
+                    this.tex.Read(fs);
             }
 
-            if (this.tex.failedReading) return;
+            if (this.tex.failedReading || this.tex.header == null) return;
 
             this.width = this.tex.header.width;
             this.height = this.tex.header.height;
@@ -183,9 +169,14 @@ namespace ProjectWS.Engine.Data.ResourceManager
 
             if (referenceCount == 0)
             {
-                //this.tex.rawData = null;
-                //Texture2D.DestroyImmediate(texture);
-                //World.textureData.Remove(fileID);  // TODO THIS
+                if (this.texturePtr != 0)
+                {
+                    GL.DeleteTexture(this.texturePtr);
+                }
+
+                this.state = Manager.ResourceState.None;
+                this.tex = null;
+                this.manager.textureResources.Remove(this.filePath);
             }
         }
 

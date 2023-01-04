@@ -7,8 +7,10 @@ namespace ProjectWS.Engine.Data
 {
     public static class DataManager
     {
-        public static Engine? engineRef;
+        public static Engine? engine;
         public static AssetDatabase? assetDB;
+        public static string? assetDatabasePath;
+        public static string? assetDatabaseDir;
         public const string ASSETDB_FILENAME = "AssetDatabase.json";
 
         public const int ASSETDB_VERSION = 1;
@@ -29,6 +31,8 @@ namespace ProjectWS.Engine.Data
                 if (jsonString != null && jsonString != String.Empty)
                 {
                     assetDB = JsonSerializer.Deserialize<AssetDatabase>(jsonString);
+                    assetDatabasePath = path;
+                    assetDatabaseDir = Path.GetDirectoryName(path);
                 }
             }
 
@@ -43,7 +47,7 @@ namespace ProjectWS.Engine.Data
                 assetDBReady = true;
             }
 
-            database = new Database(engineRef);
+            database = new Database(engine);
         }
 
         public static void CreateAssetDB(string path, Action<float>? _logProgress = null, Action<string?>? _logProgressText = null)
@@ -68,7 +72,7 @@ namespace ProjectWS.Engine.Data
             SaveAssetDB(path);
 
             SharedProcessData spd = new SharedProcessData();
-            spd.engineRef = engineRef;
+            spd.engineRef = engine;
             spd.gameClientPath = Engine.settings.dataManager?.gameClientPath;
             spd.assetDBFolder = Path.GetDirectoryName(Engine.settings.dataManager?.assetDatabasePath);
             spd.assetDB = assetDB;
@@ -93,7 +97,7 @@ namespace ProjectWS.Engine.Data
                     assetDB.database = AssetDatabase.DataStatus.InProgress;
                     SaveAssetDB(path);
                     new PExtractDatabase(spd).Run();
-                    database = new Database(engineRef);
+                    database = new Database(engine);
                     assetDB.database = AssetDatabase.DataStatus.Ready;
                     SaveAssetDB(path);
                 }
@@ -129,7 +133,7 @@ namespace ProjectWS.Engine.Data
 
 
             SharedProcessData spd = new SharedProcessData();
-            spd.engineRef = engineRef;
+            spd.engineRef = engine;
             spd.gameClientPath = Engine.settings.dataManager?.gameClientPath;
 
             BackgroundWorker worker = new BackgroundWorker();
@@ -152,6 +156,18 @@ namespace ProjectWS.Engine.Data
             };
 
             worker.RunWorkerAsync();
+        }
+    
+        public static Stream? GetFileStream(string internalPath)
+        {
+            var path = $"{assetDatabaseDir}\\{internalPath}";
+
+            if (File.Exists(path))
+            {
+                return File.OpenRead(path);
+            }
+
+            return null;
         }
     }
 }

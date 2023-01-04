@@ -23,7 +23,8 @@ namespace ProjectWS.Engine.Project
             public World? worldRecord { get; set; }
             public bool isGameMap { get; set; }
             public string? mapChunkInfoPath { get; set; }
-            public string? minimapPath { get; set; }
+            public Vector3 lastPosition { get; set; }
+            public Quaternion lastOrientation { get; set; }
 
             public class World
             {

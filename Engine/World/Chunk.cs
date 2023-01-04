@@ -7,17 +7,13 @@ namespace ProjectWS.Engine.World
     {
         #region Variables
 
-        public Data.GameData gameData;
-        public World world;
-        public Data.Block.FileEntry areaFileEntry;
-        public Data.Block.FileEntry areaLowFileEntry;
-        public string areaFilePath;
+        public World? world;
+        public string? areaFilePath;
+        public string? areaLowFilePath;
         public Vector2 coords;
-        Vector2 center;
         Vector2 lowCoords;
         public Vector3 worldCoords;
         public Matrix4 worldMatrix;
-        int chunkDistance;
         public volatile bool isVisible;
         int lod = -1;
         public bool lod0Available;
@@ -28,10 +24,10 @@ namespace ProjectWS.Engine.World
         public float minHeight;
         public float maxHeight;
 
-        public AABB AABB;
-        public FileFormats.Area.File area;
-        public FileFormats.Area.File areaLow;
-        public List<SubChunk> subChunks;
+        public AABB? AABB;
+        public FileFormats.Area.File? area;
+        public FileFormats.Area.File? areaLow;
+        public List<SubChunk>? subChunks;
 
         const float LABEL_DISTANCE = 300f;
 
@@ -44,37 +40,11 @@ namespace ProjectWS.Engine.World
         };
 
         // Tasks
-        public ConcurrentQueue<TaskManager.TerrainTask> terrainTasks;
-        public ConcurrentQueue<TaskManager.TerrainTask> buildTasks;
+        public ConcurrentQueue<TaskManager.TerrainTask>? terrainTasks;
+        public ConcurrentQueue<TaskManager.TerrainTask>? buildTasks;
         internal bool modified;
 
         #endregion
-
-        /// <summary>
-        /// Load chunk from game data
-        /// </summary>
-        /// <param name="coords"></param>
-        /// <param name="file"></param>
-        /// <param name="data"></param>
-        /// <param name="world"></param>
-        public Chunk(Vector2 coords, Data.Block.FileEntry file, Data.GameData data, World world)
-        {
-            this.terrainTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
-            this.buildTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
-
-            this.gameData = data;
-            this.world = world;
-            this.areaFileEntry = file;
-            this.coords = coords;
-            this.worldCoords = Utilities.ChunkToWorldCoords(coords);
-            this.worldMatrix = new Matrix4().TRS(this.worldCoords, Quaternion.Identity, new Vector3(1, 1, 1));
-            this.lowCoords = Utilities.CalculateLowCoords(coords);
-            this.lodQuadrants = Utilities.CalculateLoDQuadrants(coords, this.lowCoords);
-            this.AABB = new AABB(this.worldCoords, new Vector3(512f, 10000f, 512f));
-            this.subChunks = new List<SubChunk>();
-            this.minHeight = float.MaxValue;
-            this.maxHeight = float.MinValue;
-        }
 
         /// <summary>
         /// Load chunk from project
@@ -83,12 +53,11 @@ namespace ProjectWS.Engine.World
         /// <param name="file"></param>
         /// <param name="data"></param>
         /// <param name="world"></param>
-        public Chunk(Vector2 coords, string file, Data.GameData data, World world)
+        public Chunk(Vector2 coords, string file, World world)
         {
             this.terrainTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
             this.buildTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
 
-            this.gameData = data;
             this.world = world;
             this.areaFilePath = file;
             this.coords = coords;
@@ -108,12 +77,11 @@ namespace ProjectWS.Engine.World
         /// <param name="coords"></param>
         /// <param name="data"></param>
         /// <param name="world"></param>
-        public Chunk(Vector2 coords, Data.GameData data, World world)
+        public Chunk(Vector2 coords, World world)
         {
             this.terrainTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
             this.buildTasks = new ConcurrentQueue<TaskManager.TerrainTask>();
 
-            this.gameData = data;
             this.world = world;
             this.coords = coords;
             this.worldCoords = Utilities.ChunkToWorldCoords(coords);
@@ -126,9 +94,9 @@ namespace ProjectWS.Engine.World
             this.maxHeight = float.MinValue;
         }
 
-        public void EnqueueTerrainTask(TaskManager.TerrainTask task) => this.terrainTasks.Enqueue(task);
+        public void EnqueueTerrainTask(TaskManager.TerrainTask task) => this.terrainTasks?.Enqueue(task);
 
-        public void EnqueueBuildTask(TaskManager.TerrainTask task) => this.buildTasks.Enqueue(task);
+        public void EnqueueBuildTask(TaskManager.TerrainTask task) => this.buildTasks?.Enqueue(task);
 
         public int GetLoDQuadrant(int index) => this.lodQuadrants[index];
 
@@ -316,12 +284,6 @@ namespace ProjectWS.Engine.World
                 this.lod = lod;
             }
 
-            if (lod != -1)
-            {
-                this.chunkDistance = (int)Math.Max(Math.Abs(center.X - this.coords.X), Math.Abs(center.Y - this.coords.Y));
-                this.center = center;
-            }
-
             switch (this.lod)
             {
                 case 0:
@@ -448,14 +410,7 @@ namespace ProjectWS.Engine.World
 
         internal void ReadArea(FileFormats.Area.File area)
         {
-            if (this.areaFileEntry != null)
-            {
-                using (Stream? str = this.gameData.GetFileData(this.areaFileEntry))
-                {
-                    area.Read(str);
-                }
-            }
-            else if (this.areaFilePath != null)
+            if (this.areaFilePath != null)
             {
                 using(var fs = File.OpenRead(this.areaFilePath))
                 {
@@ -472,8 +427,13 @@ namespace ProjectWS.Engine.World
 
         internal void ReadAreaLow(FileFormats.Area.File areaLow)
         {
-            using (Stream? str = this.gameData.GetFileData(areaLowFileEntry))
-                areaLow.Read(str);
+            if (this.areaLowFilePath != null)
+            {
+                using (var fs = File.OpenRead(this.areaLowFilePath))
+                {
+                    areaLow.Read(fs);
+                }
+            }
 
             for (int i = 0; i < areaLow.subAreas?.Count; i++)
             {
@@ -481,6 +441,32 @@ namespace ProjectWS.Engine.World
                 //sc.mesh = new TerrainMesh(areaLow.subAreas[i].lodHeightMap, areaLow.subAreas[i]);
                 //this.subChunksLow.Add(sc);
             }
+        }
+
+        internal void Unload()
+        {
+            this.areaFilePath = null;
+            this.areaLowFilePath = null;
+
+            this.lod0Available = false;
+            this.lod0Loading = false;
+            this.lod1Available = false;
+            this.lod1Loading = false;
+
+            this.minHeight = float.MaxValue;
+            this.maxHeight = float.MinValue;
+
+            this.AABB = null;
+            this.area = null;
+            this.areaLow = null;
+
+            for (int i = 0; i < this.subChunks?.Count; i++)
+            {
+                this.subChunks[i].Unload();
+            }
+
+            this.subChunks?.Clear();
+            this.subChunks = null;
         }
     }
 }

@@ -152,6 +152,7 @@
                           SelectionChanged="mapComboBox_SelectionChanged"
                           Name="mapComboBox" VerticalAlignment="Center" Margin="5,0,5,0"
                           ItemsSource="{Binding mapNames}" ToolTip="Map List"/>
+                <Button Name="button_LoadMap" Click="button_LoadMap_Click">Load</Button>
                 <Button x:Name = "button_AddMap" Width="30" Height="30"
                         Padding="0,0" Click="button_AddMap_Click"
                         ToolTip="Create New Map">

@@ -11,6 +11,7 @@ using ProjectWS.Engine.Project;
 using ProjectWS.Engine.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.IO.Pipes;
 using System.Security.Principal;
@@ -597,6 +598,11 @@ namespace ProjectWS.Editor
             }
         }
 
+        internal void EngineTeleport(float x, float y, float z)
+        {
+            this.engine?.world?.Teleport(x, y, z);
+        }
+
         internal void OpenDataManager()
         {
             this.dataManagerWindow = new DataManagerWindow(this);
@@ -867,7 +873,6 @@ namespace ProjectWS.Editor
                 var chunkInfo = new MapChunkInfo();
 
                 newMap.mapChunkInfoPath = $"{realDir}\\ChunkInfo.json";
-                newMap.minimapPath = $"{realDir}\\Minimap.png";
                 chunkInfo.chunks = new List<Vector2i>();
                 chunkInfo.chunksLow = new List<Vector2i>();
                 chunkInfo.minimaps = new List<Vector2i>();
@@ -932,6 +937,15 @@ namespace ProjectWS.Editor
         internal void ImportLocalMap(string text)
         {
             
+        }
+
+        internal void LoadWorld(Map? map, MapChunkInfo? chunkInfo, Vector3 position)
+        {
+            if (map == null) return;
+            if (chunkInfo == null) return;
+
+            string projectFolder = $"{Path.GetDirectoryName(ProjectManager.projectFile)}\\{Path.GetFileNameWithoutExtension(ProjectManager.projectFile)}";
+            this.engine?.world?.LoadMap(map.worldRecord.ID, projectFolder, map.worldRecord.assetPath, map.Name, chunkInfo.chunks, position);
         }
     }
 }

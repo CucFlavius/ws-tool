@@ -21,12 +21,12 @@ namespace ProjectWS.Engine.Mesh
             public Vector2 uv;
         }
 
-        public TerrainVertex[] vertices;
+        public TerrainVertex[]? vertices;
 
         public float minHeight;
         public float maxHeight;
 
-        public uint[] indexData;
+        public uint[]? indexData;
         public bool isBuilt;
         public int _vertexArrayObject;
         public int _vertexBufferObject;
@@ -48,7 +48,7 @@ namespace ProjectWS.Engine.Mesh
                 {
                     for (int x = -1; x < 18; ++x)
                     {
-                        float h = ((heightMap[(y + 1) * 19 + x + 1] & 0x7FFF) / 8.0f) - 2048.0f;
+                        float h = ((heightMap[(y + 1) * 19 + x + 1] & 0x7FFF) * 0.12500381f) - 2048.0f;
 
                         // Calc minmax
                         if (h < this.minHeight)
@@ -183,8 +183,8 @@ namespace ProjectWS.Engine.Mesh
             GL.BindBuffer(BufferTarget.ArrayBuffer, this._vertexBufferObject);
             GL.BufferData(BufferTarget.ArrayBuffer, this.vertices.Length * VERTEXSIZE, this.vertices, BufferUsageHint.DynamicDraw);
 
-            _vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(_vertexArrayObject);
+            this._vertexArrayObject = GL.GenVertexArray();
+            GL.BindVertexArray(this._vertexArrayObject);
 
             GL.EnableVertexAttribArray(0);
             GL.EnableVertexAttribArray(1);
@@ -198,7 +198,7 @@ namespace ProjectWS.Engine.Mesh
 
             int _elementBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indexData.Length * 4, indexData, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, this.indexData.Length * 4, this.indexData, BufferUsageHint.StaticDraw);
 
             GL.BindVertexArray(0);
 
@@ -217,7 +217,7 @@ namespace ProjectWS.Engine.Mesh
                     float h = this.vertices[index].position.Y;
 
                     // Update height map
-                    this.subChunk.subArea.heightMap[(y + 1) * 19 + x + 1] = (ushort)((h + 2048.0f) * 8.0f);
+                    this.subChunk.subArea.heightMap[(y + 1) * 19 + x + 1] = (ushort)((h + 2048.0f) / 0.12500381f);
 
                     // Recalculate minmax
                     if (h < this.minHeight)
@@ -266,7 +266,7 @@ namespace ProjectWS.Engine.Mesh
             if (!this.isBuilt) return;
 
             GL.BindVertexArray(_vertexArrayObject);
-            GL.DrawElements(BeginMode.Triangles, indexData.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, this.indexData.Length, DrawElementsType.UnsignedInt, 0);
         }
 
         public override void DrawInstanced()
@@ -313,6 +313,17 @@ namespace ProjectWS.Engine.Mesh
             }
 
             return haveIntersection;
+        }
+
+        internal void Unload()
+        {
+            this.isBuilt = false;
+
+            GL.DeleteVertexArray(this._vertexArrayObject);
+            GL.DeleteBuffer(this._vertexBufferObject);
+
+            this.vertices = null;
+            this.indexData = null;
         }
     }
 }

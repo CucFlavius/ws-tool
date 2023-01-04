@@ -111,6 +111,20 @@ namespace ProjectWS.Editor
 
             Debug.Log("Changed Map");
 
+            // Save map position
+            if (this.editor.engine?.world?.renderer?.viewports?[0]?.mainCamera != null)
+            {
+                for (int i = 0; i < ProjectManager.project?.Maps?.Count; i++)
+                {
+                    if (ProjectManager.project.Maps[i].worldRecord.ID == this.selectedMapID)
+                    {
+                        ProjectManager.project.Maps[i].lastPosition = this.editor.engine.world.renderer.viewports[0].mainCamera.transform.GetPosition();
+                        ProjectManager.SaveProject();
+                        break;
+                    }
+                }
+            }
+
             var mapID = this.mapIDs[this.mapComboBox.SelectedIndex];
             this.selectedMapID = mapID;
             var mapIndexInProject = -1;
@@ -126,7 +140,7 @@ namespace ProjectWS.Editor
 
             if (mapIndexInProject == -1) return;
 
-            var map = ProjectManager.project.Maps[mapIndexInProject];
+            Engine.Project.Project.Map map = ProjectManager.project.Maps[mapIndexInProject];
 
             // Remember map for next session
             if (ProjectManager.project != null && this.mapComboBox != null && this.mapIDs != null)
@@ -167,50 +181,11 @@ namespace ProjectWS.Editor
                 this.mapRenderer.RefreshMinimaps(chunkInfo.minimaps, ProjectManager.projectFile, map.worldRecord.assetPath, map.Name);
             }
 
-            /*
-            if (this.locationNames == null)
-                this.locationNames = new ObservableCollection<string>();
-
-            if (this.locationIDs == null)
-                this.locationIDs = new List<uint>();
-
-            this.locationNames.Clear();
-            this.locationIDs.Clear();
-
-            int idx = this.mapComboBox.SelectedIndex;
-            if (idx == -1) return;
-
-            if (this.mapIDs == null) return;
-
-            var ID = this.mapIDs[idx];
-
-            if (ProjectManager.project?.Maps != null)
-            {
-                Project.Map? selectedMap = null;
-                foreach (var map in ProjectManager.project.Maps)
-                {
-                    if (map.worldRecord?.ID == ID)
-                    {
-                        selectedMap = map;
-                        break;
-                    }
-                }
-
-                if (selectedMap?.worldLocations != null)
-                {
-                    foreach (Project.Map.WorldLocation location in selectedMap.worldLocations)
-                    {
-                        this.locationNames.Add($"{location.ID}");
-                        this.locationIDs.Add(location.ID);
-                    }
-                }
-            }
-
-            this.comboBox_location.ItemsSource = this.locationNames;
-            */
+            // Load world
+            this.editor.LoadWorld(map, chunkInfo, map.lastPosition);
         }
 
-        private static void GenerateMinimap(MapChunkInfo? chunkInfo, Engine.Project.Project.Map map)
+        private static void GenerateMinimap(MapChunkInfo? chunkInfo, Engine.Project.Project.Map map, string savePath)
         {
             if (chunkInfo != null)
             {
@@ -262,7 +237,7 @@ namespace ProjectWS.Editor
                         }
                     }
 
-                    outputImage.Save(map.minimapPath);
+                    outputImage.Save(savePath);
                 }
             }
         }
@@ -344,8 +319,14 @@ namespace ProjectWS.Editor
             if (this.mapRenderer != null)
             {
                 Vector3 worldCoords = Utilities.ChunkToWorldCoords(this.mapRenderer.selectedCell);
-                this.editor.SandboxTeleport(worldCoords.X + 256, 0, worldCoords.Z + 256, this.selectedMapID);
+                //this.editor.SandboxTeleport(worldCoords.X + 256, 0, worldCoords.Z + 256, this.selectedMapID);
+                this.editor.EngineTeleport(worldCoords.X + 256, 0, worldCoords.Z + 256);
             }
+        }
+
+        private void button_LoadMap_Click(object sender, RoutedEventArgs e)
+        {
+            //this.editor.LoadWorld();
         }
     }
 }

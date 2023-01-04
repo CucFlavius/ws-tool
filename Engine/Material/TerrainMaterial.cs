@@ -1,12 +1,13 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using MathUtils;
 using ProjectWS.Engine.Rendering.ShaderParams;
+using ProjectWS.Engine.Data;
+using ProjectWS.Engine.Data.ResourceManager;
 
 namespace ProjectWS.Engine.Material
 {
     public class TerrainMaterial : Material
     {
-        World.Chunk chunk;
         FileFormats.Area.SubArea subChunkData;
         uint blendMapPtr;
         uint colorMapPtr;
@@ -26,11 +27,15 @@ namespace ProjectWS.Engine.Material
         const string NORMAL2 = "normal2";
         const string NORMAL3 = "normal3";
 
+        const string GREY_DEFAULT = "Art\\Dev\\BLANK_Grey.tex";
+        const string NORMAL_DEFAULT = "Art\\Dev\\BLANK_Normal.tex";
+
+        Dictionary<string, int> textureResources = new Dictionary<string, int>();
+
         TerrainParameters tParams;
 
-        public TerrainMaterial(World.Chunk chunk, FileFormats.Area.SubArea subChunkData)
+        public TerrainMaterial(FileFormats.Area.SubArea subChunkData)
         {
-            this.chunk = chunk;
             this.tParams = new TerrainParameters();
             this.subChunkData = subChunkData;
         }
@@ -61,11 +66,21 @@ namespace ProjectWS.Engine.Material
                 {
                     if (this.subChunkData.worldLayerIDs[i] != 0)
                     {
-                        var record = this.chunk.gameData.database.worldLayer.Get(this.subChunkData.worldLayerIDs[i]);
+                        var record = DataManager.database.worldLayer.Get(this.subChunkData.worldLayerIDs[i]);
                         if (record != null)
                         {
-                            this.chunk.gameData.resourceManager.AssignTexture(record.ColorMapPath, this, $"layer{i}");
-                            this.chunk.gameData.resourceManager.AssignTexture(record.NormalMapPath, this, $"normal{i}");
+                            DataManager.engine.resourceManager.AssignTexture(record.ColorMapPath, this, $"layer{i}");
+                            DataManager.engine.resourceManager.AssignTexture(record.NormalMapPath, this, $"normal{i}");
+
+                            if (textureResources.ContainsKey(record.ColorMapPath))
+                                textureResources[record.ColorMapPath]++;
+                            else
+                                textureResources.Add(record.ColorMapPath, 1);
+
+                            if (textureResources.ContainsKey(record.NormalMapPath))
+                                textureResources[record.NormalMapPath]++;
+                            else
+                                textureResources.Add(record.NormalMapPath, 1);
 
                             heightScale[i] = record.HeightScale;
                             heightOffset[i] = record.HeightOffset;
@@ -78,8 +93,19 @@ namespace ProjectWS.Engine.Material
             }
             else
             {
-                this.chunk.gameData.resourceManager.AssignTexture("Art\\Dev\\BLANK_Grey.tex", this, $"layer0");
-                this.chunk.gameData.resourceManager.AssignTexture("Art\\Dev\\BLANK_Normal.tex", this, $"normal0");
+
+                DataManager.engine?.resourceManager?.AssignTexture(GREY_DEFAULT, this, LAYER0);
+                DataManager.engine?.resourceManager?.AssignTexture(NORMAL_DEFAULT, this, NORMAL0);
+
+                if (textureResources.ContainsKey(GREY_DEFAULT))
+                    textureResources[GREY_DEFAULT]++;
+                else
+                    textureResources.Add(GREY_DEFAULT, 1);
+
+                if (textureResources.ContainsKey(NORMAL_DEFAULT))
+                    textureResources[NORMAL_DEFAULT]++;
+                else
+                    textureResources.Add(NORMAL_DEFAULT, 1);
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -216,6 +242,26 @@ namespace ProjectWS.Engine.Material
         {
             GL.BindTexture(TextureTarget.Texture2D, this.blendMapPtr);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, 65, 65, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+        }
+
+        internal void Unload()
+        {
+            if (this.blendMapPtr != 0)
+                GL.DeleteTexture(this.blendMapPtr);
+
+            if (this.colorMapPtr != 0)
+                GL.DeleteTexture(this.colorMapPtr);
+
+            if (this.unkMap2Ptr != 0)
+                GL.DeleteTexture(this.unkMap2Ptr);
+
+            foreach (var item in textureResources)
+            {
+                for (int i = 0; i < item.Value; i++)
+                {
+                    DataManager.engine?.resourceManager?.RemoveTexture(item.Key);
+                }
+            }
         }
     }
 }

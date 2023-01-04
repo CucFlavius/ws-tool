@@ -21,7 +21,7 @@ namespace ProjectWS.Engine.Data.ResourceManager
             //Debug.Log(filePath + " " + samplerName);
             if (!this.textureResources.ContainsKey(filePath))
             {
-                this.textureResources.Add(filePath, new TextureResource(filePath, this.engine.resourceManager, this.engine.data));
+                this.textureResources.Add(filePath, new TextureResource(filePath, this.engine.resourceManager));
                 this.engine.taskManager.textureThread.Enqueue(new TaskManager.TextureTask(filePath, TaskManager.Task.JobType.Read, this));
             }
             this.textureResources[filePath].AssignTexture(material, samplerName);
@@ -31,9 +31,17 @@ namespace ProjectWS.Engine.Data.ResourceManager
         {
             if (this.modelResources.ContainsKey(path)) return;
 
-            this.modelResources.Add(path, new ModelResource(path, this.engine.worlds[0]));
+            this.modelResources.Add(path, new ModelResource(path, this.engine.world));
 
             this.engine.taskManager.modelThread.Enqueue(new TaskManager.ModelTask(path, TaskManager.Task.JobType.Read, this));
+        }
+
+        internal void RemoveTexture(string filePath)
+        {
+            if (!this.textureResources.ContainsKey(filePath))
+            {
+                this.textureResources[filePath].RemoveTexture();
+            }
         }
 
         /*

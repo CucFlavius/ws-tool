@@ -9,17 +9,17 @@ namespace ProjectWS.Engine.World
         public volatile bool isVisible;
         public bool isOccluded;
         public bool isCulled;
-        public Chunk chunk;
+        public Chunk? chunk;
 
-        public FileFormats.Area.SubArea subArea;
+        public FileFormats.Area.SubArea? subArea;
 
-        public TerrainMesh terrainMesh;
-        public WaterMesh[] waterMeshes;
-        public TerrainMaterial terrainMaterial;
-        public WaterMaterial[] waterMaterials;
+        public TerrainMesh? terrainMesh;
+        public WaterMesh[]? waterMeshes;
+        public TerrainMaterial? terrainMaterial;
+        public WaterMaterial[]? waterMaterials;
 
-        public AABB AABB;
-        public AABB cullingAABB;
+        public AABB? AABB;
+        public AABB? cullingAABB;
         public Vector3 centerPosition;
         public int X;
         public int Y;
@@ -33,7 +33,7 @@ namespace ProjectWS.Engine.World
             this.subArea = subArea;
 
             this.terrainMesh = new TerrainMesh(this.subArea.heightMap, this);
-            this.terrainMaterial = new Material.TerrainMaterial(this.chunk, this.subArea);
+            this.terrainMaterial = new Material.TerrainMaterial(this.subArea);
             if (this.subArea.hasWater)
             {
                 this.waterMeshes = new WaterMesh[this.subArea.waters.Length];
@@ -71,6 +71,24 @@ namespace ProjectWS.Engine.World
             this.centerPosition = chunk.worldCoords + subchunkRelativePosition + new Vector3(16f, ((hMax - hMin) / 2f) + hMin, 16f);
             this.AABB = new AABB(this.centerPosition, new Vector3(32f, hMax - hMin, 32f));            // Exact bounds
             this.cullingAABB = new AABB(this.centerPosition, new Vector3(64f, (hMax - hMin) * 2, 64f));        // Increased bounds to account for thread delay
+        }
+
+        internal void Unload()
+        {
+            this.terrainMesh?.Unload();
+            for (int i = 0; i < this.waterMeshes?.Length; i++)
+            {
+                this.waterMeshes[i].Unload();
+            }
+            this.waterMeshes = null;
+            this.terrainMaterial?.Unload();
+            for (int i = 0; i < this.waterMaterials?.Length; i++)
+            {
+                this.waterMaterials[i].Unload();
+            }
+            this.waterMaterials = null;
+            this.AABB = null;
+            this.cullingAABB = null;
         }
     }
 }

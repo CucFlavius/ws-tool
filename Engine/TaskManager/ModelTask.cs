@@ -1,3 +1,4 @@
+using ProjectWS.Engine.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace ProjectWS.Engine.TaskManager
             {
                 case JobType.Read:
                     this.resourceManager.modelResources[this.filePath].SetFileState(Data.ResourceManager.Manager.ResourceState.IsLoading);
-                    using (MemoryStream str = this.resourceManager.engine.data.GetFileData(this.filePath))
+                    using (Stream str = DataManager.GetFileStream(this.filePath))
                     {
                         this.resourceManager.modelResources[this.filePath].m3.Read(str);
                     }

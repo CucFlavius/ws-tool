@@ -28,10 +28,10 @@ namespace ProjectWS.TestArea
             // Load game data
             // This is normally loaded from the UI
             // but for debugging purposes I need it to load directly at runtime in editor so I don't waste time
-            string installLocation = @"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\";
-            string cacheLocation = @"D:\Wildstar1.7.8.16042_Cache\";
+            //string installLocation = @"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\";
+            //string cacheLocation = @"D:\Wildstar1.7.8.16042_Cache\";
             //this.engine.LoadGameData(installLocation, OnDataLoaded);
-            this.engine.SetCacheLocation(cacheLocation);
+            //this.engine.SetCacheLocation(cacheLocation);
 
             //CalculateSkyCoeffs(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\Data\Sky\Adventure_Galeras3.sky");
         }
@@ -65,13 +65,13 @@ namespace ProjectWS.TestArea
             Debug.Log("Data Loaded");
 
             //CreateNewWorld();
-            LoadTestWorld();
+            //LoadTestWorld();
             //LoadTestTexture();
             //PrintTestDatabase();
             //LoadAnM3ForDebug();
             //TestSkyFile();
         }
-
+        /*
         void LoadTestWorld()
         {
             var testWorld = new Engine.World.World(this.engine, 0, true);
@@ -79,12 +79,14 @@ namespace ProjectWS.TestArea
             testWorld.TeleportToWorldLocation(114, -1); // !tele 3832.459 -1001.444 -4496.945 51
             //testWorld.Teleport(256, -900, 256, 3538, 1); // !tele 256 -998 256 3538
         }
-
+        */
+        /*
         void CreateNewWorld()
         {
-            var newWorld = new Engine.World.World(this.engine, 0, true);
+            this.engine = new Engine.World.World(this.engine, 0, true);
             newWorld.CreateNew("ZeeTest");
         }
+        */
 
         void LoadAnM3ForDebug()
         {

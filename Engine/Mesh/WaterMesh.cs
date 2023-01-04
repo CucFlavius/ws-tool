@@ -11,7 +11,8 @@ namespace ProjectWS.Engine.Mesh
         public float maxHeight;
 
         public bool isBuilt;
-        public int vertexArrayObject;
+        public int _vertexArrayObject;
+        public int _vertexBufferObject;
         private FileFormats.Area.Water water;
 
         public WaterMesh(FileFormats.Area.Water water)
@@ -24,12 +25,12 @@ namespace ProjectWS.Engine.Mesh
             // Some subchunks don't exist
             if (this.water.vertices == null || this.water.indexData == null) return;
 
-            int _vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
+            this._vertexBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, this._vertexBufferObject);
             GL.BufferData(BufferTarget.ArrayBuffer, this.water.vertices.Length * VERTEXSIZE, this.water.vertices, BufferUsageHint.StaticDraw);
 
-            vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(vertexArrayObject);
+            this._vertexArrayObject = GL.GenVertexArray();
+            GL.BindVertexArray(this._vertexArrayObject);
 
             GL.EnableVertexAttribArray(0);
             GL.EnableVertexAttribArray(1);
@@ -64,7 +65,7 @@ namespace ProjectWS.Engine.Mesh
         {
             if (!this.isBuilt) return;
 
-            GL.BindVertexArray(vertexArrayObject);
+            GL.BindVertexArray(this._vertexArrayObject);
             GL.DrawElements(BeginMode.Triangles, this.water.indexData.Length, DrawElementsType.UnsignedInt, 0);
         }
 
@@ -76,6 +77,14 @@ namespace ProjectWS.Engine.Mesh
         public override bool MeshIntersectsRay(Ray ray, Vector3 wPos, Quaternion wRot, Vector3 wScale, ref Vector3[] points)
         {
             throw new NotImplementedException();
+        }
+
+        internal void Unload()
+        {
+            this.isBuilt = false;
+
+            GL.DeleteVertexArray(this._vertexArrayObject);
+            GL.DeleteBuffer(this._vertexBufferObject);
         }
     }
 }

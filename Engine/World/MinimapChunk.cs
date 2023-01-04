@@ -70,8 +70,12 @@ namespace ProjectWS.Engine.World
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, 0);
 
-            var data = this.texFile.mipData[mipIndex];
-            GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, InternalFormat.CompressedRgbaS3tcDxt1Ext, resolution, resolution, 0, data.Length, data);
+            try
+            {
+                var data = this.texFile.mipData[mipIndex];
+                GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, InternalFormat.CompressedRgbaS3tcDxt1Ext, resolution, resolution, 0, data.Length, data);
+            }
+            catch{ }
         }
 
         internal void Render(Shader shader, int mip, int quadVAO)

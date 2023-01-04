@@ -1,4 +1,6 @@
-﻿namespace ProjectWS.Engine.World
+﻿using ProjectWS.Engine.Data;
+
+namespace ProjectWS.Engine.World
 {
     public class Environment
     {
@@ -66,7 +68,7 @@
 
                     if (this.currentSkyIDs[i, j] != 0)
                     {
-                        var worldSkyRecord = this.world.database.worldSky.Get(this.currentSkyIDs[i, j]);
+                        var worldSkyRecord = DataManager.database.worldSky.Get(this.currentSkyIDs[i, j]);
                         if (worldSkyRecord != null)
                         {
                             Debug.Log(worldSkyRecord.assetPath);

@@ -10,7 +10,7 @@ namespace StatisticalAnalyzer
         {
             Console.ForegroundColor = ConsoleColor.Gray;
             //CheckM3Files(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Art\");
-            CheckAreaFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Map\Western");
+            CheckAreaFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Map\Eastern");
             //ExtractShaders(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Shaders", @"G:\Reverse Engineering\WildStar\DecompiledShaders");
             //CheckSkyFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Sky");
             //CheckTexFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Art\");
@@ -280,8 +280,8 @@ namespace StatisticalAnalyzer
                 }
             }
 
-            float hmin = ((min & 0x7FFF) / 8.0f) - 2048.0f;
-            float hmax = ((max & 0x7FFF) / 8.0f) - 2048.0f;
+            float hmin = ((min & 0x7FFF) * 0.12500381f) - 2048.0f;
+            float hmax = ((max & 0x7FFF) * 0.12500381f) - 2048.0f;
             Console.WriteLine(min + " " + max);
             Console.WriteLine(hmin + " " + hmax);
 

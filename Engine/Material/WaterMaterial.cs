@@ -151,6 +151,11 @@ namespace ProjectWS.Engine.Material
             */
         }
 
+        internal void Unload()
+        {
+            
+        }
+
         void BuildMap(byte[] data, InternalFormat format, out uint ptr)
         {
             if (data == null) { ptr = 0; return; }

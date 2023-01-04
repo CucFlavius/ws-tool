@@ -13,13 +13,12 @@ namespace ProjectWS.Engine
     /// </summary>
     public class Engine
     {
-        public static Settings settings = new Settings();
+        public static Settings? settings = new Settings();
         bool running = false;
         public bool contextAvailable = false;
         public float deltaTime;
         public float frameTime;
         public float time;
-        public string cacheLocation;
         public int focusedRendererID;
         public int total_mem_kb;
         public int total_mem_mb;
@@ -29,39 +28,36 @@ namespace ProjectWS.Engine
         public int memory_usage_mb;
         public bool firstFrame = true;
 
-        public TaskManager.Manager taskManager;
-        public Data.ResourceManager.Manager resourceManager;
-        public Dictionary<uint, World.World> worlds;
-        public Data.GameData data;
-        public Input.Input input;
-        public Dictionary<uint, FileFormats.Sky.File> skyData;
-        public Dictionary<int, Rendering.Renderer> renderers;
+        public TaskManager.Manager? taskManager;
+        public Data.ResourceManager.Manager? resourceManager;
+        public World.World? world;
+        public Data.GameData? data;
+        public Input.Input? input;
+        public Dictionary<uint, FileFormats.Sky.File>? skyData;
+        public Dictionary<int, Rendering.Renderer>? renderers;
 
         /// <summary>
         /// Code to be executed on application launch
         /// </summary>
         public Engine()
         {
-            DataManager.engineRef = this;
+            DataManager.engine = this;
             SettingsSerializer.Load();
             this.taskManager = new TaskManager.Manager(this);
             this.resourceManager = new Data.ResourceManager.Manager(this);
             this.renderers = new Dictionary<int, Rendering.Renderer>();
             this.input = new Input.Input(this);
-            this.worlds = new Dictionary<uint, World.World>();
             this.skyData = new Dictionary<uint, FileFormats.Sky.File>();
-
+            this.world = new World.World(this);
             this.running = true;
         }
-
+        /*
         public void LoadGameData(string installLocation, Action<Data.GameData> onLoaded)
         {
             this.data = new Data.GameData(this, installLocation, onLoaded);
             this.taskManager.otherThread.Enqueue(new TaskManager.ArchiveTask(this.data, TaskManager.Task.JobType.Read, this.taskManager));
         }
-
-        public void SetCacheLocation(string cacheLocation) => this.cacheLocation = cacheLocation;
-
+        */
         /// <summary>
         /// Code to be execute every frame
         /// </summary>
@@ -69,12 +65,12 @@ namespace ProjectWS.Engine
         {
             if (!this.running) return;
 
-            this.taskManager.Update();
-            this.input.Update();
+            this.taskManager?.Update();
+            this.input?.Update();
 
             if (this.input.GetKeyPress(Keys.R))
             {
-                for (int i = 0; i < this.renderers.Count; i++)
+                for (int i = 0; i < this.renderers?.Count; i++)
                 {
                     Debug.Log($"Reload Shaders: Renderer[{i}]");
                     this.renderers[i].normalShader?.Load();
