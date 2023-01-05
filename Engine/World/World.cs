@@ -1,6 +1,7 @@
 ﻿using MathUtils;
 using OpenTK.Graphics.OpenGL4;
 using ProjectWS.Engine.Rendering;
+using System.Collections.Concurrent;
 
 namespace ProjectWS.Engine.World
 {
@@ -24,12 +25,11 @@ namespace ProjectWS.Engine.World
         uint loadedWorldID;
         public Dictionary<Vector2i, Chunk>? chunks;
         public Dictionary<Vector2i, Chunk>? activeChunks;
-        ChunkDistanceComparer? chunkComparer;
-        uint currentWorldSkyID = 0;
 
         // Prop
-        List<string> loadedProps;
-        public Dictionary<string, Prop>? props;
+        ConcurrentBag<string> loadedProps;
+        public ConcurrentDictionary<string, Prop>? props;
+        Dictionary<string, Prop>? failedToAddProps;
 
         // Controller
         public Controller controller;
@@ -48,15 +48,15 @@ namespace ProjectWS.Engine.World
         {
             this.chunks = new Dictionary<Vector2i, Chunk>();
             this.activeChunks = new Dictionary<Vector2i, Chunk>();
-            this.chunkComparer = new ChunkDistanceComparer();
-            this.loadedProps = new List<string>();
-            this.props = new Dictionary<string, Prop>();
+            this.loadedProps = new ConcurrentBag<string>();
+            this.props = new ConcurrentDictionary<string, Prop>();
             this.controller = new Controller(this);
             this.controller.onChunkPositionChange = OnChunkPositionChange;
             this.controller.onSubchunkPositionChange = OnSubchunkPositionChange;
             this.controller.onWorldPositionChange = OnWorldPositionChange;
             this.cullingStopwatch = new System.Diagnostics.Stopwatch();
             this.environment = new Environment(this);
+            this.failedToAddProps = new Dictionary<string, Prop>();
 
             this.engine = engine;
 
@@ -178,16 +178,41 @@ namespace ProjectWS.Engine.World
 
         public void UnloadMap()
         {
-            for (int x = 0; x < WORLD_SIZE; x++)
+            if (this.engine?.taskManager != null)
             {
-                for (int y = 0; y < WORLD_SIZE; y++)
-                {
-                    if (this.chunks.TryGetValue(new Vector2i(x, y), out var chunk))
-                        chunk.Unload();
-                }
+                this.engine.taskManager.terrainThread.tasks.Clear();
+                this.engine.taskManager.modelThread.tasks.Clear();
+                this.engine.taskManager.textureThread.tasks.Clear();
+                this.engine.taskManager.otherThread.tasks.Clear();
+                this.engine.taskManager.buildTasks.Clear();
             }
 
-            this.chunks.Clear();
+            if (this.chunks != null)
+            {
+                for (int x = 0; x < WORLD_SIZE; x++)
+                {
+                    for (int y = 0; y < WORLD_SIZE; y++)
+                    {
+                        if (this.chunks.TryGetValue(new Vector2i(x, y), out var chunk))
+                            chunk.Unload();
+                    }
+                }
+
+                this.chunks.Clear();
+            }
+
+            this.loadedProps?.Clear();
+
+            if (this.props != null)
+            {
+                foreach (var item in this.props)
+                {
+                    item.Value.Unload();
+                }
+
+                this.props.Clear();
+            }
+
         }
 
         public void Teleport(float x, float y, float z)
@@ -222,7 +247,13 @@ namespace ProjectWS.Engine.World
             else
             {
                 this.loadedProps.Add(data.filePath);
-                this.props.Add(data.filePath, new Prop(data, areaprop, this.engine));
+                var prop = new Prop(data, areaprop, this.engine);
+                bool added = this.props.TryAdd(data.filePath, prop);
+                
+                if (!added)
+                {
+                    failedToAddProps?.Add(data.filePath, prop);
+                }
             }
         }
 
@@ -239,6 +270,26 @@ namespace ProjectWS.Engine.World
 
             CullingMT();
             TasksUpdate();
+
+            if (failedToAddProps?.Count > 0)
+            {
+                List<String> addedList = new List<string>();
+
+                foreach (var item in failedToAddProps)
+                {
+                    bool added = this.props.TryAdd(item.Key, item.Value);
+
+                    if (added)
+                    {
+                        addedList.Add(item.Key);
+                    }
+                }
+
+                for (int i = 0; i < addedList.Count; i++)
+                {
+                    failedToAddProps.Remove(addedList[i]);
+                }
+            }
         }
 
         public void RenderTerrain(Shader shader)
@@ -271,23 +322,27 @@ namespace ProjectWS.Engine.World
         public void RenderProps(Shader shader)
         {
             if (this.activeChunks == null) return;
+            if (this.loadedProps == null || this.props == null) return;
 
             GL.Disable(EnableCap.Blend);
             GL.Enable(EnableCap.DepthTest);
 
-            foreach (var item in this.props)
+            foreach (var propName in this.loadedProps)
             {
-                for (int k = 0; k < item.Value.renderableInstances.Count; k++)
+                if(this.props.TryGetValue(propName, out var prop))
                 {
-                    if (item.Value.hasMeshes)
+                    for (int k = 0; k < prop.renderableInstances?.Count; k++)
                     {
-                        Matrix4 model = item.Value.renderableInstances[k];
-                        item.Value.Render(shader, model);
-                    }
-                    else
-                    {
-                        // TODO : check if it's actually a light m3 or just some other thing like a camera or whatever
-                        Debug.DrawIcon3D(IconRenderer.Icon3D.Type.Light, item.Value.renderableInstances[k].ExtractPosition(), Vector4.One);
+                        if (prop.hasMeshes)
+                        {
+                            Matrix4 model = prop.renderableInstances[k];
+                            prop.Render(shader, model);
+                        }
+                        else
+                        {
+                            // TODO : check if it's actually a light m3 or just some other thing like a camera or whatever
+                            Debug.DrawIcon3D(IconRenderer.Icon3D.Type.Light, prop.renderableInstances[k].ExtractPosition(), Vector4.One);
+                        }
                     }
                 }
             }
@@ -295,6 +350,8 @@ namespace ProjectWS.Engine.World
 
         void TasksUpdate()
         {
+            if (this.engine == null) return;
+            if (this.engine.taskManager == null) return;
             if (this.activeChunks == null) return;
 
             foreach (var item in this.activeChunks)
@@ -303,18 +360,18 @@ namespace ProjectWS.Engine.World
                 Vector2 coord = item.Key;
 
                 // Terrain Tasks //
-                if (chunk.terrainTasks.Count > 0 && this.engine.taskManager.terrainThread.tasks.Count < 4)
+                if (chunk.terrainTasks?.Count > 0 && this.engine.taskManager.terrainThread.tasks.Count < 4)
                 {
-                    if (chunk.terrainTasks.TryDequeue(out TaskManager.TerrainTask task))
+                    if (chunk.terrainTasks.TryDequeue(out TaskManager.TerrainTask? task))
                     {
                         this.engine.taskManager.terrainThread.tasks.Enqueue(task);
                     }
                 }
 
                 // Build Object Tasks //
-                if (chunk.buildTasks.Count > 0 && this.engine.taskManager.buildTasks.Count < 4)
+                if (chunk.buildTasks?.Count > 0 && this.engine.taskManager.buildTasks.Count < 4)
                 {
-                    if (chunk.buildTasks.TryDequeue(out TaskManager.TerrainTask task))
+                    if (chunk.buildTasks.TryDequeue(out TaskManager.TerrainTask? task))
                         this.engine.taskManager.buildTasks.Enqueue(task);
                 }
 
@@ -401,25 +458,24 @@ namespace ProjectWS.Engine.World
                 this.cullTaskUpdate = false;
 
                 // Update prop culling
-                for (int i = 0; i < this.loadedProps.Count; i++)
+                foreach (var item in this.props)
                 {
-                    if (this.props.TryGetValue(this.loadedProps[i], out Prop prop))
-                    {
-                        prop.renderableInstances.Clear();
-                        prop.renderableUUIDs.Clear();
-                        for (int k = 0; k < prop.uniqueInstanceIDs.Count; k++)
-                        {
-                            uint uuid = prop.uniqueInstanceIDs[k];
-                            prop.instances[uuid].visible = false;
-                            if (prop.cullingResults[prop.instances[uuid].uuid])
-                            {
-                                prop.renderableUUIDs.Add(prop.instances[uuid].uuid);
-                                prop.renderableInstances.Add(prop.instances[uuid].transform);
-                                prop.instances[uuid].visible = true;
-                            }
+                    var prop = item.Value;
 
-                            prop.culled = prop.renderableInstances.Count == 0;
+                    prop.renderableInstances.Clear();
+                    prop.renderableUUIDs.Clear();
+                    for (int k = 0; k < prop.uniqueInstanceIDs.Count; k++)
+                    {
+                        uint uuid = prop.uniqueInstanceIDs[k];
+                        prop.instances[uuid].visible = false;
+                        if (prop.cullingResults[prop.instances[uuid].uuid])
+                        {
+                            prop.renderableUUIDs.Add(prop.instances[uuid].uuid);
+                            prop.renderableInstances.Add(prop.instances[uuid].transform);
+                            prop.instances[uuid].visible = true;
                         }
+
+                        prop.culled = prop.renderableInstances.Count == 0;
                     }
                 }
 
@@ -495,6 +551,7 @@ namespace ProjectWS.Engine.World
                 }
             }
         }
+
         /*
         public void ChunksOcclusionCulling()
         {
@@ -561,14 +618,13 @@ namespace ProjectWS.Engine.World
 
         public void PropCulling()
         {
-            for (int i = 0; i < this.loadedProps.Count; i++)
+            foreach (var item in this.props)
             {
-                if (this.props.TryGetValue(this.loadedProps[i], out Prop prop))
+                var prop = item.Value;
+
+                for (int j = 0; j < prop.uniqueInstanceIDs.Count; j++)
                 {
-                    for (int j = 0; j < prop.uniqueInstanceIDs.Count; j++)
-                    {
-                        prop.cullingResults[prop.uniqueInstanceIDs[j]] = false;
-                    }
+                    prop.cullingResults[prop.uniqueInstanceIDs[j]] = false;
                 }
             }
 

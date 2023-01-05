@@ -13,6 +13,7 @@ namespace ProjectWS.Engine.Material
         FileFormats.M3.Material matData;
         FileFormats.M3.File m3;
         ProjectWS.Engine.Data.ResourceManager.Manager rm;
+        Dictionary<string, int> textureResources = new Dictionary<string, int>();
 
         public M3Material(FileFormats.M3.Material matData, FileFormats.M3.File m3, ProjectWS.Engine.Data.ResourceManager.Manager rm)
         {
@@ -40,6 +41,11 @@ namespace ProjectWS.Engine.Material
                         rm.AssignTexture(texture.texturePath, this, $"diffuseMap{i}");
                     else if (texture.textureType == FileFormats.M3.Texture.TextureType.Normal)
                         rm.AssignTexture(texture.texturePath, this, $"normalMap{i}");
+
+                    if (textureResources.ContainsKey(texture.texturePath))
+                        textureResources[texture.texturePath]++;
+                    else
+                        textureResources.Add(texture.texturePath, 1);
                 }
 
                 short textureB = this.matData.materialDescriptions[i].textureSelectorB;
@@ -50,6 +56,11 @@ namespace ProjectWS.Engine.Material
                         rm.AssignTexture(texture.texturePath, this, $"diffuseMap{i}");
                     else if (texture.textureType == FileFormats.M3.Texture.TextureType.Normal)
                         rm.AssignTexture(texture.texturePath, this, $"normalMap{i}");
+
+                    if (textureResources.ContainsKey(texture.texturePath))
+                        textureResources[texture.texturePath]++;
+                    else
+                        textureResources.Add(texture.texturePath, 1);
                 }
             }
 
@@ -128,6 +139,17 @@ namespace ProjectWS.Engine.Material
                 else
                 {
                     GL.BindTexture(TextureTarget.Texture2D, -1);
+                }
+            }
+        }
+
+        internal void Unload()
+        {
+            foreach (var item in textureResources)
+            {
+                for (int i = 0; i < item.Value; i++)
+                {
+                    DataManager.engine?.resourceManager?.RemoveTexture(item.Key);
                 }
             }
         }

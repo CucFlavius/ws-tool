@@ -15,7 +15,9 @@ namespace ProjectWS.Engine.Mesh
         public bool isBuilt;
         public bool positionCompressed;
         public bool renderable;
-        public int _vertexArrayObject;
+        public int VAO;
+        public int VBO;
+        public int EBO;
 
         public uint[]? indexData;
         public byte[]? vertexData;
@@ -61,18 +63,18 @@ namespace ProjectWS.Engine.Mesh
 
             this.positionCompressed = vertexFieldTypes[0] == FileFormats.M3.Geometry.VertexFieldType.Vector3_16bit;
 
-            GL.GenVertexArrays(1, out _vertexArrayObject);
-            int vbo = GL.GenBuffer();
-            int ebo = GL.GenBuffer();
+            GL.GenVertexArrays(1, out VAO);
+            VBO = GL.GenBuffer();
+            EBO = GL.GenBuffer();
 
             // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-            GL.BindVertexArray(_vertexArrayObject);
+            GL.BindVertexArray(VAO);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
 
             GL.BufferData(BufferTarget.ArrayBuffer, this.vertexData.Length, this.vertexData, BufferUsageHint.StaticDraw);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
             GL.BufferData(BufferTarget.ElementArrayBuffer, this.indexData.Length * 4, this.indexData, BufferUsageHint.StaticDraw);
 
             int idx = 0;
@@ -189,7 +191,7 @@ namespace ProjectWS.Engine.Mesh
         {
             if (!this.isBuilt || !this.renderable || this.data == null || this.indexData == null) return;
 
-            GL.BindVertexArray(this._vertexArrayObject);
+            GL.BindVertexArray(this.VAO);
             GL.DrawElements(BeginMode.Triangles, this.indexData.Length, DrawElementsType.UnsignedInt, 0);
         }
 
@@ -203,7 +205,7 @@ namespace ProjectWS.Engine.Mesh
             GL.BindBuffer(BufferTarget.ArrayBuffer, this.instanceBuffer);
             GL.BufferData(BufferTarget.ArrayBuffer, this.instances.Length * 64, this.instances, BufferUsageHint.StaticDraw);
 
-            GL.BindVertexArray(this._vertexArrayObject);
+            GL.BindVertexArray(this.VAO);
             GL.DrawElementsInstanced(PrimitiveType.Triangles, this.indexData.Length, DrawElementsType.UnsignedInt, this.indexData, this.instances.Length);
         }
 
@@ -250,6 +252,20 @@ namespace ProjectWS.Engine.Mesh
             }
 
             return haveIntersection;
+        }
+
+        internal void Unload()
+        {
+            this.isBuilt = false;
+            this.renderable = false;
+            this.indexData = null;
+            this.vertexData = null;
+            this.vertexPositions = null;
+            this.instances = null;
+
+            GL.DeleteVertexArray(this.VAO);
+            GL.DeleteBuffer(this.VBO);
+            GL.DeleteBuffer(this.EBO);
         }
     }
 }

@@ -374,9 +374,18 @@ namespace ProjectWS.Engine.World
                 int from = quadrant * (256 / 4);
                 int to = from + (256 / 4);
 
+                if (this.area == null)
+                {
+                    return;
+                }
+
                 if (this.area.subAreas == null)
                 {
-                    Debug.LogError("Area.Build() subAreas == null");
+                    return;
+                }
+
+                if (this.subChunks == null)
+                {
                     return;
                 }
 
@@ -386,15 +395,15 @@ namespace ProjectWS.Engine.World
                     if (i < total)
                     {
                         // Terrain //
-                        this.subChunks[i].terrainMesh.Build();
-                        this.subChunks[i].terrainMaterial.Build();
+                        this.subChunks[i]?.terrainMesh?.Build();
+                        this.subChunks[i]?.terrainMaterial?.Build();
 
                         // Water //
                         if (this.subChunks[i].waterMeshes != null)
                         {
-                            for (int j = 0; j < this.subChunks[i].waterMeshes.Length; j++)
+                            for (int j = 0; j < this.subChunks[i]?.waterMeshes?.Length; j++)
                             {
-                                this.subChunks[i].waterMeshes[j].Build();
+                                this.subChunks[i]?.waterMeshes?[j]?.Build();
                             }
                         }
                     }
@@ -445,6 +454,9 @@ namespace ProjectWS.Engine.World
 
         internal void Unload()
         {
+            this.terrainTasks?.Clear();
+            this.buildTasks?.Clear();
+
             this.areaFilePath = null;
             this.areaLowFilePath = null;
 

@@ -127,6 +127,33 @@ namespace ProjectWS.Engine.World
             }
         }
 
+        internal void Unload()
+        {
+            this.instances?.Clear();
+            this.renderableInstances?.Clear();
+            this.renderableUUIDs?.Clear();
+            this.cullingResults?.Clear();
+            this.uniqueInstanceIDs?.Clear();
+            this.data = null;
+
+            for (int g = 0; g < this.geometries?.Length; g++)
+            {
+                for (int m = 0; m < this.geometries[g]?.meshes?.Length; m++)
+                {
+                    this.geometries[g]?.meshes?[m]?.Unload();
+                }
+            }
+
+            this.geometries = null;
+
+            for (int m = 0; m < this.materials?.Length; m++)
+            {
+                this.materials[m].Unload();
+            }
+
+            this.materials = null;
+        }
+
         public class Instance
         {
             public FileFormats.Area.AreaProp? areaprop;

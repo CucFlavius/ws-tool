@@ -47,7 +47,7 @@ namespace ProjectWS.Engine.World
                             {
                                 if (subchunk.skyCorners[i].worldSkyIDs[j] != this.currentSkyIDs[i, j])
                                 {
-                                    SwapSkyChunk(subchunk);
+                                    //SwapSkyChunk(subchunk);
                                     return;
                                 }
                             }

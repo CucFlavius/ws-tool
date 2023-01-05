@@ -88,7 +88,7 @@ namespace ProjectWS.FileFormats.Extensions
 
         public static void SkipChunk(this BinaryReader br, string chunkID, int chunkSize, string type)
         {
-            Console.WriteLine($"{type} | Skipping chunk : {chunkID}");
+            //Console.WriteLine($"{type} | Skipping chunk : {chunkID}");
             br.BaseStream.Seek(chunkSize, SeekOrigin.Current);
         }
 
