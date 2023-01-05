@@ -1,3 +1,4 @@
+using MathUtils;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using ProjectWS.Engine.Data;
@@ -31,6 +32,7 @@ namespace ProjectWS.Engine
         public TaskManager.Manager? taskManager;
         public Data.ResourceManager.Manager? resourceManager;
         public World.World? world;
+        public World.World? unloadWorld;
         public Data.GameData? data;
         public Input.Input? input;
         public Dictionary<uint, FileFormats.Sky.File>? skyData;
@@ -48,7 +50,6 @@ namespace ProjectWS.Engine
             this.renderers = new Dictionary<int, Rendering.Renderer>();
             this.input = new Input.Input(this);
             this.skyData = new Dictionary<uint, FileFormats.Sky.File>();
-            this.world = new World.World(this);
             this.running = true;
         }
         /*
@@ -153,6 +154,18 @@ namespace ProjectWS.Engine
             sky.Read(this.data.GetFileData(worldSkyRecord.assetPath));
             this.skyData.Add(ID, sky);
             return sky;
+        }
+
+        public void LoadWorld(uint iD, string projectFolder, string? assetPath, string? name, List<Vector2i>? chunks, Vector3 position)
+        {
+            if (this.world != null)
+            {
+                this.unloadWorld = this.world;
+                this.unloadWorld.UnloadMap();
+            }
+
+            this.world = new World.World(this);
+            this.world.LoadMap(iD, projectFolder, assetPath, name, chunks, position);
         }
     }
 }

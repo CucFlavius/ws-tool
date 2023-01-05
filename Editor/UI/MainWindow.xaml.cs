@@ -145,6 +145,8 @@ namespace ProjectWS.Editor
             Engine.Engine.settings.window.windowState = (int)this.WindowState;
 
             SettingsSerializer.Save();
+
+			this.editor.OnExit();
         }
 
 		private void menuItem_Toolbox_Click(object sender, RoutedEventArgs e)

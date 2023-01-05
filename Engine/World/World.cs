@@ -27,9 +27,7 @@ namespace ProjectWS.Engine.World
         public Dictionary<Vector2i, Chunk>? activeChunks;
 
         // Prop
-        ConcurrentBag<string> loadedProps;
-        public ConcurrentDictionary<string, Prop>? props;
-        Dictionary<string, Prop>? failedToAddProps;
+        public Dictionary<string, Prop>? props;
 
         // Controller
         public Controller controller;
@@ -48,15 +46,13 @@ namespace ProjectWS.Engine.World
         {
             this.chunks = new Dictionary<Vector2i, Chunk>();
             this.activeChunks = new Dictionary<Vector2i, Chunk>();
-            this.loadedProps = new ConcurrentBag<string>();
-            this.props = new ConcurrentDictionary<string, Prop>();
+            this.props = new Dictionary<string, Prop>();
             this.controller = new Controller(this);
             this.controller.onChunkPositionChange = OnChunkPositionChange;
             this.controller.onSubchunkPositionChange = OnSubchunkPositionChange;
             this.controller.onWorldPositionChange = OnWorldPositionChange;
             this.cullingStopwatch = new System.Diagnostics.Stopwatch();
             this.environment = new Environment(this);
-            this.failedToAddProps = new Dictionary<string, Prop>();
 
             this.engine = engine;
 
@@ -201,8 +197,6 @@ namespace ProjectWS.Engine.World
                 this.chunks.Clear();
             }
 
-            this.loadedProps?.Clear();
-
             if (this.props != null)
             {
                 foreach (var item in this.props)
@@ -210,7 +204,7 @@ namespace ProjectWS.Engine.World
                     item.Value.Unload();
                 }
 
-                this.props.Clear();
+                //this.props.Clear();
             }
 
         }
@@ -240,20 +234,16 @@ namespace ProjectWS.Engine.World
 
         internal void LoadProp(FileFormats.M3.File data, FileFormats.Area.AreaProp areaprop)
         {
+            if (this.props == null) return;
+
             if (this.props.ContainsKey(data.filePath))
             {
                 this.props[data.filePath].AddInstance(areaprop);
             }
             else
             {
-                this.loadedProps.Add(data.filePath);
                 var prop = new Prop(data, areaprop, this.engine);
-                bool added = this.props.TryAdd(data.filePath, prop);
-                
-                if (!added)
-                {
-                    failedToAddProps?.Add(data.filePath, prop);
-                }
+                this.props.Add(data.filePath, prop);
             }
         }
 
@@ -264,32 +254,13 @@ namespace ProjectWS.Engine.World
             {
                 for (int v = 0; v < this.renderer.viewports.Count; v++)
                 {
-                    this.controller.Update(this.renderer.viewports[v].mainCamera);
+                    if (this.renderer.viewports[v] != null)
+                        this.controller.Update(this.renderer.viewports[v].mainCamera);
                 }
             }
 
             CullingMT();
             TasksUpdate();
-
-            if (failedToAddProps?.Count > 0)
-            {
-                List<String> addedList = new List<string>();
-
-                foreach (var item in failedToAddProps)
-                {
-                    bool added = this.props.TryAdd(item.Key, item.Value);
-
-                    if (added)
-                    {
-                        addedList.Add(item.Key);
-                    }
-                }
-
-                for (int i = 0; i < addedList.Count; i++)
-                {
-                    failedToAddProps.Remove(addedList[i]);
-                }
-            }
         }
 
         public void RenderTerrain(Shader shader)
@@ -322,27 +293,26 @@ namespace ProjectWS.Engine.World
         public void RenderProps(Shader shader)
         {
             if (this.activeChunks == null) return;
-            if (this.loadedProps == null || this.props == null) return;
+            if (this.props == null) return;
 
             GL.Disable(EnableCap.Blend);
             GL.Enable(EnableCap.DepthTest);
 
-            foreach (var propName in this.loadedProps)
+            foreach (var item in this.props)
             {
-                if(this.props.TryGetValue(propName, out var prop))
+                var prop = item.Value;
+
+                for (int k = 0; k < prop.renderableInstances?.Count; k++)
                 {
-                    for (int k = 0; k < prop.renderableInstances?.Count; k++)
+                    if (prop.hasMeshes)
                     {
-                        if (prop.hasMeshes)
-                        {
-                            Matrix4 model = prop.renderableInstances[k];
-                            prop.Render(shader, model);
-                        }
-                        else
-                        {
-                            // TODO : check if it's actually a light m3 or just some other thing like a camera or whatever
-                            Debug.DrawIcon3D(IconRenderer.Icon3D.Type.Light, prop.renderableInstances[k].ExtractPosition(), Vector4.One);
-                        }
+                        Matrix4 model = prop.renderableInstances[k];
+                        prop.Render(shader, model);
+                    }
+                    else
+                    {
+                        // TODO : check if it's actually a light m3 or just some other thing like a camera or whatever
+                        Debug.DrawIcon3D(IconRenderer.Icon3D.Type.Light, prop.renderableInstances[k].ExtractPosition(), Vector4.One);
                     }
                 }
             }
@@ -432,7 +402,7 @@ namespace ProjectWS.Engine.World
         /// </summary>
         void CullingMT()
         {
-            if (this.loadedWorldID != 0 || this.loadedProps.Count > 0)
+            if (this.loadedWorldID != 0)
             {
                 // Boot CullingThread
                 if (!this.cullingThreadRunning)

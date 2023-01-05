@@ -32,6 +32,7 @@ namespace MathUtils
     /// Represents a Quaternion.
     /// </summary>
     [Serializable, StructLayout(LayoutKind.Sequential)]
+    [JsonConverter(typeof(QuaternionJsonConverter))]
     public struct Quaternion : IEquatable<Quaternion>
     {
         /// <summary>
@@ -832,7 +833,19 @@ namespace MathUtils
         /// <returns>A human-readable representation of the quaternion.</returns>
         public override string ToString()
         {
-            return $"V: {Xyz}{MathHelper.ListSeparator} W: {W}";
+            return $"({X},{Y},{Z},{W})";
+        }
+
+        internal static Quaternion FromString(string v)
+        {
+            if (v != null)
+            {
+                var tokens = v.Substring(1, v.Length - 2).Split($"{MathHelper.ListSeparator} ");
+                if (tokens.Length == 4)
+                    if (float.TryParse(tokens[0], out float x) && float.TryParse(tokens[1], out float y) && float.TryParse(tokens[2], out float z) && float.TryParse(tokens[3], out float w))
+                        return new Quaternion(x, y, z, w);
+            }
+            return Quaternion.Identity;
         }
     }
 }

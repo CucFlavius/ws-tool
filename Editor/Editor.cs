@@ -6,12 +6,11 @@ using ProjectWS.Editor.Tools;
 using ProjectWS.Editor.UI;
 using ProjectWS.Engine;
 using ProjectWS.Engine.Data;
-using ProjectWS.Engine.Database.Definitions;
 using ProjectWS.Engine.Project;
 using ProjectWS.Engine.Rendering;
+using ProjectWS.Engine.World;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.IO.Pipes;
 using System.Security.Principal;
@@ -19,7 +18,6 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using static ProjectWS.Engine.Project.Project;
 
 namespace ProjectWS.Editor
 {
@@ -773,7 +771,7 @@ namespace ProjectWS.Editor
             Directory.Delete(target_dir, false);
         }
 
-        internal void ImportGameMap(World worldRecord)
+        internal void ImportGameMap(Engine.Database.Definitions.World worldRecord)
         {
             var mapName = Path.GetFileNameWithoutExtension(worldRecord.assetPath);
             var mapID = worldRecord.ID;
@@ -795,10 +793,10 @@ namespace ProjectWS.Editor
             }
 
             // First create map entry in project, and add to dropdown, and only then fill in the details
-            var newMap = new Map();
+            var newMap = new Engine.Project.Project.Map();
             newMap.Name = mapName;
             newMap.isGameMap = true;
-            newMap.worldRecord = new Map.World()
+            newMap.worldRecord = new Engine.Project.Project.Map.World()
             {
                 ID = mapID,
                 assetPath = worldRecord.assetPath,
@@ -939,13 +937,127 @@ namespace ProjectWS.Editor
             
         }
 
-        internal void LoadWorld(Map? map, MapChunkInfo? chunkInfo, Vector3 position)
+        internal void LoadWorld(Engine.Project.Project.Map? map, MapChunkInfo? chunkInfo, Vector3 position)
         {
             if (map == null) return;
             if (chunkInfo == null) return;
 
             string projectFolder = $"{Path.GetDirectoryName(ProjectManager.projectFile)}\\{Path.GetFileNameWithoutExtension(ProjectManager.projectFile)}";
-            this.engine?.world?.LoadMap(map.worldRecord.ID, projectFolder, map.worldRecord.assetPath, map.Name, chunkInfo.chunks, position);
+            this.engine.LoadWorld(map.worldRecord.ID, projectFolder, map.worldRecord.assetPath, map.Name, chunkInfo.chunks, position);
+        }
+
+        public void OnExit()
+        {
+            SaveMapPosition();
+        }
+
+        internal void SaveMapPosition()
+        {
+            if (this.worldManagerPane != null)
+            {
+                uint selectedMapID = this.worldManagerPane.selectedMapID;
+                if (this.engine?.world?.renderer?.viewports?[0]?.mainCamera != null)
+                {
+                    for (int i = 0; i < ProjectManager.project?.Maps?.Count; i++)
+                    {
+                        if (ProjectManager.project.Maps[i].worldRecord.ID == selectedMapID)
+                        {
+                            ProjectManager.project.Maps[i].lastPosition = this.engine.world.renderer.viewports[0].mainCamera.transform.GetPosition();
+                            ProjectManager.project.Maps[i].lastOrientation = this.engine.world.renderer.viewports[0].mainCamera.transform.GetRotation();
+                            ProjectManager.SaveProject();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void CopyChunk(Vector2i fromLocation)
+        {
+            //throw new NotImplementedException();
+        }
+
+        internal void PasteChunk(Vector2i toLocation)
+        {
+            //throw new NotImplementedException();
+        }
+
+        internal void DeleteChunk(Vector2i atLocation)
+        {
+            //throw new NotImplementedException();
+        }
+
+        public float GetRoughHeightAtLocation(Vector3 worldCoord)
+        {
+            var chunkCoord = Utilities.WorldToChunkCoords(worldCoord);
+            string xHex = chunkCoord.X.ToString("X2").ToLower();
+            string yHex = chunkCoord.Y.ToString("X2").ToLower();
+            string projectFolder = $"{Path.GetDirectoryName(ProjectManager.projectFile)}\\{Path.GetFileNameWithoutExtension(ProjectManager.projectFile)}";
+            int mapIndexInProject = -1;
+            for (int i = 0; i < ProjectManager.project?.Maps?.Count; i++)
+            {
+                if (ProjectManager.project.Maps[i].worldRecord.ID == this.worldManagerPane.selectedMapID)
+                {
+                    mapIndexInProject = i;
+                    break;
+                }
+            }
+
+            if (mapIndexInProject != -1)
+            {
+                Engine.Project.Project.Map map = ProjectManager.project.Maps[mapIndexInProject];
+                string path = $"{projectFolder}\\{map.worldRecord.assetPath}\\{map.Name}.{yHex}{xHex}.area";
+                FileFormats.Area.File aFile = new FileFormats.Area.File(path);
+
+                using(var fs = File.OpenRead(path))
+                {
+                    aFile.Read(fs);
+                }
+
+                float scDist = float.MaxValue;
+                int scIdx = 0;
+                ushort maxH = ushort.MinValue;
+                for (int s = 0; s < aFile.subAreas?.Count; s++)
+                {
+                    for (int i = 0; i < aFile.subAreas[s]?.heightMap.Length; i++)
+                    {
+                        if (aFile.subAreas[s].heightMap[i] > maxH)
+                            maxH = aFile.subAreas[s].heightMap[i];
+                    }
+                }
+
+                float h = ((maxH & 0x7FFF) * 0.12500381f) - 2048.0f;
+                return h;
+            }
+
+            return 500;
+            /*
+            if (this.engine?.world?.chunks != null)
+            {
+                var chunkCoord = Utilities.WorldToChunkCoords(worldCoord);
+                if (this.engine.world.chunks.TryGetValue(chunkCoord, out Chunk? chunk))
+                {
+                    if (chunk.lod0Available)
+                    {
+                        float scDist = float.MaxValue;
+                        int scIdx = 0;
+                        for (int s = 0; s < chunk.subChunks?.Count; s++)
+                        {
+                            var dist = Vector2.Distance(chunk.subChunks[s].centerPosition.Xz, worldCoord.Xz);
+                            if (dist < scDist)
+                            {
+                                scDist = dist;
+                                scIdx = s;
+                            }
+                        }
+
+                        return chunk.subChunks[scIdx].centerPosition.Y;
+                    }
+                }
+            }
+            // Chunk isn't loaded so load area
+            return 0;
+            */
         }
     }
 }

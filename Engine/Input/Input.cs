@@ -22,6 +22,7 @@ namespace ProjectWS.Engine.Input
         public ClickState LMBClicked = ClickState.None;
         public ClickState RMBClicked = ClickState.None;
         public ClickState MMBClicked = ClickState.None;
+        internal bool mouseDownInView;
 
         public enum ClickState
         {

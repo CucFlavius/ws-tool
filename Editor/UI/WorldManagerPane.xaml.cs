@@ -20,6 +20,8 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using SixLabors.ImageSharp.Processing;
+using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace ProjectWS.Editor
 {
@@ -42,7 +44,7 @@ namespace ProjectWS.Editor
             InitializeComponent();
             this.editor = editor;
             this.mapRenderer = mapRenderer;
-
+            this.mapRenderer.onRightClick = OpenContextMenu;
             this.mapNames = new ObservableCollection<string>();
             this.mapIDs = new List<uint>();
             this.locationNames = new ObservableCollection<string>();
@@ -111,19 +113,7 @@ namespace ProjectWS.Editor
 
             Debug.Log("Changed Map");
 
-            // Save map position
-            if (this.editor.engine?.world?.renderer?.viewports?[0]?.mainCamera != null)
-            {
-                for (int i = 0; i < ProjectManager.project?.Maps?.Count; i++)
-                {
-                    if (ProjectManager.project.Maps[i].worldRecord.ID == this.selectedMapID)
-                    {
-                        ProjectManager.project.Maps[i].lastPosition = this.editor.engine.world.renderer.viewports[0].mainCamera.transform.GetPosition();
-                        ProjectManager.SaveProject();
-                        break;
-                    }
-                }
-            }
+            SaveMapPosition();
 
             var mapID = this.mapIDs[this.mapComboBox.SelectedIndex];
             this.selectedMapID = mapID;
@@ -183,6 +173,12 @@ namespace ProjectWS.Editor
 
             // Load world
             this.editor.LoadWorld(map, chunkInfo, map.lastPosition);
+            this.editor.engine.world.renderer.viewports[0].mainCamera.transform.SetRotation(map.lastOrientation);
+        }
+
+        private void SaveMapPosition()
+        {
+            this.editor.SaveMapPosition();
         }
 
         private static void GenerateMinimap(MapChunkInfo? chunkInfo, Engine.Project.Project.Map map, string savePath)
@@ -327,6 +323,63 @@ namespace ProjectWS.Editor
         private void button_LoadMap_Click(object sender, RoutedEventArgs e)
         {
             //this.editor.LoadWorld();
+        }
+
+        public void OpenContextMenu()
+        {
+            ContextMenu cm = this.FindResource("contextMenuRMB") as ContextMenu;
+            cm.PlacementTarget = this.GLWpfControl;
+            cm.Items.Clear();
+
+            Vector2i selectedChunk = new Vector2i((int)this.mapRenderer.mapRMBMax.X, (int)this.mapRenderer.mapRMBMax.Y);
+            Vector3 worldCoords = Utilities.ChunkToWorldCoords(this.mapRenderer.mapRMBMax);
+
+            MenuItem itemChunkLocation = new MenuItem();
+            var location = $"Chunk {selectedChunk}";
+            itemChunkLocation.Header = location;
+            itemChunkLocation.Click += (e, a) => { Clipboard.SetData(DataFormats.Text, location); };
+            cm.Items.Add(itemChunkLocation);
+
+            MenuItem itemWorldLocation = new MenuItem();
+            var wlocation = $"World {worldCoords}";
+            itemWorldLocation.Header = wlocation;
+            itemWorldLocation.Click += (e, a) => { Clipboard.SetData(DataFormats.Text, wlocation); };
+            cm.Items.Add(itemWorldLocation);
+
+            cm.Items.Add(new Separator());
+
+            MenuItem itemCopy = new MenuItem();
+            itemCopy.Header = "Copy";
+            itemCopy.Click += (e, a) => { this.editor.CopyChunk(selectedChunk); };
+            cm.Items.Add(itemCopy);
+
+            MenuItem itemPaste = new MenuItem();
+            itemPaste.Header = "Paste";
+            itemPaste.Click += (e, a) => { this.editor.PasteChunk(selectedChunk); };
+            cm.Items.Add(itemPaste);
+
+            MenuItem itemDelete = new MenuItem();
+            itemDelete.Header = "Delete";
+            itemDelete.Click += (e, a) => { this.editor.DeleteChunk(selectedChunk); };
+            cm.Items.Add(itemDelete);
+
+            cm.Items.Add(new Separator());
+
+            MenuItem itemTeleportWorld = new MenuItem();
+            itemTeleportWorld.Header = "Teleport World";
+            itemTeleportWorld.Click += (e, a) => { 
+                this.editor.EngineTeleport(worldCoords.X, this.editor.GetRoughHeightAtLocation(worldCoords) + 5, worldCoords.Z); };
+            cm.Items.Add(itemTeleportWorld);
+
+            MenuItem itemTeleportGame = new MenuItem();
+            itemTeleportGame.Header = "Teleport Game";
+            itemTeleportGame.Click += (e, a) => {
+                worldCoords.Y = this.editor.GetRoughHeightAtLocation(worldCoords) + 5;
+                this.editor.SandboxTeleport(worldCoords.X, worldCoords.Y, worldCoords.Z, this.selectedMapID);
+            };
+            cm.Items.Add(itemTeleportGame);
+
+            cm.IsOpen = true;
         }
     }
 }

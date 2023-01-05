@@ -311,7 +311,6 @@ namespace ProjectWS.FileFormats.Area
             // Unknown Map DXT1 //
             if (this.flags.HasFlag(Flags.hasUnkMap4))
             {
-                Console.WriteLine("yeA");
                 br.ReadBytes(2312);
             }
 

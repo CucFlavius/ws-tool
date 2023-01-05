@@ -1,6 +1,7 @@
 ﻿using MathUtils;
 using OpenTK.Graphics.OpenGL4;
 using ProjectWS.Engine.Components;
+using ProjectWS.Engine.Database.Definitions;
 using ProjectWS.Engine.TaskManager;
 using ProjectWS.Engine.World;
 
@@ -24,9 +25,13 @@ namespace ProjectWS.Engine.Rendering
         private uint selectionBitmapPtr;
         private uint availableBitmapPtr;
         private bool marqueeVisible;
-        public Vector2 marqueeMin;
-        public Vector2 marqueeMax;
-        public Vector2 marqueeMaxPrevious;
+        public Vector2 mapLMBMin;
+        public Vector2 mapLMBMax;
+        public Vector2 mapLMBMaxPrevious;
+        public Vector2 screenRMBMin;
+        public Vector2 screenRMBMax;
+        public Vector2 mapRMBMin;
+        public Vector2 mapRMBMax;
         private int[]? lineSquareIndices;
         private int lineSquareVAO;
         //public bool deselectMode;
@@ -39,7 +44,6 @@ namespace ProjectWS.Engine.Rendering
         public bool singleSelect = true;
         public bool marqueeSelect = false;
         int cellSizeOnScreen = 0;
-
 
         public TThread minimapThread;
 
@@ -65,6 +69,7 @@ namespace ProjectWS.Engine.Rendering
 
         public Action<Vector2i>? onCellHighlight;
         public Action<float>? onZoomLevelChanged;
+        public Action onRightClick;
         private string? projectFile;
         private string? assetPath;
         private string? mapName;
@@ -248,9 +253,6 @@ namespace ProjectWS.Engine.Rendering
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, MAP_SIZE, MAP_SIZE, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
         }
 
-        Vector2 previousTopLeft = Vector2.Zero;
-        Vector2 previousBottomRight = Vector2.Zero;
-
         public override void Update(float deltaTime)
         {
             if (this.viewports == null) return;
@@ -276,13 +278,13 @@ namespace ProjectWS.Engine.Rendering
 
             // Determine which quad mouse is over
             var vp = this.viewports![0];
+            var vpSize = new Vector2((float)vp.width, (float)vp.height);
 
             this.mouseOverGrid = false;
 
             if (this.ID == this.engine.focusedRendererID)
             {
                 var oCamera = vp.mainCamera as OrthoCamera;
-                var vpSize = new Vector2((float)vp.width, (float)vp.height);
 
                 // Mipmap cell culling
                 MipmapCellCulling(oCamera, vpSize);
@@ -294,44 +296,49 @@ namespace ProjectWS.Engine.Rendering
                 MapMousePosition(vp, oCamera, vpSize);
             }
 
-            MapMouseInput();
+            MapMouseInput(vpSize);
         }
 
-        private void MapMouseInput()
+        private void MapMouseInput(Vector2 vpSize)
         {
-            if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonDown)
+            if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonDown || this.engine.input.RMBClicked == Input.Input.ClickState.MouseButtonDown)
             {
                 var mousePos = this.engine.input.GetMousePosition();
 
-                if (mousePos.X >= 0 && mousePos.Y >= 0)
+                if (mousePos.X >= 0 && mousePos.Y >= 0 && mousePos.X < vpSize.X && mousePos.Y < vpSize.Y)
                 {
                     this.mouseDownInView = true;
-                    this.marqueeMin = mousePosMapSpace;
+                    this.input.mouseDownInView = true;
+
+                    if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonDown)
+                        this.mapLMBMin = mousePosMapSpace;
                 }
                 else
                 {
                     this.mouseDownInView = false;
+                    this.input.mouseDownInView = false;
                 }
 
-                if (this.marqueeSelect)
+                if (this.engine.input.LMBClicked == Input.Input.ClickState.MouseButtonDown && this.marqueeSelect)
                 {
                     this.marqueeVisible = true;
                 }
             }
+
             if (this.engine.input.LMB)
             {
-                this.marqueeMax = this.mousePosMapSpace;
+                this.mapLMBMax = this.mousePosMapSpace;
 
                 if (this.mouseDownInView && this.marqueeSelect)
                 {
-                    if (this.marqueeMax != this.marqueeMaxPrevious)
+                    if (this.mapLMBMax != this.mapLMBMaxPrevious)
                     {
-                        this.marqueeMaxPrevious = this.marqueeMax;
+                        this.mapLMBMaxPrevious = this.mapLMBMax;
 
-                        var minX = MathF.Min(this.marqueeMin.X, this.marqueeMax.X);
-                        var maxX = MathF.Max(this.marqueeMin.X, this.marqueeMax.X);
-                        var minY = MathF.Min(this.marqueeMin.Y, this.marqueeMax.Y);
-                        var maxY = MathF.Max(this.marqueeMin.Y, this.marqueeMax.Y);
+                        var minX = MathF.Min(this.mapLMBMin.X, this.mapLMBMax.X);
+                        var maxX = MathF.Max(this.mapLMBMin.X, this.mapLMBMax.X);
+                        var minY = MathF.Min(this.mapLMBMin.Y, this.mapLMBMax.Y);
+                        var maxY = MathF.Max(this.mapLMBMin.Y, this.mapLMBMax.Y);
 
                         DeselectAllCells();
 
@@ -362,6 +369,31 @@ namespace ProjectWS.Engine.Rendering
                     }
 
                     UpdateBitmap(this.selectionBitmapPtr, this.selectionBitmap);
+                }
+            }
+
+            if (this.engine.input.RMBClicked == Input.Input.ClickState.MouseButtonDown)
+            {
+                if (this.mouseDownInView)
+                {
+                    this.screenRMBMin = this.engine.input.GetMousePosition().Xy;
+                    this.mapRMBMin = this.mousePosMapSpace;
+                }
+            }
+
+            if (this.engine.input.RMBClicked == Input.Input.ClickState.MouseButtonUp)
+            {
+                if (this.mouseDownInView)
+                {
+                    this.screenRMBMax = this.engine.input.GetMousePosition().Xy;
+                    this.mapRMBMax = this.mousePosMapSpace;
+
+                    var distance = Vector2.Distance(this.screenRMBMin, this.screenRMBMax);
+
+                    if (distance < 2)  // Making sure mouse didn't move (much) while right click
+                    {
+                        this.onRightClick?.Invoke();
+                    }
                 }
             }
         }
@@ -412,33 +444,27 @@ namespace ProjectWS.Engine.Rendering
             var topLeftI = new Vector2i((int)topLeft.X, (int)topLeft.Y);
             var bottomRightI = new Vector2i((int)bottomRight.X, (int)bottomRight.Y);
 
-            //if (AreVectorsDifferent(this.previousTopLeft, topLeft) || AreVectorsDifferent(this.previousBottomRight, bottomRight))
+            for (int x = 0; x < MAP_SIZE; x++)
             {
-                this.previousTopLeft = topLeft;
-                this.previousBottomRight = bottomRight;
-
-                for (int x = 0; x < MAP_SIZE; x++)
+                if (x >= topLeftI.X && x <= bottomRightI.X)
                 {
-                    if (x >= topLeftI.X && x <= bottomRightI.X)
+                    for (int y = 0; y < MAP_SIZE; y++)
                     {
-                        for (int y = 0; y < MAP_SIZE; y++)
+                        if (y >= topLeftI.Y && y <= bottomRightI.Y)
                         {
-                            if (y >= topLeftI.Y && y <= bottomRightI.Y)
-                            {
-                                this.minimaps[x][y].isVisible = true;
-                            }
-                            else
-                            {
-                                this.minimaps[x][y].isVisible = false;
-                            }
+                            this.minimaps[x][y].isVisible = true;
                         }
-                    }
-                    else
-                    {
-                        for (int y = 0; y < MAP_SIZE; y++)
+                        else
                         {
                             this.minimaps[x][y].isVisible = false;
                         }
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < MAP_SIZE; y++)
+                    {
+                        this.minimaps[x][y].isVisible = false;
                     }
                 }
             }
@@ -705,8 +731,8 @@ namespace ProjectWS.Engine.Rendering
                 this.viewports?[0]?.mainCamera?.SetToShader(this.marqueeShader);
 
                 // Calculate the position and size of the quad
-                Vector2 position = (this.marqueeMin + this.marqueeMax) / 2;
-                Vector2 size = this.marqueeMax - this.marqueeMin;
+                Vector2 position = (this.mapLMBMin + this.mapLMBMax) / 2;
+                Vector2 size = this.mapLMBMax - this.mapLMBMin;
 
                 // Create the matrix that transforms the quad
                 var quadMat = Matrix4.CreateScale(size.X, 1f, size.Y) * Matrix4.CreateTranslation(position.X, layer / 1000f, position.Y);

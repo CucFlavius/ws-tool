@@ -48,4 +48,17 @@ namespace MathUtils
             Vector3 vector,
             JsonSerializerOptions options) => writer.WriteStringValue(vector.ToString());
     }
+
+    public class QuaternionJsonConverter : JsonConverter<Quaternion>
+    {
+        public override Quaternion Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options) => Quaternion.FromString(reader.GetString()!);
+
+        public override void Write(
+            Utf8JsonWriter writer,
+            Quaternion vector,
+            JsonSerializerOptions options) => writer.WriteStringValue(vector.ToString());
+    }
 }

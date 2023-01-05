@@ -25,7 +25,7 @@ namespace ProjectWS.Engine.World
             this.world = world;
         }
 
-        public void Update(Camera camera)
+        public void Update(Camera? camera)
         {
             if (this.world == null) return;
             if (camera == null) return;
