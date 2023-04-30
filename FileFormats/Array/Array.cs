@@ -1,3 +1,4 @@
+using ProjectWS.FileFormats.Extensions;
 using System.IO;
 
 namespace ProjectWS.FileFormats.Common
@@ -19,6 +20,7 @@ namespace ProjectWS.FileFormats.Common
             long save = br.BaseStream.Position;
             this.data = new T[this.elements];
             br.BaseStream.Position = startOffset + this.offset;
+
             return save;
         }
     }

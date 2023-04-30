@@ -1,3 +1,5 @@
+using ProjectWS.FileFormats.Extensions;
+
 namespace ProjectWS.FileFormats.Common
 {
     public class ArrayStruct<T> where T : ArrayData, new()
@@ -7,7 +9,7 @@ namespace ProjectWS.FileFormats.Common
         public long offset;
         public T[] data;
 
-        public ArrayStruct(BinaryReader br, long startOffset)
+        public ArrayStruct(BinaryReader br, long startOffset, bool i3Alignment = false)
         {
             this.elements = br.ReadUInt32();
             this.unused = br.ReadUInt32();
@@ -15,6 +17,7 @@ namespace ProjectWS.FileFormats.Common
 
             long save = br.BaseStream.Position;
             br.BaseStream.Position = startOffset + this.offset;
+
             long endOffset = 0;
             this.data = new T[this.elements];
             for (uint i = 0; i < this.elements; i++)
@@ -22,7 +25,16 @@ namespace ProjectWS.FileFormats.Common
                 T rec = new T();
 
                 if (endOffset == 0)
-                    endOffset = startOffset + this.offset + (rec.GetSize() * this.elements);
+                {
+                    if (i3Alignment)
+                    {
+                        endOffset = startOffset + this.offset + (long)((ulong)((rec.GetSize() * this.elements) + 15) & 0xFFFFFFFFFFFFFFF0);
+                    }
+                    else
+                    {
+                        endOffset = startOffset + this.offset + (rec.GetSize() * this.elements);
+                    }
+                }
 
                 rec.Read(br, endOffset);
                 data[i] = rec;

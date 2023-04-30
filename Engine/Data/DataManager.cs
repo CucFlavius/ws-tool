@@ -35,6 +35,10 @@ namespace ProjectWS.Engine.Data
                     assetDatabaseDir = Path.GetDirectoryName(path);
                 }
             }
+            else
+            {
+                return;
+            }
 
             if (assetDB.database != AssetDatabase.DataStatus.Ready ||
                 assetDB.gameArt != AssetDatabase.DataStatus.Ready)
@@ -120,6 +124,10 @@ namespace ProjectWS.Engine.Data
         {
             if (path != null)
             {
+                var dir = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 string data = JsonSerializer.Serialize(assetDB, options);
                 File.WriteAllText(path, data);

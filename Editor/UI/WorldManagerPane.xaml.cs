@@ -50,6 +50,12 @@ namespace ProjectWS.Editor
             this.locationNames = new ObservableCollection<string>();
             this.locationIDs = new List<uint>();
 
+            if (ProjectManager.project == null)
+                return;
+
+            if (ProjectManager.project.Maps == null)
+                return;
+
             foreach (ProjectWS.Engine.Project.Project.Map map in ProjectManager.project!.Maps!)
             {
                 this.mapNames.Add($"{map.worldRecord.ID}. {map.Name}");

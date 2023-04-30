@@ -10,18 +10,62 @@ namespace StatisticalAnalyzer
         {
             Console.ForegroundColor = ConsoleColor.Gray;
             //CheckM3Files(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Art\");
-            CheckAreaFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Map\Eastern");
+            //CheckAreaFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Map\Eastern");
             //ExtractShaders(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Shaders", @"G:\Reverse Engineering\WildStar\DecompiledShaders");
             //CheckSkyFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Sky");
             //CheckTexFiles(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Art\");
             //var area = new ProjectWS.Engine.Data.Area(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Map\BattlegroundHallsoftheBloodsworn\BattlegroundHallsoftheBloodsworn.3f3d.area");
             //area.Read();
-
+            CheckI3Files(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042 Extracted\Art");
             //CalculateSkyCoeffs(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\Data\Sky\Adventure_Galeras3.sky");
         }
 
+        private static void CheckI3Files(string location)
+        {
+            string[] i3Files = Directory.GetFiles(location, "*.i3", SearchOption.AllDirectories);
 
+            HashSet<long> collected = new HashSet<long>();
+            //Console.WriteLine($"{i3Files.Length} files.");
+            foreach (var filePath in i3Files)
+            {
+                var i3 = new ProjectWS.FileFormats.I3.I3File(filePath);
+                using (var str = File.OpenRead(filePath))
+                {
+                    i3.Read(str);
+                }
 
+                if (i3.failedReading)
+                    continue;
+                /*
+                var val = i3.unk2;
+
+                if (!collected.Contains(val))
+                {
+                    collected.Add(val);
+                    //Console.WriteLine(filePath);
+                }
+                */
+                if (i3.unk1?.Length != 0)
+                    Console.WriteLine(filePath);
+                /*
+                for (int g = 0; g < i3.unk5?.Length; g++)
+                {
+                    var val = i3.unk5[g].unk15;
+
+                    if (!collected.Contains(val))
+                    {
+                        collected.Add(val);
+                        //Console.WriteLine(filePath);
+                    }
+                }
+                */
+            }
+
+            foreach (var item in collected)
+            {
+                Console.WriteLine(item);
+            }
+        }
 
         static float[][] coeffs = new float[9][];
 
