@@ -18,6 +18,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace ProjectWS.Editor
 {
@@ -106,10 +107,15 @@ namespace ProjectWS.Editor
 
             // Create tests
             this.tests = new TestArea.Tests(this.engine, this);
-            this.tests.Start();
 
             // Create framerate counter
             this.fps = new FPSCounter();
+        }
+
+        public void OnMainWindowCreated()
+        {
+            // Run tests
+            this.tests.Start();
         }
 
         public void Update()
@@ -386,6 +392,8 @@ namespace ProjectWS.Editor
 
                 var settings = new GLWpfControlSettings { MajorVersion = 4, MinorVersion = 0, RenderContinuously = true };
                 openTkControl.Start(settings);
+
+                layoutDoc.DockAsDocument(); // This makes it [World][Model] tab
 
                 renderer = new ModelRenderer(this.engine, ID, this.engine.input);
                 //renderer.SetDimensions(0, 0, (int)openTkControl.ActualWidth, (int)openTkControl.ActualHeight);
@@ -1019,12 +1027,16 @@ namespace ProjectWS.Editor
                 ushort maxH = ushort.MinValue;
                 for (int s = 0; s < aFile.subAreas?.Count; s++)
                 {
-                    for (int i = 0; i < aFile.subAreas[s]?.heightMap.Length; i++)
+                    for (int i = 0; i < aFile.subAreas[s]?.heightMap?.Length; i++)
                     {
                         if (aFile.subAreas[s].heightMap[i] > maxH)
                             maxH = aFile.subAreas[s].heightMap[i];
                     }
                 }
+
+                // In the situation where terrain was never painted in the area, set height to 0
+                if (maxH == ushort.MinValue)
+                    maxH = 0;
 
                 float h = ((maxH & 0x7FFF) * 0.12500381f) - 2048.0f;
                 return h;

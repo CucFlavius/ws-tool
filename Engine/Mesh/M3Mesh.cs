@@ -171,6 +171,7 @@ namespace ProjectWS.Engine.Mesh
             // Build vertex positions for mouse picking
             this.vertexPositions = new Vector3[this.vertexData.Length / this.vertexBlockSizeInBytes];
             float compressionScale = 1.0f / 1024f;
+
             int bufferSkip = this.vertexBlockSizeInBytes - (this.positionCompressed ? 6 : 12);
             using (var ms = new MemoryStream(this.vertexData))
             {

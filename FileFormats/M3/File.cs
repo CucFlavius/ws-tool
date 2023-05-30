@@ -7,7 +7,7 @@ namespace ProjectWS.FileFormats.M3
         public string filePath;
         public string fileName;
         public bool failedReading;
-        public int modelID = -1;
+        public int modelID = 1;
 
         public int headerSize;
         public uint version;

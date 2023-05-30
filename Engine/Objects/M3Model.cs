@@ -1,4 +1,5 @@
 ﻿using MathUtils;
+using ProjectWS.Engine.Database;
 using ProjectWS.Engine.Material;
 using ProjectWS.Engine.World;
 
@@ -18,10 +19,26 @@ namespace ProjectWS.Engine.Objects
         {
             this.engine = engine;
             this.data = new FileFormats.M3.File(path);
-            this.data.modelID = 4;
-            using (MemoryStream str = engine.data.GetFileData(path))
+            //this.data.modelID = 1;
+
+            var assetDBPath = Path.GetDirectoryName(Engine.settings.dataManager.assetDatabasePath);
+            var filePath = $"{assetDBPath}\\{path}";
+
+            //using (MemoryStream str = engine.data.GetFileData(path))
+            //{
+            //    this.data.Read(str);
+            //}
+            if (File.Exists(filePath))
             {
-                this.data.Read(str);
+                using (FileStream fs = File.OpenRead(filePath))
+                {
+                    this.data.Read(fs);
+                }
+            }
+            else
+            {
+                Debug.Log("M3 File Missing " + filePath);
+                return;
             }
 
             if (this.data.failedReading)
@@ -66,6 +83,8 @@ namespace ProjectWS.Engine.Objects
                     for (int i = 0; i < this.geometries[g].meshes.Length; i++)
                     {
                         var mesh = this.geometries[g].meshes[i];
+
+                        if (mesh == null) continue;
 
                         if (!mesh.isBuilt || mesh.data == null) continue;
 

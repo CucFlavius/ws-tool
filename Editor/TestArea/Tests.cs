@@ -34,6 +34,8 @@ namespace ProjectWS.TestArea
             //this.engine.SetCacheLocation(cacheLocation);
 
             //CalculateSkyCoeffs(@"G:\Reverse Engineering\GameData\Wildstar 1.7.8.16042\Data\Sky\Adventure_Galeras3.sky");
+
+            LoadAnM3ForDebug();
         }
 
         void OnDataLoaded(Engine.Data.GameData data)
@@ -90,18 +92,22 @@ namespace ProjectWS.TestArea
 
         void LoadAnM3ForDebug()
         {
-            var renderer = Program.editor.CreateRendererPane(Program.mainWindow, "Model", 1, 1, out _);
+            var ID = 1;
+            var renderer = this.editor.CreateRendererPane(Program.mainWindow, "Model", ID, 1, out _);
             //string path0 = @"Art\Character\Chua\Male\Chua_M.m3";
             //string path0 = @"Art\Creature\AgressorBot\AgressorBot.m3";
             //string path0 = @"Art\Prop\Constructed\Quest\Taxi\TaxiKiosk\PRP_Taxi_Kiosk_000.m3";
             //string path0 = @"Art\Prop\Constructed\Ship\Defiance\PRP_Ship_DefianceTransport_000.m3";
             //string path1 = @"Art\Prop\Natural\Tree\Deciduous_RootyMangrove\PRP_Tree_Deciduous_RootyMangrove_Blue_000.m3";
-            //string path1 = @"Art\Creature\Asura\Asura.m3";
+            //string path0 = @"Art\Creature\Asura\Asura.m3";
 
-            string path0 = @"Art\Prop\Constructed\WalkWays\SanctuaryCommon\PRP_SideWalk_SanctuaryCommonStraight_Brown_001.m3";
+            //string path0 = @"Art\Prop\Constructed\WalkWays\SanctuaryCommon\PRP_SideWalk_SanctuaryCommonStraight_Brown_001.m3";
+            string path0 = @"Art\Creature\Rowsdower\Rowsdower.m3";
 
             var modelRenderer = renderer as Engine.Rendering.ModelRenderer;
-            modelRenderer.objects.Add(new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine));
+            var model = new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine);
+            modelRenderer.AddModel(model);
+            (this.editor.modelRendererPanes[ID] as ModelRendererPane).UpdateModelInformation(model);
         }
 
         void PrintTestDatabase()

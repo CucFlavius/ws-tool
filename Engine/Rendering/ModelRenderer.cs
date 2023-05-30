@@ -7,6 +7,7 @@ namespace ProjectWS.Engine.Rendering
     {
         public List<Objects.GameObject> objects;
         public List<Lighting.Light> lights;
+        public Objects.Gizmos.AxisGizmo axisGizmo;
 
         public ModelRenderer(Engine engine, int ID, Input.Input input) : base(engine)
         {
@@ -15,10 +16,24 @@ namespace ProjectWS.Engine.Rendering
             this.input = input;
             this.objects = new List<Objects.GameObject>();
             this.lights = new List<Lighting.Light>();
-            //this.cameras = new List<Camera>();
-            //AddDefaultCamera();
+
             SetViewportMode(0);
             AddDefaultLight();
+            AddAxisGizmo();
+        }
+
+        public void AddModel(Objects.M3Model m3Model)
+        {
+            this.objects.Add(m3Model);
+        }
+
+        void AddAxisGizmo()
+        {
+            this.axisGizmo = new Objects.Gizmos.AxisGizmo();
+            if (this.gizmos != null)
+                this.gizmos.Add(this.axisGizmo);
+            if (this.engine != null)
+                this.engine.taskManager.buildTasks.Enqueue(new TaskManager.BuildObjectTask(this.axisGizmo));
         }
 
         void AddDefaultLight()
@@ -98,6 +113,8 @@ namespace ProjectWS.Engine.Rendering
                 RenderNormals();
             }
 
+            RenderGizmos();
+
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, frameBuffer);
 
             GL.Viewport(this.x, this.y, this.width, this.height);
@@ -134,6 +151,29 @@ namespace ProjectWS.Engine.Rendering
                                                                         // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
             GL.BlitFramebuffer(0, 0, this.width, this.height, 0, 0, this.width, this.height, ClearBufferMask.DepthBufferBit, BlitFramebufferFilter.Nearest);
             //GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        }
+
+        private void RenderGizmos()
+        {
+            // Render Gizmos
+            for (int i = 0; i < this.gizmos?.Count; i++)
+            {
+                if (this.gizmos[i] == null) continue;
+
+                if (this.gizmos[i].visible == false) continue;
+
+                if (this.gizmos[i] is Objects.Gizmos.CameraGizmo)
+                {
+                    var camGizmo = this.gizmos[i] as Objects.Gizmos.CameraGizmo;
+                    if (camGizmo != null)
+                        if (camGizmo.camera == this.viewports[0].mainCamera)
+                            continue;
+                }
+
+                this.lineShader.Use();
+                this.viewports[0].mainCamera.SetToShader(this.lineShader);
+                this.gizmos[i].Render(Matrix4.Identity, this.lineShader);
+            }
         }
 
         void RenderWireframe(bool smooth)
@@ -175,10 +215,11 @@ namespace ProjectWS.Engine.Rendering
             GL.Disable(EnableCap.Blend);
             GL.Enable(EnableCap.DepthTest);
 
-            for (int i = 0; i < this.lights.Count; i++)
-            {
-                this.lights[i].ApplyToShader(this.modelShader);
-            }
+            // TODO : move this stuff to final (deferred)
+            //for (int i = 0; i < this.lights.Count; i++)
+            //{
+                //this.lights[i].ApplyToShader(this.modelShader);
+            //}
 
             this.modelShader.SetInt("diffuseMap0", 0);
             this.modelShader.SetInt("normalMap0", 1);

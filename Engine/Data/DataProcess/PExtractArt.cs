@@ -19,6 +19,7 @@
                 Dictionary<string, Block.FileEntry> scannedFiles = new Dictionary<string, Block.FileEntry>();
                 FileScan($"{Data.Archive.rootBlockName}\\Sky", this.sharedProcessData.assetDBFolder, ref scannedFiles);
                 FileScan($"{Data.Archive.rootBlockName}\\Art\\Camera", this.sharedProcessData.assetDBFolder, ref scannedFiles);
+                FileScan($"{Data.Archive.rootBlockName}\\Art\\Creature", this.sharedProcessData.assetDBFolder, ref scannedFiles);
                 FileScan($"{Data.Archive.rootBlockName}\\Art\\Dev", this.sharedProcessData.assetDBFolder, ref scannedFiles);
                 FileScan($"{Data.Archive.rootBlockName}\\Art\\FX", this.sharedProcessData.assetDBFolder, ref scannedFiles);
                 FileScan($"{Data.Archive.rootBlockName}\\Art\\LevelDesign", this.sharedProcessData.assetDBFolder, ref scannedFiles);
@@ -37,6 +38,7 @@
                 Parallel.ForEach(scannedFiles, new ParallelOptions() { MaxDegreeOfParallelism = 10 }, entry =>
                 {
                     bool copy = true;
+
                     if (Path.GetExtension(entry.Key).ToLower() == TEX)
                     {
                         using (var ms = this.sharedProcessData.gameData.GetFileData(entry.Value))
@@ -48,6 +50,7 @@
 
                                 if (tex.header?.format == 0 && tex.header?.isCompressed == 1) // if jpeg
                                 {
+                                    //Console.WriteLine("CONVERT");
                                     tex.ConvertMipDataToDXT();
                                     tex.Write(entry.Key);
                                     LogProgress(idx++);
@@ -59,6 +62,7 @@
 
                     if (copy)
                     {
+                        //Console.WriteLine("COPY");
                         using (var fs = new System.IO.FileStream(entry.Key, FileMode.Create, System.IO.FileAccess.Write))
                         using (var ms = this.sharedProcessData.gameData.GetFileData(entry.Value))
                         {

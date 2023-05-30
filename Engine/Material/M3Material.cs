@@ -71,35 +71,6 @@ namespace ProjectWS.Engine.Material
         public override void SetToShader(Shader shader)
         {
             if (!this.isBuilt) return;
-            /*
-            for (int j = 0; j < this.matData.materialDescriptions.Length; j++)
-            {
-                if (this.texturePtrs.TryGetValue($"diffuseMap{j}", out uint texDiffusePtr))
-                {
-                    if (j == 0)
-                        GL.ActiveTexture(TextureUnit.Texture0);
-                    else if (j == 1)
-                        GL.ActiveTexture(TextureUnit.Texture2);
-                    else if (j == 2)
-                        GL.ActiveTexture(TextureUnit.Texture4);
-                    else if (j == 3)
-                        GL.ActiveTexture(TextureUnit.Texture6);
-                    GL.BindTexture(TextureTarget.Texture2D, texDiffusePtr);
-                }
-                if (this.texturePtrs.TryGetValue($"normalMap{j}", out uint texNormalPtr))
-                {
-                    if (j == 0)
-                        GL.ActiveTexture(TextureUnit.Texture1);
-                    else if (j == 1)
-                        GL.ActiveTexture(TextureUnit.Texture3);
-                    else if (j == 2)
-                        GL.ActiveTexture(TextureUnit.Texture5);
-                    else if (j == 3)
-                        GL.ActiveTexture(TextureUnit.Texture7);
-                    GL.BindTexture(TextureTarget.Texture2D, texNormalPtr);
-                }
-            }
-            */
 
             for (int j = 0; j < 4; j++)
             {
@@ -141,6 +112,7 @@ namespace ProjectWS.Engine.Material
                     GL.BindTexture(TextureTarget.Texture2D, -1);
                 }
             }
+
         }
 
         internal void Unload()

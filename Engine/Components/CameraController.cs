@@ -19,14 +19,14 @@ namespace ProjectWS.Engine.Components
         }
 
         // Default camera values
-        const float YAW = -90.0f;
+        const float YAW = 120.0f;
         const float PITCH = 0.0f;
         const float SPEED = 50.0f;
         const float SENSITIVITY_FLY = 0.1f;
         const float SENSITIVITY_ORBIT = 0.2f;
         const float SENSITIVITY_ORTHO = 0.1f;
         const float ZOOM = 45.0f;
-        const float DISTANCE = 10.0f;
+        const float DISTANCE = 5.0f;
 
         // camera Attributes
         public Vector3 Pos;
@@ -35,7 +35,9 @@ namespace ProjectWS.Engine.Components
         public Vector3 Right;
         public Vector3 WorldUp;
         public float distanceToOrigin;
-        public Vector3 lookAtPoint = Vector3.Zero;
+        public Vector3 lookAtPoint = Vector3.UnitY; // placing this at (0, 1, 0)
+                                                    // so the camera looks more at the middle of the loaded model
+                                                    // mainly until I add model framing based on bounding box
 
         // euler Angles
         public float Yaw;

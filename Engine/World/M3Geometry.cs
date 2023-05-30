@@ -32,17 +32,23 @@ namespace ProjectWS.Engine.World
             {
                 var submesh = this.data.submeshes[i];
 
+                this.meshes[i] = new M3Mesh(submesh, this.data.vertexBlockSizeInBytes, this.data.vertexBlockFieldPositions, this.data.vertexBlockFlags, this.data.vertexFieldTypes);
+
+                this.meshes[i].vertexData = new byte[submesh.vertexCount * this.data.vertexBlockSizeInBytes];
+                Array.Copy(data.vertexData, submesh.startVertex * this.data.vertexBlockSizeInBytes, this.meshes[i].vertexData, 0, submesh.vertexCount * this.data.vertexBlockSizeInBytes);
+
+                this.meshes[i].indexData = new uint[submesh.indexCount];
+                Array.Copy(data.indexData, submesh.startIndex, this.meshes[i].indexData, 0, submesh.indexCount);
+
+                this.meshes[i].Build();
+
                 if (submesh.meshGroupID == m3ModelID || submesh.meshGroupID == -1)
                 {
-                    this.meshes[i] = new M3Mesh(submesh, this.data.vertexBlockSizeInBytes, this.data.vertexBlockFieldPositions, this.data.vertexBlockFlags, this.data.vertexFieldTypes);
-
-                    this.meshes[i].vertexData = new byte[submesh.vertexCount * this.data.vertexBlockSizeInBytes];
-                    Array.Copy(data.vertexData, submesh.startVertex * this.data.vertexBlockSizeInBytes, this.meshes[i].vertexData, 0, submesh.vertexCount * this.data.vertexBlockSizeInBytes);
-
-                    this.meshes[i].indexData = new uint[submesh.indexCount];
-                    Array.Copy(data.indexData, submesh.startIndex, this.meshes[i].indexData, 0, submesh.indexCount);
-
-                    this.meshes[i].Build();
+                    this.meshes[i].renderable = true;
+                }
+                else
+                {
+                    this.meshes[i].renderable = false;
                 }
             }
 #pragma warning restore CS8604 // Possible null reference argument.

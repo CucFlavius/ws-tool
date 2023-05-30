@@ -14,12 +14,35 @@
             </ToolBar>
 
         </ToolBarTray>
-        <glControl:GLWpfControl Name="GLWpfControl" Margin="0,50,0,-18" Focusable="True"/>
-        <Rectangle Name="ViewportRect0" HorizontalAlignment="Left" Height="100" Margin="0,24,0,0" Stroke="White" VerticalAlignment="Bottom" Width="100" IsHitTestVisible="False"/>
+        
+        <Rectangle Name="ViewportRect0" HorizontalAlignment="Left" Height="1" Margin="0,24,0,0" Stroke="White" VerticalAlignment="Bottom" Width="1" IsHitTestVisible="False"/>
+        
         <ToolBar HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="500" Margin="0,26,0,0" ToolBarTray.IsLocked="True">
             <TextBlock IsHitTestVisible="False" Name="txtSelectRenderMode" Foreground="#d0d0d0" Text="Render Mode" TextAlignment="Center" VerticalAlignment="Center" Margin="10,0"/>
             <ComboBox Text="RenderMode" Width="150" Height="21" SelectionChanged="renderModeComboBox_SelectionChanged" Name="renderModeComboBox" VerticalAlignment="Center" Margin="0,0,0,0" ItemsSource="{Binding renderModes}" Loaded="renderModeComboBox_Loaded" />
         </ToolBar>
-
+        <Grid Margin="0, 50, 0, 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="250" />
+            </Grid.ColumnDefinitions>
+            <glControl:GLWpfControl Name="GLWpfControl" Focusable="True" Grid.Column="0"/>
+            <GridSplitter Width="5" Background="#1f1f1f" HorizontalAlignment="Stretch" Grid.Column="1"/>
+            <TabControl Grid.Column="2">
+                <TabItem Header="Meshes">
+                    <Grid Background="#1f1f1f" Margin="0,0,0,0">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="StackPanel_Meshes" VerticalAlignment="Top" HorizontalAlignment="Left">
+                                
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Materials">
+                    <Grid Background="#1f1f1f"/>
+                </TabItem>
+            </TabControl>
+        </Grid>
     </Grid>
 </UserControl>

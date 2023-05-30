@@ -48,6 +48,8 @@ namespace ProjectWS.Editor
 					if (Engine.Engine.settings.window.panels["WorldManagerPane"].open)
 						this.editor.OpenWorldManagerPane(this);
 			}
+
+			this.editor.OnMainWindowCreated();
         }
 
 		#region FocusedElement
