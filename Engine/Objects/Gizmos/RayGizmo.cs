@@ -3,7 +3,7 @@ using MathUtils;
 
 namespace ProjectWS.Engine.Objects.Gizmos
 {
-    public class RayGizmo : GameObject
+    public class RayGizmo : Gizmo
     {
         int _vertexArrayObject;
         bool isBuilt;

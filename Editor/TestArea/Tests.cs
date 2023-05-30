@@ -105,7 +105,7 @@ namespace ProjectWS.TestArea
             string path0 = @"Art\Creature\Rowsdower\Rowsdower.m3";
 
             var modelRenderer = renderer as Engine.Rendering.ModelRenderer;
-            var model = new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine);
+            var model = new Engine.Objects.M3Model(path0, new Vector3(0, 0, 0), this.engine, renderer);
             modelRenderer.AddModel(model);
             (this.editor.modelRendererPanes[ID] as ModelRendererPane).UpdateModelInformation(model);
         }

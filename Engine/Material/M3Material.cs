@@ -15,7 +15,7 @@ namespace ProjectWS.Engine.Material
         ProjectWS.Engine.Data.ResourceManager.Manager rm;
         Dictionary<string, int> textureResources = new Dictionary<string, int>();
 
-        public M3Material(FileFormats.M3.Material matData, FileFormats.M3.File m3, ProjectWS.Engine.Data.ResourceManager.Manager rm)
+        public M3Material(FileFormats.M3.Material matData, FileFormats.M3.File m3, ProjectWS.Engine.Data.ResourceManager.Manager? rm)
         {
             this.matData = matData;
             this.m3 = m3;

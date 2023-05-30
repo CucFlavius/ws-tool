@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ProjectWS.Engine.Objects.Gizmos
 {
-    public class CameraGizmo : GameObject
+    public class CameraGizmo : Gizmo
     {
         public Camera camera;
         int _vertexArrayObject;

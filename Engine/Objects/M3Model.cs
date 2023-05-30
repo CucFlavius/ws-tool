@@ -2,22 +2,28 @@
 using ProjectWS.Engine.Database;
 using ProjectWS.Engine.Material;
 using ProjectWS.Engine.World;
+using ProjectWS.Engine.Animation;
+using ProjectWS.Engine.Rendering;
 
 namespace ProjectWS.Engine.Objects
 {
     public class M3Model : GameObject
     {
         Engine engine;
+        private readonly Renderer renderer;
         public FileFormats.M3.File data;
         public readonly Matrix4 decompressMat = Matrix4.CreateScale(1.0f / 1024.0f);
 
         public M3Geometry[] geometries;
         public M3Material[] materials;
+        public M3Bone[] bones;
+
         private bool isBuilt;
 
-        public M3Model(string path, Vector3 position, Engine engine) : base()
+        public M3Model(string path, Vector3 position, Engine engine, Renderer renderer) : base()
         {
             this.engine = engine;
+            this.renderer = renderer;
             this.data = new FileFormats.M3.File(path);
             //this.data.modelID = 1;
 
@@ -53,6 +59,7 @@ namespace ProjectWS.Engine.Objects
 
         public override void Build()
         {
+            // Materials //
             this.materials = new M3Material[this.data.materials.Length];
             for (int i = 0; i < this.materials.Length; i++)
             {
@@ -60,6 +67,7 @@ namespace ProjectWS.Engine.Objects
                 this.materials[i].Build();
             }
 
+            // Geometries //
             this.geometries = new M3Geometry[this.data.geometries.Length];
 
             for (int i = 0; i < this.geometries.Length; i++)
@@ -68,7 +76,25 @@ namespace ProjectWS.Engine.Objects
                 this.geometries[i].Build(this.data.modelID);
             }
 
+            // Skeleton //
+            this.bones = new M3Bone[this.data.bones.Length];
+
+            for (int i = 0; i < this.bones.Length; i++)
+            {
+                this.bones[i] = new M3Bone(this.data.bones[i]);
+            }
+
+            for (int i = 0; i < this.bones.Length; i++)
+            {
+                this.bones[i].Build(renderer, engine, this);
+            }
+
             this.isBuilt = true;
+        }
+
+        public override void Update(float deltaTime)
+        {
+            
         }
 
         public override void Render(Matrix4 model, Shader shader)

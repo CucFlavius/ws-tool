@@ -31,6 +31,12 @@ namespace ProjectWS.Engine.Components
             this.needsUpdate = true;
         }
 
+        public void SetScale(Vector3 scale)
+        {
+            this.scale = scale;
+            this.needsUpdate = true;
+        }
+
         public Vector3 GetPosition()
         {
             return this.position;
@@ -41,10 +47,9 @@ namespace ProjectWS.Engine.Components
             return this.rotation;
         }
 
-        public void SetScale(Vector3 scale)
+        public Vector3 GetScale()
         {
-            this.scale = scale;
-            this.needsUpdate = true;
+            return this.scale;
         }
 
         public Transform()
@@ -67,10 +72,12 @@ namespace ProjectWS.Engine.Components
         {
             if (this.needsUpdate)
             {
-                this.matrix = Matrix4.Identity;
-                this.matrix *= Matrix4.CreateScale(scale);
-                this.matrix *= Matrix4.CreateTranslation(position);
-                this.matrix *= Matrix4.CreateFromQuaternion(rotation);
+                this.matrix = Matrix4.CreateScale(scale) * Matrix4.CreateFromQuaternion(rotation) * Matrix4.CreateTranslation(position);
+
+                //this.matrix = Matrix4.Identity;
+                //this.matrix *= Matrix4.CreateScale(scale);
+                //this.matrix *= Matrix4.CreateFromQuaternion(rotation);
+                //this.matrix *= Matrix4.CreateTranslation(position);
                 this.needsUpdate = false;
             }
             return this.matrix;
@@ -78,7 +85,9 @@ namespace ProjectWS.Engine.Components
 
         public void SetMatrix(Matrix4 mat)
         {
-            this.matrix = mat;
+            // This doesn't work for some reason
+            this.needsUpdate = false;
+            this.matrix = new Matrix4(mat.Row0, mat.Row1, mat.Row2, mat.Row3);//mat;
         }
 
         public override void Update(float deltaTime) { }

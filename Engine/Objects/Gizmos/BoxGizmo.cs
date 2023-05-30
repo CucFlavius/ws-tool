@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ProjectWS.Engine.Objects.Gizmos
 {
-    public class BoxGizmo : GameObject
+    public class BoxGizmo : Gizmo
     {
         int vao;
         int[]? indices;

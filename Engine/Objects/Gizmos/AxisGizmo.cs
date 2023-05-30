@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ProjectWS.Engine.Objects.Gizmos
 {
-    public class AxisGizmo : GameObject
+    public class AxisGizmo : Gizmo
     {
         int vao;
         int[]? indices;
@@ -17,18 +17,6 @@ namespace ProjectWS.Engine.Objects.Gizmos
         Vector4 color;
 
         public AxisGizmo() { }
-
-        public struct AxisData
-        {
-            public Vector3 position;
-            public Vector4 color;
-
-            public AxisData(Vector3 position, Vector4 color)
-            {
-                this.position = position;
-                this.color = color;
-            }
-        }
 
         public override void Build()
         {
@@ -39,16 +27,16 @@ namespace ProjectWS.Engine.Objects.Gizmos
 
             this.color = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
-            var vertices = new AxisData[]
+            var vertices = new LineVertexBuffer[]
             {
-                new AxisData(new Vector3 (0.0f, 0.0f, 0.0f), new Vector4(1.0f, 0.0f, 0.0f, 1.0f)),
-                new AxisData(new Vector3 (ch, 0.0f, 0.0f), new Vector4(1.0f, 0.0f, 0.0f, 1.0f)),
+                new LineVertexBuffer(new Vector3 (0.0f, 0.0f, 0.0f), new Vector4(1.0f, 0.0f, 0.0f, 1.0f)),
+                new LineVertexBuffer(new Vector3 (ch, 0.0f, 0.0f), new Vector4(1.0f, 0.0f, 0.0f, 1.0f)),
 
-                new AxisData(new Vector3 (0.0f, 0.0f, 0.0f), new Vector4(0.0f, 1.0f, 0.0f, 1.0f)),
-                new AxisData(new Vector3 (0.0f, ch, 0.0f), new Vector4(0.0f, 1.0f, 0.0f, 1.0f)),
+                new LineVertexBuffer(new Vector3 (0.0f, 0.0f, 0.0f), new Vector4(0.0f, 1.0f, 0.0f, 1.0f)),
+                new LineVertexBuffer(new Vector3 (0.0f, ch, 0.0f), new Vector4(0.0f, 1.0f, 0.0f, 1.0f)),
 
-                new AxisData(new Vector3 (0.0f, 0.0f, 0.0f), new Vector4(0.0f, 0.0f, 1.0f, 1.0f)),
-                new AxisData(new Vector3 (0.0f, 0.0f, ch), new Vector4(0.0f, 0.0f, 1.0f, 1.0f)),
+                new LineVertexBuffer(new Vector3 (0.0f, 0.0f, 0.0f), new Vector4(0.0f, 0.0f, 1.0f, 1.0f)),
+                new LineVertexBuffer(new Vector3 (0.0f, 0.0f, ch), new Vector4(0.0f, 0.0f, 1.0f, 1.0f)),
             };
 
             this.indices = new int[]
@@ -85,6 +73,8 @@ namespace ProjectWS.Engine.Objects.Gizmos
             if (!this.isBuilt) return;
             if (this.indices == null) return;
 
+            GL.Disable(EnableCap.DepthTest);
+
             var mat = model * this.transform.GetMatrix();
 
             shader.SetMat4("model", ref mat);
@@ -92,6 +82,8 @@ namespace ProjectWS.Engine.Objects.Gizmos
 
             GL.BindVertexArray(this.vao);
             GL.DrawElements(BeginMode.Lines, this.indices.Length, DrawElementsType.UnsignedInt, 0);
+
+            GL.Enable(EnableCap.DepthTest);
         }
     }
 }
